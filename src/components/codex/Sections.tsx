@@ -9,7 +9,7 @@ interface SectionsProps {
 }
 
 const Sections = ({ onSelect }: SectionsProps) => {
-  const contentSections = sections.filter((s) => s.id !== 'contacts');
+  const contentSections = sections.filter((s) => s.id !== 'contacts' && s.id !== 'map');
 
   return (
     <div id="sections" className="container py-16 md:py-24">

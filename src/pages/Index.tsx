@@ -3,6 +3,7 @@ import { CodexEntry } from '@/data/codex';
 import Header from '@/components/codex/Header';
 import Hero from '@/components/codex/Hero';
 import Sections from '@/components/codex/Sections';
+import WorldMap from '@/components/codex/WorldMap';
 import Contacts from '@/components/codex/Contacts';
 import Footer from '@/components/codex/Footer';
 import SearchDialog from '@/components/codex/SearchDialog';
@@ -29,6 +30,7 @@ const Index = () => {
       <main>
         <Hero onSearchClick={() => setSearchOpen(true)} />
         <Sections onSelect={setActiveEntry} />
+        <WorldMap />
         <Contacts />
       </main>
       <Footer />
