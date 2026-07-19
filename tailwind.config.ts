@@ -19,6 +19,10 @@ export default {
 		},
 		extend: {
 			colors: {
+				gold: 'hsl(var(--gold))',
+				'gold-bright': 'hsl(var(--gold-bright))',
+				blood: 'hsl(var(--blood))',
+				parchment: 'hsl(var(--parchment))',
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -67,12 +71,6 @@ export default {
 				display: ['Cinzel', 'serif'],
 				body: ['"Cormorant Garamond"', 'serif'],
 				rune: ['MedievalSharp', 'cursive']
-			},
-			colors: {
-				gold: 'hsl(var(--gold))',
-				'gold-bright': 'hsl(var(--gold-bright))',
-				blood: 'hsl(var(--blood))',
-				parchment: 'hsl(var(--parchment))'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
