@@ -34,7 +34,7 @@ const Footer = () => {
 
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gold/15 pt-6">
           <p className="font-body text-sm text-muted-foreground">© {new Date().getFullYear()} Кодекс Старого Света</p>
-          <p className="font-rune text-sm text-gold/60 tracking-wide">Sigmar protects</p>
+          <p className="font-rune text-sm text-gold/60 tracking-wide">Taal protects</p>
         </div>
       </div>
     </footer>

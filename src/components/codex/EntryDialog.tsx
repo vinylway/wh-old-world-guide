@@ -13,7 +13,7 @@ const EntryDialog = ({ entry, onOpenChange }: EntryDialogProps) => {
 
   return (
     <Dialog open={!!entry} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg border-gold/40 bg-card parchment-panel">
+      <DialogContent className="max-w-lg bg-card parchment-panel ornate-frame">
         {entry && (
           <div className="animate-fade-in">
             <div className="flex items-center justify-center gap-2 text-gold">

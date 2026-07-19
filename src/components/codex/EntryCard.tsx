@@ -12,9 +12,9 @@ const EntryCard = ({ entry, onSelect }: EntryCardProps) => {
   return (
     <button
       onClick={() => onSelect(entry)}
-      className="group relative flex flex-col text-left parchment-panel rounded border border-gold/20 p-5 hover:border-gold/60 transition-all hover-scale"
+      className="group relative flex flex-col text-left parchment-panel ornate-frame p-4 transition-all hover-scale"
     >
-      <span className="pointer-events-none absolute inset-0 rounded opacity-0 group-hover:opacity-100 transition-opacity glow-gold" />
+      <span className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity glow-gold" />
       <div className="flex items-center justify-between gap-3 mb-3">
         <span className="flex items-center gap-2 text-gold">
           <Icon name={section?.icon ?? 'Circle'} size={18} fallback="Circle" />
