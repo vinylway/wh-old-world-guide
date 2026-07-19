@@ -11,10 +11,10 @@ const Hero = ({ onSearchClick }: HeroProps) => {
   return (
     <section id="top" className="relative overflow-hidden">
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center opacity-80"
         style={{ backgroundImage: `url(${HERO_IMG})` }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/80 to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/85 to-background" />
 
       <div className="container relative py-24 md:py-36 text-center animate-fade-in">
         <p className="font-rune text-gold/80 tracking-[0.3em] uppercase text-sm mb-6 animate-flicker">

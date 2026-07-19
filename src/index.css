@@ -4,49 +4,49 @@
 
 @layer base {
   :root {
-    --background: 30 18% 8%;
-    --foreground: 40 30% 88%;
+    --background: 38 40% 90%;
+    --foreground: 25 40% 16%;
 
-    --card: 28 20% 11%;
-    --card-foreground: 40 30% 88%;
+    --card: 40 45% 95%;
+    --card-foreground: 25 40% 16%;
 
-    --popover: 28 22% 10%;
-    --popover-foreground: 40 30% 88%;
+    --popover: 40 45% 96%;
+    --popover-foreground: 25 40% 16%;
 
-    --primary: 40 68% 52%;
-    --primary-foreground: 30 30% 8%;
+    --primary: 38 68% 42%;
+    --primary-foreground: 25 40% 14%;
 
-    --secondary: 20 30% 16%;
-    --secondary-foreground: 40 40% 85%;
+    --secondary: 36 30% 82%;
+    --secondary-foreground: 25 40% 16%;
 
-    --muted: 26 16% 18%;
-    --muted-foreground: 38 18% 62%;
+    --muted: 35 25% 85%;
+    --muted-foreground: 30 20% 38%;
 
-    --accent: 0 55% 38%;
-    --accent-foreground: 40 40% 92%;
+    --accent: 358 45% 34%;
+    --accent-foreground: 40 40% 96%;
 
-    --destructive: 0 62% 42%;
-    --destructive-foreground: 40 40% 92%;
+    --destructive: 358 55% 40%;
+    --destructive-foreground: 40 40% 96%;
 
-    --border: 34 25% 24%;
-    --input: 34 25% 20%;
-    --ring: 40 68% 52%;
+    --border: 35 25% 68%;
+    --input: 35 25% 74%;
+    --ring: 38 68% 42%;
 
     --radius: 0.35rem;
 
-    --gold: 40 68% 52%;
-    --gold-bright: 44 82% 64%;
-    --blood: 0 55% 38%;
-    --parchment: 40 40% 88%;
+    --gold: 38 68% 40%;
+    --gold-bright: 40 75% 46%;
+    --blood: 358 50% 34%;
+    --parchment: 25 40% 16%;
 
-    --sidebar-background: 28 20% 11%;
-    --sidebar-foreground: 40 30% 88%;
-    --sidebar-primary: 40 68% 52%;
-    --sidebar-primary-foreground: 30 30% 8%;
-    --sidebar-accent: 20 30% 16%;
-    --sidebar-accent-foreground: 40 40% 85%;
-    --sidebar-border: 34 25% 24%;
-    --sidebar-ring: 40 68% 52%;
+    --sidebar-background: 40 45% 95%;
+    --sidebar-foreground: 25 40% 16%;
+    --sidebar-primary: 38 68% 42%;
+    --sidebar-primary-foreground: 25 40% 14%;
+    --sidebar-accent: 36 30% 82%;
+    --sidebar-accent-foreground: 25 40% 16%;
+    --sidebar-border: 35 25% 68%;
+    --sidebar-ring: 38 68% 42%;
   }
 }
 
@@ -59,18 +59,11 @@
     @apply bg-background text-foreground;
     font-family: "Cormorant Garamond", serif;
     background-color: hsl(var(--background));
-    background-image:
-      radial-gradient(
-        ellipse 80% 60% at 50% -10%,
-        hsl(40 60% 30% / 0.18),
-        transparent 60%
-      ),
-      radial-gradient(
-        ellipse 60% 50% at 100% 100%,
-        hsl(0 55% 25% / 0.12),
-        transparent 55%
-      ),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c8992f' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-image: url("https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/cc2e0ce0-39fa-49ae-9afc-f70f3e8c98b9.png");
+    background-size: cover;
+    background-position: top center;
+    background-attachment: fixed;
+    background-repeat: repeat-y;
   }
 
   h1,
@@ -94,7 +87,7 @@
       180deg,
       hsl(var(--gold-bright)),
       hsl(var(--gold)) 55%,
-      hsl(34 60% 34%)
+      hsl(30 55% 28%)
     );
     -webkit-background-clip: text;
     background-clip: text;
@@ -111,13 +104,17 @@
   }
   .glow-gold {
     box-shadow:
-      0 0 0 1px hsl(var(--gold) / 0.3),
-      0 8px 40px -12px hsl(var(--gold) / 0.35);
+      0 0 0 1px hsl(var(--gold) / 0.35),
+      0 8px 32px -14px hsl(30 50% 20% / 0.45);
   }
   .parchment-panel {
     background:
-      linear-gradient(hsl(var(--card) / 0.92), hsl(var(--card) / 0.96)),
-      radial-gradient(circle at 20% 10%, hsl(40 40% 30% / 0.1), transparent 40%);
+      linear-gradient(hsl(var(--card) / 0.94), hsl(var(--card) / 0.98)),
+      radial-gradient(
+        circle at 20% 10%,
+        hsl(38 50% 60% / 0.15),
+        transparent 40%
+      );
   }
   .story-link {
     position: relative;
@@ -191,9 +188,9 @@
   width: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: hsl(28 20% 10%);
+  background: hsl(36 30% 82%);
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(hsl(var(--gold) / 0.5), hsl(34 40% 25%));
+  background: linear-gradient(hsl(var(--gold)), hsl(30 50% 32%));
   border-radius: 4px;
 }
