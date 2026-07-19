@@ -97,6 +97,39 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate }: EntryDialogProps) => {
               </div>
             )}
 
+            {entry.otherOpinions && entry.otherOpinions.length > 0 && (
+              <div className="mt-4">
+                <button
+                  onClick={() => setShowOpinions((v) => !v)}
+                  className="flex w-full items-center justify-center gap-2 rounded border border-gold/30 py-2 font-display text-xs uppercase tracking-widest text-gold hover:bg-secondary transition-colors"
+                >
+                  <Icon name={showOpinions ? 'EyeOff' : 'MessagesSquare'} size={14} />
+                  {showOpinions ? 'Скрыть мнения других народов' : 'Мнение представителей других происхождений'}
+                </button>
+                {showOpinions && (
+                  <div className="mt-3 space-y-3 animate-fade-in">
+                    {entry.otherOpinions.map((op, i) => (
+                      <div key={i} className="rounded border border-gold/20 p-3">
+                        <p className="font-body italic text-parchment/90 leading-relaxed">
+                          «{op.quote}»
+                        </p>
+                        {op.linkEntryId && onNavigate ? (
+                          <button
+                            onClick={() => onNavigate(op.linkEntryId as string)}
+                            className="story-link mt-2 inline-block font-display text-sm text-gold hover:text-gold-bright transition-colors"
+                          >
+                            — {op.author}
+                          </button>
+                        ) : (
+                          <p className="mt-2 font-display text-sm text-gold/80">— {op.author}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {cs && (
               <div className="mt-6 space-y-5">
                 <div className="overflow-hidden rounded border border-gold/25">
