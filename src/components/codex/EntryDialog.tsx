@@ -49,7 +49,7 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate }: EntryDialogProps) => {
 
             <OrnateDivider className="my-5" />
 
-            {cs ? (
+            {cs || (entry.stats && entry.stats.length > 0) ? (
               <div>
                 <button
                   onClick={() => setShowSummary((v) => !v)}
@@ -59,15 +59,23 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate }: EntryDialogProps) => {
                   {showSummary ? 'Скрыть описание' : 'Показать описание'}
                 </button>
                 {showSummary && (
-                  <p className="mt-3 font-body text-lg leading-relaxed text-parchment/90 animate-fade-in">
-                    {entry.summary}
-                  </p>
+                  <div className="mt-3 space-y-3 animate-fade-in">
+                    {entry.summary.split('\n\n').map((paragraph, i) => (
+                      <p key={i} className="font-body text-lg leading-relaxed text-parchment/90">
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
                 )}
               </div>
             ) : (
-              <p className="font-body text-lg leading-relaxed text-parchment/90">
-                {entry.summary}
-              </p>
+              <div className="space-y-3">
+                {entry.summary.split('\n\n').map((paragraph, i) => (
+                  <p key={i} className="font-body text-lg leading-relaxed text-parchment/90">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
             )}
 
             {entry.stats && entry.stats.length > 0 && (
