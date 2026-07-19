@@ -102,7 +102,7 @@ const CharacterGenerator = () => {
   };
 
   const allRoundsDone = rounds.every((r) => r.status === 'done');
-  const xp = (originId ? 1 : 0) + rounds.filter((r) => r.status === 'done').length;
+  const xp = (originId ? 1 : 0) + (allRoundsDone ? 1 : 0);
 
   const finalStats: StatRow[] | null =
     origin && origin.stats
