@@ -1,6 +1,6 @@
 import Icon from '@/components/ui/icon';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { sections, entries, itemCategories, sources, SourceId, CodexEntry } from '@/data/codex';
+import { sections, entries, itemCategories, sources, defaultSourceIds, Source, CodexEntry } from '@/data/codex';
 import EntryCard from './EntryCard';
 import OrnateDivider from './OrnateDivider';
 
@@ -34,6 +34,8 @@ const Sections = ({ onSelect }: SectionsProps) => {
       <div className="space-y-20">
         {contentSections.map((section) => {
           const sectionEntries = entries.filter((e) => e.section === section.id);
+          const sectionSourceIds = section.sourceIds ?? defaultSourceIds;
+          const sectionSources = sources.filter((s) => sectionSourceIds.includes(s.id));
           return (
             <section key={section.id} id={`section-${section.id}`} className="scroll-mt-24">
               <div className="flex items-center gap-4 mb-8">
@@ -46,9 +48,9 @@ const Sections = ({ onSelect }: SectionsProps) => {
                 </div>
               </div>
 
-              <Tabs defaultValue="gm">
+              <Tabs defaultValue={sectionSources[0]?.id}>
                 <TabsList className="mb-6 flex-wrap h-auto gap-1 bg-secondary/60 border border-gold/20">
-                  {sources.map((src) => (
+                  {sectionSources.map((src) => (
                     <TabsTrigger
                       key={src.id}
                       value={src.id}
@@ -60,7 +62,7 @@ const Sections = ({ onSelect }: SectionsProps) => {
                   ))}
                 </TabsList>
 
-                {sources.map((src: { id: SourceId; title: string; icon: string }) => {
+                {sectionSources.map((src: Source) => {
                   const items = sectionEntries.filter((e) => e.source === src.id);
                   return (
                     <TabsContent key={src.id} value={src.id} className="mt-0">

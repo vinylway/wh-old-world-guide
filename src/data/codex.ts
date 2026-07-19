@@ -1,4 +1,4 @@
-export type SourceId = 'gm' | 'player';
+export type SourceId = 'gm' | 'player' | 'trinity' | 'talagaad-guide' | 'talagaad-adventures';
 
 export interface Source {
   id: SourceId;
@@ -9,6 +9,9 @@ export interface Source {
 export const sources: Source[] = [
   { id: 'gm', title: 'Руководство ведущего', icon: 'Crown' },
   { id: 'player', title: 'Руководство игрока', icon: 'UserRound' },
+  { id: 'trinity', title: 'Жажда Троицы', icon: 'Droplets' },
+  { id: 'talagaad-guide', title: 'Путеводитель по Талагааду', icon: 'MapPinned' },
+  { id: 'talagaad-adventures', title: 'Приключения в Талагааде', icon: 'Compass' },
 ];
 
 export interface CodexEntry {
@@ -45,11 +48,18 @@ export interface Section {
   title: string;
   icon: string;
   description: string;
+  sourceIds?: SourceId[];
 }
+
+export const defaultSourceIds: SourceId[] = ['gm', 'player'];
 
 export const sections: Section[] = [
   { id: 'rules', title: 'Правила', icon: 'ScrollText', description: 'Механики, характеристики, броски и боевая система' },
-  { id: 'creatures', title: 'Существа', icon: 'Skull', description: 'Бестиарий Старого Света: от гоблинов до драконов' },
+  {
+    id: 'creatures', title: 'Персонажи ведущего', icon: 'Skull',
+    description: 'Готовые NPC, чудовища и противники для сюжетных встреч: характеристики, повадки и советы по отыгрышу',
+    sourceIds: ['gm', 'trinity', 'talagaad-guide', 'talagaad-adventures'],
+  },
   { id: 'items', title: 'Предметы', icon: 'Sword', description: 'Оружие, доспехи, артефакты и снаряжение' },
   { id: 'magic', title: 'Магия', icon: 'Sparkles', description: 'Ветра магии, заклинания и колдовские традиции' },
   { id: 'contacts', title: 'Контакты', icon: 'Feather', description: 'Гильдия мастеров и связь с летописцами' },
@@ -87,12 +97,12 @@ export const entries: CodexEntry[] = [
     tags: ['грифон', 'империя', 'горы', 'ездовое'], meta: 'Угроза: высокая',
   },
   {
-    id: 'c3', section: 'creatures', source: 'gm', title: 'Вампир из рода фон Карштайн',
+    id: 'c3', section: 'creatures', source: 'trinity', title: 'Вампир из рода фон Карштайн',
     summary: 'Аристократ нежити, повелевающий ветром Шиш. Регенерирует раны, гипнотизирует жертв и поднимает армии скелетов.',
     tags: ['вампир', 'нежить', 'карштайн', 'магия смерти'], meta: 'Угроза: смертельная',
   },
   {
-    id: 'c4', section: 'creatures', source: 'gm', title: 'Древень Атель Лорена',
+    id: 'c4', section: 'creatures', source: 'talagaad-guide', title: 'Древень Атель Лорена',
     summary: 'Древний живой лес-хранитель. Медлителен, но невероятно вынослив; сокрушает врагов ветвями и топит корнями.',
     tags: ['древень', 'лесные эльфы', 'атель лорен', 'дерево'], meta: 'Угроза: высокая',
   },
