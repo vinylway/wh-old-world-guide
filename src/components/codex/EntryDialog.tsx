@@ -14,9 +14,11 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate }: EntryDialogProps) => {
   const section = entry ? sections.find((s) => s.id === entry.section) : null;
   const cs = entry?.creatureStats;
   const [showSummary, setShowSummary] = useState(false);
+  const [showOpinions, setShowOpinions] = useState(false);
 
   useEffect(() => {
     setShowSummary(false);
+    setShowOpinions(false);
   }, [entry]);
 
   return (
