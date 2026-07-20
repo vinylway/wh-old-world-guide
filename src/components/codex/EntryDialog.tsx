@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
-import { CodexEntry, sections } from '@/data/codex';
+import { CodexEntry, sections, entries } from '@/data/codex';
 import OrnateDivider from './OrnateDivider';
 
 interface EntryDialogProps {
@@ -94,6 +94,30 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate }: EntryDialogProps) => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {entry.relatedEntryIds && entry.relatedEntryIds.length > 0 && (
+              <div className="mt-4">
+                <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-2 text-center">
+                  Связанные записи
+                </p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {entry.relatedEntryIds.map((id) => {
+                    const related = entries.find((e) => e.id === id);
+                    if (!related) return null;
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => onNavigate?.(id)}
+                        className="story-link flex items-center gap-1.5 rounded border border-gold/30 px-3 py-1.5 font-display text-xs uppercase tracking-wide text-gold hover:bg-secondary transition-colors"
+                      >
+                        <Icon name="ArrowRight" size={12} />
+                        {related.title}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
 

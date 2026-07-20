@@ -65,6 +65,7 @@ export interface CodexEntry {
   creatureStats?: CreatureStatBlock;
   portrait?: string;
   otherOpinions?: OpinionQuote[];
+  relatedEntryIds?: string[];
 }
 
 export interface Subgroup {
@@ -75,6 +76,11 @@ export interface Subgroup {
 }
 
 export const subgroups: Subgroup[] = [
+  { id: 'ability-characteristics', title: 'Характеристики', sectionId: 'abilities', sourceId: 'player' },
+  { id: 'ability-skills', title: 'Навыки', sectionId: 'abilities', sourceId: 'player' },
+  { id: 'ability-talents', title: 'Таланты', sectionId: 'abilities', sourceId: 'player' },
+  { id: 'ability-lore', title: 'Знания', sectionId: 'abilities', sourceId: 'player' },
+  { id: 'ability-contacts', title: 'Контакты', sectionId: 'abilities', sourceId: 'player' },
   { id: 'talabek', title: 'Великое герцогство Талабек', sectionId: 'creatures', sourceId: 'gm' },
   { id: 'bretonnia', title: 'Королевство Бретония', sectionId: 'creatures', sourceId: 'gm' },
   { id: 'osterlund', title: 'Великое графство Остерлунд', sectionId: 'creatures', sourceId: 'gm' },
@@ -102,7 +108,23 @@ export const itemCategories: ItemCategory[] = [
   { id: 'tools', title: 'Инструменты и наборы', icon: 'Wrench' },
 ];
 
-export type SectionId = 'rules' | 'origins' | 'creatures' | 'items' | 'magic' | 'contacts';
+export type SectionId = 'rules' | 'abilities' | 'origins' | 'creatures' | 'items' | 'magic' | 'contacts';
+
+export type SectionGroupId = 'player-corner';
+
+export interface SectionGroup {
+  id: SectionGroupId;
+  title: string;
+  icon: string;
+  description: string;
+}
+
+export const sectionGroups: SectionGroup[] = [
+  {
+    id: 'player-corner', title: 'Уголок игрока', icon: 'UserRound',
+    description: 'Всё необходимое для создания и развития персонажа игрока',
+  },
+];
 
 export interface Section {
   id: SectionId;
@@ -110,24 +132,44 @@ export interface Section {
   icon: string;
   description: string;
   sourceIds?: SourceId[];
+  group?: SectionGroupId;
 }
 
 export const defaultSourceIds: SourceId[] = ['gm', 'player'];
 
 export const sections: Section[] = [
-  { id: 'rules', title: 'Правила', icon: 'ScrollText', description: 'Механики, характеристики, броски и боевая система' },
+  {
+    id: 'rules', title: 'Правила', icon: 'ScrollText',
+    description: 'Механики, характеристики, броски и боевая система',
+    group: 'player-corner',
+  },
+  {
+    id: 'abilities', title: 'Способности', icon: 'Sparkle',
+    description: 'Характеристики, навыки, таланты, знания и контакты персонажа',
+    sourceIds: ['player'],
+    group: 'player-corner',
+  },
   {
     id: 'origins', title: 'Происхождения', icon: 'Users',
     description: 'Народы и родины персонажей игроков: люди, эльфы, гномы и полурослики',
     sourceIds: ['player'],
+    group: 'player-corner',
+  },
+  {
+    id: 'items', title: 'Предметы', icon: 'Sword',
+    description: 'Оружие, доспехи, артефакты и снаряжение',
+    group: 'player-corner',
+  },
+  {
+    id: 'magic', title: 'Магия', icon: 'Sparkles',
+    description: 'Ветра магии, заклинания и колдовские традиции',
+    group: 'player-corner',
   },
   {
     id: 'creatures', title: 'Персонажи ведущего', icon: 'Skull',
     description: 'Готовые NPC, чудовища и противники для сюжетных встреч: характеристики, повадки и советы по отыгрышу',
     sourceIds: ['gm', 'trinity', 'talagaad-guide', 'talagaad-adventures'],
   },
-  { id: 'items', title: 'Предметы', icon: 'Sword', description: 'Оружие, доспехи, артефакты и снаряжение' },
-  { id: 'magic', title: 'Магия', icon: 'Sparkles', description: 'Ветра магии, заклинания и колдовские традиции' },
   { id: 'contacts', title: 'Контакты', icon: 'Feather', description: 'Гильдия мастеров и связь с летописцами' },
 ];
 
@@ -156,6 +198,59 @@ export const entries: CodexEntry[] = [
     id: 'r5', section: 'rules', source: 'player', title: 'Помощь',
     summary: 'Персонаж может ПОМОЧЬ союзнику совершить проверку или атаку в рукопашном бою. Помогающий не проходит собственную проверку — вместо этого цель его помощи получает +1d к своей проверке за каждого помогающего, если иное не указано особыми правилами или способностями.',
     tags: ['помощь', 'кооперация', 'проверка', 'атака'], meta: 'Глава III',
+  },
+  {
+    id: 'ability-bb', section: 'abilities', source: 'player', title: 'Ближний бой (ББ)', subgroup: 'Характеристики',
+    summary: 'Ближний бой отражает ваше мастерство в нанесении и уклонении от ударов на короткой дистанции. Этот показатель не связан с грубой физической силой — он зависит от скорости реакции, ловкости, отточенной работы ног, инстинкта и мышечной памяти.',
+    tags: ['характеристика', 'ближний бой', 'ббл'], meta: 'Характеристика',
+    relatedEntryIds: ['skill-melee', 'skill-defence'],
+  },
+  {
+    id: 'ability-v', section: 'abilities', source: 'player', title: 'Выносливость (В)', subgroup: 'Характеристики',
+    summary: 'Выносливость определяет вашу стойкость к ранам, ядам, болезням и усталости — насколько крепко ваше тело способно выдерживать тяготы приключений.',
+    tags: ['характеристика', 'выносливость'], meta: 'Характеристика',
+  },
+  {
+    id: 'ability-db', section: 'abilities', source: 'player', title: 'Дистанционный бой (ДБ)', subgroup: 'Характеристики',
+    summary: 'Дистанционный бой отражает меткость и хладнокровие при стрельбе или метании — будь то лук, арбалет, пистолет или брошенный камень.',
+    tags: ['характеристика', 'дистанционный бой'], meta: 'Характеристика',
+  },
+  {
+    id: 'ability-i', section: 'abilities', source: 'player', title: 'Инициатива (И)', subgroup: 'Характеристики',
+    summary: 'Инициатива показывает скорость мышления и остроту восприятия персонажа — как быстро он замечает опасность и принимает решения в напряжённый момент.',
+    tags: ['характеристика', 'инициатива'], meta: 'Характеристика',
+  },
+  {
+    id: 'ability-pr', section: 'abilities', source: 'player', title: 'Проворство (Пр)', subgroup: 'Характеристики',
+    summary: 'Проворство отражает гибкость, координацию и телесную ловкость персонажа — способность балансировать, красться, взбираться и уворачиваться.',
+    tags: ['характеристика', 'проворство'], meta: 'Характеристика',
+  },
+  {
+    id: 'ability-r', section: 'abilities', source: 'player', title: 'Рассудительность (Р)', subgroup: 'Характеристики',
+    summary: 'Рассудительность измеряет силу воли, здравомыслие и устойчивость персонажа к страху, панике и порочным искушениям Старого Света.',
+    tags: ['характеристика', 'рассудительность'], meta: 'Характеристика',
+  },
+  {
+    id: 'ability-s', section: 'abilities', source: 'player', title: 'Сила (С)', subgroup: 'Характеристики',
+    summary: 'Сила отражает физическую мощь персонажа — способность наносить сокрушительные удары, ломать препятствия и переносить тяжести.',
+    tags: ['характеристика', 'сила'], meta: 'Характеристика',
+  },
+  {
+    id: 'ability-h', section: 'abilities', source: 'player', title: 'Харизма (Х)', subgroup: 'Характеристики',
+    summary: 'Харизма показывает силу убеждения, обаяние и умение персонажа влиять на окружающих словом, взглядом или одним лишь присутствием.',
+    tags: ['характеристика', 'харизма'], meta: 'Характеристика',
+  },
+  {
+    id: 'skill-melee', section: 'abilities', source: 'player', title: 'Рукопашный бой', subgroup: 'Навыки',
+    summary: 'Рукопашный бой (рукопашный бой капителью) применяется для нанесения ударов по цели при использовании оружия ближнего боя. Этот навык критически важен для всех, чьи обязанности, склонности или простое невезение часто приводят к схваткам.\n\nХотя большинство стандартных видов оружия ближнего боя могут использоваться любым персонажем без штрафов, для эффективного владения некоторыми образцами требуется соответствующее знание (знание капителью).\n\nРукопашный бой (рукопашный бой капителью) задействуется преимущественно при проверках атаки (проверки атаки капителью). При этом осложнения (осложнения атаки капителью) и дополнительные эффекты (дополнительные эффекты капителью) не активируются.',
+    tags: ['навык', 'рукопашный бой', 'атака'], meta: 'Навык',
+    relatedEntryIds: ['ability-bb'],
+  },
+  {
+    id: 'skill-defence', section: 'abilities', source: 'player', title: 'Защита', subgroup: 'Навыки',
+    summary: 'Защита — это физический щит против вражеских атак, и она имеет первостепенное значение для всех, кто хочет выйти из битвы невредимым.\n\nВы можете задействовать Защиту во встречных проверках против атаки рукопашного боя видимого врага — при условии, что держите оружие или щит для блокирования удара. Если вы используете щит, этот же навык можно применить и во встречных проверках против атак, основанных на стрельбе или метании. В иных ситуациях придётся полагаться на Атлетику, чтобы уклониться от удара.\n\nКак правило, Защита применяется для противодействия атакам, поэтому осложнения и дополнительные эффекты не учитываются. Если же вы используете Защиту для сопротивления опасностям, осложнения могут привести к тому, что вы уроните предмет, который держите. Дополнительный эффект в таком случае позволит предоставить бонус +1d союзнику, который пытается справиться с той же опасностью.',
+    tags: ['навык', 'защита', 'блок'], meta: 'Навык',
+    relatedEntryIds: ['ability-bb'],
   },
   {
     id: 'o1', section: 'origins', source: 'player', title: 'Бретонец (человек)',
