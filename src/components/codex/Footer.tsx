@@ -1,8 +1,9 @@
 import Icon from '@/components/ui/icon';
-import { sections } from '@/data/codex';
+import { sections, sectionGroups } from '@/data/codex';
 
 const Footer = () => {
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  const navSections = sections.filter((s) => !s.group && s.id !== 'contacts');
 
   return (
     <footer className="border-t border-gold/25 bg-background">
@@ -20,7 +21,16 @@ const Footer = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-x-10 gap-y-2">
-            {sections.map((s) => (
+            {sectionGroups.map((g) => (
+              <button
+                key={g.id}
+                onClick={() => scrollTo(`group-${g.id}`)}
+                className="story-link text-left font-display text-sm uppercase tracking-wide text-parchment/70 hover:text-gold transition-colors"
+              >
+                {g.title}
+              </button>
+            ))}
+            {navSections.map((s) => (
               <button
                 key={s.id}
                 onClick={() => scrollTo(`section-${s.id}`)}

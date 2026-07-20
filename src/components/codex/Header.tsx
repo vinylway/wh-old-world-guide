@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
-import { sections } from '@/data/codex';
+import { sections, sectionGroups } from '@/data/codex';
 
 const Header = () => {
   const [open, setOpen] = useState(false);
@@ -10,6 +10,8 @@ const Header = () => {
     setOpen(false);
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  const navSections = sections.filter((s) => !s.group && s.id !== 'contacts');
 
   return (
     <header className="sticky top-0 z-50 border-b border-gold/25 bg-background/85 backdrop-blur-md">
@@ -25,7 +27,16 @@ const Header = () => {
         </button>
 
         <nav className="hidden lg:flex items-center gap-6">
-          {sections.map((s) => (
+          {sectionGroups.map((g) => (
+            <button
+              key={g.id}
+              onClick={() => scrollTo(`group-${g.id}`)}
+              className="story-link font-display text-sm uppercase tracking-widest text-parchment/80 hover:text-gold transition-colors"
+            >
+              {g.title}
+            </button>
+          ))}
+          {navSections.map((s) => (
             <button
               key={s.id}
               onClick={() => scrollTo(`section-${s.id}`)}
@@ -55,7 +66,17 @@ const Header = () => {
       {open && (
         <nav className="lg:hidden border-t border-gold/20 bg-background/95 animate-fade-in">
           <div className="container grid grid-cols-2 gap-2 py-4">
-            {sections.map((s) => (
+            {sectionGroups.map((g) => (
+              <button
+                key={g.id}
+                onClick={() => scrollTo(`group-${g.id}`)}
+                className="flex items-center gap-2 rounded px-3 py-2 text-left font-display text-sm uppercase tracking-wide text-parchment/80 hover:bg-secondary hover:text-gold transition-colors"
+              >
+                <Icon name={g.icon} size={16} fallback="Circle" />
+                {g.title}
+              </button>
+            ))}
+            {navSections.map((s) => (
               <button
                 key={s.id}
                 onClick={() => scrollTo(`section-${s.id}`)}

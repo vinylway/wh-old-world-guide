@@ -82,75 +82,93 @@ const ItemsGrid = ({ items, onSelect, sectionId, sourceId }: ItemsGridProps) => 
   );
 };
 
-const SectionBlock = ({ section, onSelect }: { section: Section; onSelect: (e: CodexEntry) => void }) => {
+const SectionBlock = ({
+  section,
+  onSelect,
+  defaultOpen = false,
+}: {
+  section: Section;
+  onSelect: (e: CodexEntry) => void;
+  defaultOpen?: boolean;
+}) => {
+  const [open, setOpen] = useState(defaultOpen);
   const sectionEntries = entries.filter((e) => e.section === section.id);
   const sectionSourceIds = section.sourceIds ?? defaultSourceIds;
   const sectionSources = sources.filter((s) => sectionSourceIds.includes(s.id));
 
   return (
-    <section id={`section-${section.id}`} className="scroll-mt-24">
-      <div className="flex items-center gap-4 mb-8">
+    <section id={`section-${section.id}`} className="scroll-mt-24 ornate-frame parchment-panel">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-4 p-5 text-left"
+      >
         <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded border border-gold/40 bg-secondary text-gold">
           <Icon name={section.icon} size={26} fallback="Circle" />
         </span>
-        <div>
-          <h3 className="font-display text-2xl md:text-3xl font-bold text-parchment">{section.title}</h3>
-          <p className="font-body text-base md:text-lg text-muted-foreground">{section.description}</p>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-display text-xl md:text-2xl font-bold text-parchment">{section.title}</h3>
+          <p className="font-body text-base text-muted-foreground">{section.description}</p>
         </div>
-      </div>
+        <span className="font-display text-xs text-muted-foreground shrink-0">{sectionEntries.length}</span>
+        <Icon name={open ? 'ChevronUp' : 'ChevronDown'} size={20} className="text-gold shrink-0" />
+      </button>
 
-      <Tabs defaultValue={sectionSources[0]?.id}>
-        <TabsList className="mb-6 flex-wrap h-auto gap-1 bg-secondary/60 border border-gold/20">
-          {sectionSources.map((src) => (
-            <TabsTrigger
-              key={src.id}
-              value={src.id}
-              className="flex items-center gap-1.5 font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground"
-            >
-              <Icon name={src.icon} size={14} fallback="Circle" />
-              {src.title}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      {open && (
+        <div className="px-5 pb-6 animate-fade-in">
+          <Tabs defaultValue={sectionSources[0]?.id}>
+            <TabsList className="mb-6 flex-wrap h-auto gap-1 bg-secondary/60 border border-gold/20">
+              {sectionSources.map((src) => (
+                <TabsTrigger
+                  key={src.id}
+                  value={src.id}
+                  className="flex items-center gap-1.5 font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground"
+                >
+                  <Icon name={src.icon} size={14} fallback="Circle" />
+                  {src.title}
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-        {sectionSources.map((src: Source) => {
-          const items = sectionEntries.filter((e) => e.source === src.id);
-          return (
-            <TabsContent key={src.id} value={src.id} className="mt-0">
-              {section.id === 'items' ? (
-                <Tabs defaultValue="all">
-                  <TabsList className="mb-6 flex-wrap h-auto gap-1 bg-secondary/40 border border-gold/15">
-                    <TabsTrigger value="all" className="font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground">
-                      Все
-                    </TabsTrigger>
-                    {itemCategories.map((cat) => (
-                      <TabsTrigger
-                        key={cat.id}
-                        value={cat.id}
-                        className="flex items-center gap-1.5 font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground"
-                      >
-                        <Icon name={cat.icon} size={14} fallback="Circle" />
-                        {cat.title}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
+            {sectionSources.map((src: Source) => {
+              const items = sectionEntries.filter((e) => e.source === src.id);
+              return (
+                <TabsContent key={src.id} value={src.id} className="mt-0">
+                  {section.id === 'items' ? (
+                    <Tabs defaultValue="all">
+                      <TabsList className="mb-6 flex-wrap h-auto gap-1 bg-secondary/40 border border-gold/15">
+                        <TabsTrigger value="all" className="font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground">
+                          Все
+                        </TabsTrigger>
+                        {itemCategories.map((cat) => (
+                          <TabsTrigger
+                            key={cat.id}
+                            value={cat.id}
+                            className="flex items-center gap-1.5 font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground"
+                          >
+                            <Icon name={cat.icon} size={14} fallback="Circle" />
+                            {cat.title}
+                          </TabsTrigger>
+                        ))}
+                      </TabsList>
 
-                  <TabsContent value="all" className="mt-0">
+                      <TabsContent value="all" className="mt-0">
+                        <ItemsGrid items={items} onSelect={onSelect} sectionId={section.id} sourceId={src.id} />
+                      </TabsContent>
+                      {itemCategories.map((cat) => (
+                        <TabsContent key={cat.id} value={cat.id} className="mt-0">
+                          <ItemsGrid items={items.filter((e) => e.category === cat.id)} onSelect={onSelect} sectionId={section.id} sourceId={src.id} />
+                        </TabsContent>
+                      ))}
+                    </Tabs>
+                  ) : (
                     <ItemsGrid items={items} onSelect={onSelect} sectionId={section.id} sourceId={src.id} />
-                  </TabsContent>
-                  {itemCategories.map((cat) => (
-                    <TabsContent key={cat.id} value={cat.id} className="mt-0">
-                      <ItemsGrid items={items.filter((e) => e.category === cat.id)} onSelect={onSelect} sectionId={section.id} sourceId={src.id} />
-                    </TabsContent>
-                  ))}
-                </Tabs>
-              ) : (
-                <ItemsGrid items={items} onSelect={onSelect} sectionId={section.id} sourceId={src.id} />
-              )}
-            </TabsContent>
-          );
-        })}
-      </Tabs>
+                  )}
+                </TabsContent>
+              );
+            })}
+          </Tabs>
+        </div>
+      )}
     </section>
   );
 };
@@ -182,7 +200,7 @@ const Sections = ({ onSelect }: SectionsProps) => {
                 </p>
                 <OrnateDivider className="mt-6" />
               </div>
-              <div className="space-y-20">
+              <div className="space-y-4">
                 {groupSections.map((section) => (
                   <SectionBlock key={section.id} section={section} onSelect={onSelect} />
                 ))}
@@ -191,9 +209,13 @@ const Sections = ({ onSelect }: SectionsProps) => {
           );
         })}
 
-        {ungroupedSections.map((section) => (
-          <SectionBlock key={section.id} section={section} onSelect={onSelect} />
-        ))}
+        {ungroupedSections.length > 0 && (
+          <div className="space-y-4">
+            {ungroupedSections.map((section) => (
+              <SectionBlock key={section.id} section={section} onSelect={onSelect} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
