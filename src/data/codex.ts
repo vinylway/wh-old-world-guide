@@ -56,6 +56,21 @@ export interface Callout {
   items: string[];
 }
 
+export interface StatLink {
+  // Точная подстрока в значении характеристики, которая станет ссылкой
+  match: string;
+  // Либо ссылка на конкретную запись кодекса...
+  entryId?: string;
+  // ...либо ссылка, открывающая окно со всеми записями раздела (например «Происхождения»)
+  sectionId?: SectionId;
+}
+
+export interface StatRowValue {
+  label: string;
+  value: string;
+  links?: StatLink[];
+}
+
 export interface CodexEntry {
   id: string;
   title: string;
@@ -65,7 +80,7 @@ export interface CodexEntry {
   tags: string[];
   meta?: string;
   category?: ItemCategoryId;
-  stats?: { label: string; value: string }[];
+  stats?: StatRowValue[];
   subgroup?: string;
   creatureStats?: CreatureStatBlock;
   portrait?: string;
@@ -101,7 +116,7 @@ export const subgroups: Subgroup[] = [
   { id: 'great-forest', title: 'Чудовища Великого леса', sectionId: 'creatures', sourceId: 'gm' },
 ];
 
-export type ItemCategoryId = 'melee' | 'throwing' | 'ranged' | 'armor' | 'tools';
+export type ItemCategoryId = 'melee' | 'throwing' | 'ranged' | 'armor' | 'tools' | 'magic-items' | 'assets';
 
 export interface ItemCategory {
   id: ItemCategoryId;
@@ -109,12 +124,14 @@ export interface ItemCategory {
   icon: string;
 }
 
+// Подкатегории раздела «Имущество» (не включает «Активы» — те отображаются отдельной вкладкой)
 export const itemCategories: ItemCategory[] = [
   { id: 'melee', title: 'Ближний бой', icon: 'Sword' },
   { id: 'throwing', title: 'Метательное оружие', icon: 'Target' },
   { id: 'ranged', title: 'Дальний бой', icon: 'Crosshair' },
   { id: 'armor', title: 'Одежда и броня', icon: 'ShieldHalf' },
   { id: 'tools', title: 'Инструменты и наборы', icon: 'Wrench' },
+  { id: 'magic-items', title: 'Магические предметы', icon: 'Sparkles' },
 ];
 
 export type SectionId = 'rules' | 'abilities' | 'origins' | 'careers' | 'creatures' | 'items' | 'magic' | 'contacts';
@@ -914,6 +931,63 @@ export const entries: CodexEntry[] = [
     ],
   },
   {
+    id: 'i10', section: 'items', source: 'player', title: 'Праща', category: 'ranged',
+    summary: 'Простое и дешёвое метательное приспособление из ремня и кожаного кармана для камня или свинцовой пули. Уступает лукам в дальности, зато доступно каждому крестьянину.',
+    tags: ['праща', 'дистанционный бой', 'снаряжение'], meta: 'Снаряжение',
+    stats: [
+      { label: 'Название', value: 'Праща' },
+      { label: 'Оптимальная дистанция', value: 'Средняя' },
+      { label: 'Урон', value: '2' },
+      { label: '1Р / 2Р', value: '1Р' },
+    ],
+  },
+  {
+    id: 'i11', section: 'items', source: 'player', title: 'Короткий лук', category: 'ranged',
+    summary: 'Компактный лук, удобный в лесу, седле или тесном переулке. Уступает в мощи длинным лукам, но выигрывает в манёвренности и скорости стрельбы.',
+    tags: ['лук', 'дистанционный бой', 'снаряжение'], meta: 'Снаряжение',
+    stats: [
+      { label: 'Название', value: 'Короткий лук' },
+      { label: 'Оптимальная дистанция', value: 'Средняя-дальняя' },
+      { label: 'Урон', value: '3' },
+      { label: '1Р / 2Р', value: '1Р' },
+    ],
+  },
+  {
+    id: 'i12', section: 'items', source: 'player', title: 'Дорожная одежда', category: 'armor',
+    summary: 'Прочный плащ, крепкие сапоги и удобная для долгих переходов одежда странника. Не защищает как доспех, зато оберегает от непогоды в пути.',
+    tags: ['одежда', 'дорога', 'странник'], meta: 'Снаряжение',
+  },
+  {
+    id: 'i13', section: 'items', source: 'player', title: 'Алхимический набор', category: 'tools',
+    summary: 'Переносная лаборатория аптекаря: реторты, весы, ступки и запас реагентов, необходимых для варки снадобий, ядов и иных смесей прямо в дороге.',
+    tags: ['алхимия', 'набор', 'инструменты', 'аптекарь'], meta: 'Снаряжение',
+  },
+  {
+    id: 'asset-laboratory', section: 'items', source: 'player', title: 'Лаборатория', category: 'assets',
+    summary: 'Обустроенное помещение с ретортами, перегонными кубами и полками реагентов, где аптекарь или арканист может спокойно и безопасно варить сложные смеси и зелья.',
+    tags: ['актив', 'лаборатория', 'алхимия'], meta: 'Актив',
+  },
+  {
+    id: 'asset-brewery', section: 'items', source: 'player', title: 'Пивоварня', category: 'assets',
+    summary: 'Собственное или арендованное помещение с чанами и бочками для варки эля и иных хмельных напитков — источник стабильного дохода и повод для знакомств в любой таверне.',
+    tags: ['актив', 'пивоварня', 'эль'], meta: 'Актив',
+  },
+  {
+    id: 'asset-shop', section: 'items', source: 'player', title: 'Лавка', category: 'assets',
+    summary: 'Небольшое торговое помещение на бойком месте, где можно продавать снадобья, товары или услуги напрямую горожанам — надёжный способ закрепиться в городской жизни.',
+    tags: ['актив', 'лавка', 'торговля'], meta: 'Актив',
+  },
+  {
+    id: 'contact-commoners', section: 'abilities', source: 'player', title: 'Простолюдины', subgroup: 'Контакты',
+    summary: 'Широкая сеть знакомств среди крестьян, ремесленников и городской бедноты. Простолюдины редко имеют власть или богатство, зато знают все местные слухи, тропы и тайны раньше знати.',
+    tags: ['контакт', 'простолюдины', 'слухи'], meta: 'Контакт',
+  },
+  {
+    id: 'contact-wanderers', section: 'abilities', source: 'player', title: 'Странники', subgroup: 'Контакты',
+    summary: 'Знакомства среди бродячих торговцев, паломников и путешественников, то и дело проходящих через город. Странники приносят свежие новости из дальних земель и могут провести короткими путями.',
+    tags: ['контакт', 'странники', 'путешествия'], meta: 'Контакт',
+  },
+  {
     id: 'm1', section: 'magic', source: 'player', title: 'Ветер Азир (Небеса)',
     summary: 'Голубой ветер магии предвидения и молний. Даёт заклинания призыва бури и прорицания судьбы противника.',
     tags: ['азир', 'небеса', 'ветер', 'молния'], meta: 'Ветер магии',
@@ -935,13 +1009,56 @@ export const entries: CodexEntry[] = [
     portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/d99d73e2-5d73-4d6c-a86a-5ac9d3a8546e.png',
     stats: [
       { label: 'Статус', value: 'Медный' },
-      { label: 'Происхождения', value: 'Все' },
-      { label: 'Предпочтительные характеристики', value: 'Сила, Инициатива, Рассудительность' },
-      { label: 'Бонусы к навыкам', value: '+1 к четырём из следующих навыков: Защита, Выживание, Наблюдательность, Сноровка, Скрытность, Память' },
-      { label: 'Знание', value: 'Алхимия, анатомия, зоология или окружающая среда (на выбор)' },
-      { label: 'Имущество', value: 'Праща или короткий лук, кинжал, дорожная одежда, рабочая кожаная одежда, алхимический набор' },
-      { label: 'Активы', value: 'Лаборатория или пивоварня, или лавка' },
-      { label: 'Контакты', value: 'Простолюдины, странники' },
+      {
+        label: 'Происхождения', value: 'Все',
+        links: [{ match: 'Все', sectionId: 'origins' }],
+      },
+      {
+        label: 'Предпочтительные характеристики', value: 'Сила, Инициатива, Рассудительность',
+        links: [
+          { match: 'Сила', entryId: 'ability-s' },
+          { match: 'Инициатива', entryId: 'ability-i' },
+          { match: 'Рассудительность', entryId: 'ability-r' },
+        ],
+      },
+      {
+        label: 'Бонусы к навыкам', value: '+1 к четырём из следующих навыков: Защита, Выживание, Наблюдательность, Сноровка, Скрытность, Память',
+        links: [
+          { match: 'Защита', entryId: 'skill-defence' },
+          { match: 'Выживание', entryId: 'skill-survival' },
+          { match: 'Наблюдательность', entryId: 'skill-observation' },
+          { match: 'Сноровка', entryId: 'skill-cunning' },
+          { match: 'Скрытность', entryId: 'skill-stealth' },
+          { match: 'Память', entryId: 'skill-memory' },
+        ],
+      },
+      { label: 'Знание', value: 'Алхимия, анатомия или зоология или окружающая среда (на выбор)' },
+      {
+        label: 'Имущество', value: 'Праща или короткий лук, кинжал, дорожная одежда, рабочая кожаная одежда, алхимический набор',
+        links: [
+          { match: 'Праща', entryId: 'i10' },
+          { match: 'короткий лук', entryId: 'i11' },
+          { match: 'кинжал', entryId: 'i6' },
+          { match: 'дорожная одежда', entryId: 'i12' },
+          { match: 'рабочая кожаная одежда', entryId: 'i9' },
+          { match: 'алхимический набор', entryId: 'i13' },
+        ],
+      },
+      {
+        label: 'Активы', value: 'Лаборатория или пивоварня, или лавка',
+        links: [
+          { match: 'Лаборатория', entryId: 'asset-laboratory' },
+          { match: 'пивоварня', entryId: 'asset-brewery' },
+          { match: 'лавка', entryId: 'asset-shop' },
+        ],
+      },
+      {
+        label: 'Контакты', value: 'Простолюдины, странники',
+        links: [
+          { match: 'Простолюдины', entryId: 'contact-commoners' },
+          { match: 'странники', entryId: 'contact-wanderers' },
+        ],
+      },
     ],
     callouts: [
       {

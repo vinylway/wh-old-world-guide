@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CodexEntry, entries, sectionGroups } from '@/data/codex';
+import { CodexEntry, SectionId, entries, sectionGroups } from '@/data/codex';
 import Header from '@/components/codex/Header';
 import Footer from '@/components/codex/Footer';
 import Sections from '@/components/codex/Sections';
@@ -10,6 +10,7 @@ import Icon from '@/components/ui/icon';
 
 const GmCorner = () => {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchFilter, setSearchFilter] = useState<SectionId | 'all'>('all');
   const [activeEntry, setActiveEntry] = useState<CodexEntry | null>(null);
   const group = sectionGroups.find((g) => g.id === 'gm-corner');
 
@@ -40,7 +41,7 @@ const GmCorner = () => {
           </p>
           <div className="mt-6 flex justify-center">
             <button
-              onClick={() => setSearchOpen(true)}
+              onClick={() => { setSearchFilter('all'); setSearchOpen(true); }}
               className="group flex items-center gap-3 rounded border border-gold/40 bg-gold px-6 py-2.5 font-display text-sm font-semibold uppercase tracking-widest text-primary-foreground glow-gold hover-scale"
             >
               <Icon name="Search" size={16} />
@@ -54,13 +55,23 @@ const GmCorner = () => {
       </main>
       <Footer />
 
-      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} onSelect={setActiveEntry} />
+      <SearchDialog
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        onSelect={setActiveEntry}
+        initialFilter={searchFilter}
+      />
       <EntryDialog
         entry={activeEntry}
         onOpenChange={() => setActiveEntry(null)}
         onNavigate={(id) => {
           const target = entries.find((e) => e.id === id);
           if (target) setActiveEntry(target);
+        }}
+        onOpenSection={(sectionId) => {
+          setActiveEntry(null);
+          setSearchFilter(sectionId);
+          setSearchOpen(true);
         }}
       />
     </div>

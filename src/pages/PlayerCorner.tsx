@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { CodexEntry, entries, sectionGroups } from '@/data/codex';
+import { CodexEntry, SectionId, entries, sectionGroups } from '@/data/codex';
 import Header from '@/components/codex/Header';
 import Footer from '@/components/codex/Footer';
 import Sections from '@/components/codex/Sections';
@@ -11,6 +11,7 @@ import Icon from '@/components/ui/icon';
 
 const PlayerCorner = () => {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchFilter, setSearchFilter] = useState<SectionId | 'all'>('all');
   const [activeEntry, setActiveEntry] = useState<CodexEntry | null>(null);
   const group = sectionGroups.find((g) => g.id === 'player-corner');
 
@@ -41,7 +42,7 @@ const PlayerCorner = () => {
           </p>
           <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
-              onClick={() => setSearchOpen(true)}
+              onClick={() => { setSearchFilter('all'); setSearchOpen(true); }}
               className="group flex items-center gap-3 rounded border border-gold/40 bg-gold px-6 py-2.5 font-display text-sm font-semibold uppercase tracking-widest text-primary-foreground glow-gold hover-scale"
             >
               <Icon name="Search" size={16} />
@@ -62,13 +63,23 @@ const PlayerCorner = () => {
       </main>
       <Footer />
 
-      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} onSelect={setActiveEntry} />
+      <SearchDialog
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        onSelect={setActiveEntry}
+        initialFilter={searchFilter}
+      />
       <EntryDialog
         entry={activeEntry}
         onOpenChange={() => setActiveEntry(null)}
         onNavigate={(id) => {
           const target = entries.find((e) => e.id === id);
           if (target) setActiveEntry(target);
+        }}
+        onOpenSection={(sectionId) => {
+          setActiveEntry(null);
+          setSearchFilter(sectionId);
+          setSearchOpen(true);
         }}
       />
     </div>

@@ -7,18 +7,21 @@ interface SearchDialogProps {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onSelect: (entry: CodexEntry) => void;
+  initialFilter?: SectionId | 'all';
 }
 
-const SearchDialog = ({ open, onOpenChange, onSelect }: SearchDialogProps) => {
+const SearchDialog = ({ open, onOpenChange, onSelect, initialFilter }: SearchDialogProps) => {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<SectionId | 'all'>('all');
 
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      setFilter(initialFilter ?? 'all');
+    } else {
       setQuery('');
       setFilter('all');
     }
-  }, [open]);
+  }, [open, initialFilter]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();

@@ -160,31 +160,50 @@ const SectionBlock = ({
               return (
                 <TabsContent key={src.id} value={src.id} className="mt-0">
                   {section.id === 'items' ? (
-                    <Tabs defaultValue="all">
+                    <Tabs defaultValue="equipment">
                       <TabsList className="mb-6 flex-wrap h-auto gap-1 bg-secondary/40 border border-gold/15">
-                        <TabsTrigger value="all" className="font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground">
-                          Все
+                        <TabsTrigger value="equipment" className="flex items-center gap-1.5 font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground">
+                          <Icon name="Backpack" size={14} />
+                          Имущество
                         </TabsTrigger>
-                        {itemCategories.map((cat) => (
-                          <TabsTrigger
-                            key={cat.id}
-                            value={cat.id}
-                            className="flex items-center gap-1.5 font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground"
-                          >
-                            <Icon name={cat.icon} size={14} fallback="Circle" />
-                            {cat.title}
-                          </TabsTrigger>
-                        ))}
+                        <TabsTrigger value="assets" className="flex items-center gap-1.5 font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground">
+                          <Icon name="Building2" size={14} />
+                          Активы
+                        </TabsTrigger>
                       </TabsList>
 
-                      <TabsContent value="all" className="mt-0">
-                        <ItemsGrid items={items} onSelect={onSelect} sectionId={section.id} sourceId={src.id} />
+                      <TabsContent value="equipment" className="mt-0">
+                        <Tabs defaultValue="all">
+                          <TabsList className="mb-6 flex-wrap h-auto gap-1 bg-secondary/40 border border-gold/15">
+                            <TabsTrigger value="all" className="font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground">
+                              Все
+                            </TabsTrigger>
+                            {itemCategories.map((cat) => (
+                              <TabsTrigger
+                                key={cat.id}
+                                value={cat.id}
+                                className="flex items-center gap-1.5 font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground"
+                              >
+                                <Icon name={cat.icon} size={14} fallback="Circle" />
+                                {cat.title}
+                              </TabsTrigger>
+                            ))}
+                          </TabsList>
+
+                          <TabsContent value="all" className="mt-0">
+                            <ItemsGrid items={items.filter((e) => e.category !== 'assets')} onSelect={onSelect} sectionId={section.id} sourceId={src.id} />
+                          </TabsContent>
+                          {itemCategories.map((cat) => (
+                            <TabsContent key={cat.id} value={cat.id} className="mt-0">
+                              <ItemsGrid items={items.filter((e) => e.category === cat.id)} onSelect={onSelect} sectionId={section.id} sourceId={src.id} />
+                            </TabsContent>
+                          ))}
+                        </Tabs>
                       </TabsContent>
-                      {itemCategories.map((cat) => (
-                        <TabsContent key={cat.id} value={cat.id} className="mt-0">
-                          <ItemsGrid items={items.filter((e) => e.category === cat.id)} onSelect={onSelect} sectionId={section.id} sourceId={src.id} />
-                        </TabsContent>
-                      ))}
+
+                      <TabsContent value="assets" className="mt-0">
+                        <ItemsGrid items={items.filter((e) => e.category === 'assets')} onSelect={onSelect} sectionId={section.id} sourceId={src.id} />
+                      </TabsContent>
                     </Tabs>
                   ) : (
                     <ItemsGrid items={items} onSelect={onSelect} sectionId={section.id} sourceId={src.id} />

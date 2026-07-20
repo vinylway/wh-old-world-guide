@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CodexEntry, entries } from '@/data/codex';
+import { CodexEntry, SectionId, entries } from '@/data/codex';
 import Header from '@/components/codex/Header';
 import Hero from '@/components/codex/Hero';
 import Contacts from '@/components/codex/Contacts';
@@ -9,6 +9,7 @@ import EntryDialog from '@/components/codex/EntryDialog';
 
 const Index = () => {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchFilter, setSearchFilter] = useState<SectionId | 'all'>('all');
   const [activeEntry, setActiveEntry] = useState<CodexEntry | null>(null);
 
   useEffect(() => {
@@ -26,18 +27,28 @@ const Index = () => {
     <div className="min-h-screen">
       <Header />
       <main>
-        <Hero onSearchClick={() => setSearchOpen(true)} />
+        <Hero onSearchClick={() => { setSearchFilter('all'); setSearchOpen(true); }} />
         <Contacts />
       </main>
       <Footer />
 
-      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} onSelect={setActiveEntry} />
+      <SearchDialog
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        onSelect={setActiveEntry}
+        initialFilter={searchFilter}
+      />
       <EntryDialog
         entry={activeEntry}
         onOpenChange={() => setActiveEntry(null)}
         onNavigate={(id) => {
           const target = entries.find((e) => e.id === id);
           if (target) setActiveEntry(target);
+        }}
+        onOpenSection={(sectionId) => {
+          setActiveEntry(null);
+          setSearchFilter(sectionId);
+          setSearchOpen(true);
         }}
       />
     </div>

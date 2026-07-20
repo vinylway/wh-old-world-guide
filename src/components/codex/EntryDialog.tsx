@@ -1,16 +1,76 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
-import { CodexEntry, sections, entries } from '@/data/codex';
+import { CodexEntry, StatRowValue, StatLink, sections, entries, SectionId } from '@/data/codex';
 import OrnateDivider from './OrnateDivider';
 
 interface EntryDialogProps {
   entry: CodexEntry | null;
   onOpenChange: (v: boolean) => void;
   onNavigate?: (entryId: string) => void;
+  onOpenSection?: (sectionId: SectionId) => void;
 }
 
-const EntryDialog = ({ entry, onOpenChange, onNavigate }: EntryDialogProps) => {
+const StatValueWithLinks = ({
+  stat,
+  onNavigate,
+  onOpenSection,
+}: {
+  stat: StatRowValue;
+  onNavigate?: (id: string) => void;
+  onOpenSection?: (sectionId: SectionId) => void;
+}) => {
+  if (!stat.links || stat.links.length === 0 || (!onNavigate && !onOpenSection)) {
+    return <>{stat.value}</>;
+  }
+
+  const sortedLinks = [...stat.links].sort((a, b) => b.match.length - a.match.length);
+  const parts: { text: string; link?: StatLink }[] = [];
+  let remaining = stat.value;
+  let cursor = 0;
+
+  while (cursor < remaining.length) {
+    const found = sortedLinks
+      .map((link) => ({ link, idx: remaining.indexOf(link.match, cursor) }))
+      .filter((f) => f.idx === cursor)[0];
+
+    if (found) {
+      parts.push({ text: found.link.match, link: found.link });
+      cursor += found.link.match.length;
+    } else {
+      const nextIdx = Math.min(
+        ...sortedLinks
+          .map((link) => remaining.indexOf(link.match, cursor))
+          .filter((idx) => idx >= cursor)
+          .concat(remaining.length)
+      );
+      parts.push({ text: remaining.slice(cursor, nextIdx) });
+      cursor = nextIdx;
+    }
+  }
+
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.link ? (
+          <button
+            key={i}
+            onClick={() =>
+              part.link?.entryId ? onNavigate?.(part.link.entryId) : part.link?.sectionId ? onOpenSection?.(part.link.sectionId) : undefined
+            }
+            className="story-link text-gold hover:text-gold-bright transition-colors font-semibold"
+          >
+            {part.text}
+          </button>
+        ) : (
+          <Fragment key={i}>{part.text}</Fragment>
+        )
+      )}
+    </>
+  );
+};
+
+const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDialogProps) => {
   const section = entry ? sections.find((s) => s.id === entry.section) : null;
   const cs = entry?.creatureStats;
   const [showSummary, setShowSummary] = useState(false);
@@ -86,10 +146,12 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate }: EntryDialogProps) => {
                   <tbody>
                     {entry.stats.map((s, i) => (
                       <tr key={s.label} className={i % 2 === 0 ? 'bg-secondary/40' : ''}>
-                        <td className="px-4 py-2 font-display text-xs uppercase tracking-wide text-gold/80 whitespace-nowrap">
+                        <td className="px-4 py-2 font-display text-xs uppercase tracking-wide text-gold/80 whitespace-nowrap align-top">
                           {s.label}
                         </td>
-                        <td className="px-4 py-2 text-parchment/90">{s.value}</td>
+                        <td className="px-4 py-2 text-parchment/90">
+                          <StatValueWithLinks stat={s} onNavigate={onNavigate} onOpenSection={onOpenSection} />
+                        </td>
                       </tr>
                     ))}
                   </tbody>
