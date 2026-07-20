@@ -1,12 +1,12 @@
 import { useState, ReactNode } from 'react';
 import Icon from '@/components/ui/icon';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { sections, sectionGroups, entries, itemCategories, sources, subgroups, defaultSourceIds, Source, Section, SectionId, SourceId, CodexEntry } from '@/data/codex';
+import { sections, entries, itemCategories, sources, subgroups, defaultSourceIds, Source, Section, SectionId, SourceId, SectionGroupId, CodexEntry } from '@/data/codex';
 import EntryCard from './EntryCard';
-import OrnateDivider from './OrnateDivider';
 
 interface SectionsProps {
   onSelect: (entry: CodexEntry) => void;
+  groupId: SectionGroupId;
 }
 
 const SubgroupBlock = ({
@@ -199,49 +199,15 @@ const SectionBlock = ({
   );
 };
 
-const Sections = ({ onSelect }: SectionsProps) => {
-  const contentSections = sections.filter((s) => s.id !== 'contacts');
-  const ungroupedSections = contentSections.filter((s) => !s.group);
+const Sections = ({ onSelect, groupId }: SectionsProps) => {
+  const groupSections = sections.filter((s) => s.groups?.includes(groupId));
 
   return (
     <div id="sections" className="container py-16 md:py-24">
-      <div className="text-center mb-12">
-        <h2 className="font-display text-3xl md:text-5xl font-black text-gradient-gold">Разделы кодекса</h2>
-        <OrnateDivider className="mt-6" />
-      </div>
-
-      <div className="space-y-24">
-        {sectionGroups.map((group) => {
-          const groupSections = contentSections.filter((s) => s.group === group.id);
-          if (groupSections.length === 0) return null;
-          return (
-            <div key={group.id} id={`group-${group.id}`} className="scroll-mt-24">
-              <div className="text-center mb-14">
-                <span className="flex mx-auto h-16 w-16 items-center justify-center rounded border border-gold/40 bg-secondary text-gold mb-4">
-                  <Icon name={group.icon} size={30} fallback="Circle" />
-                </span>
-                <h3 className="font-display text-2xl md:text-4xl font-black text-gradient-gold">{group.title}</h3>
-                <p className="mt-2 font-body text-base md:text-lg text-muted-foreground max-w-xl mx-auto">
-                  {group.description}
-                </p>
-                <OrnateDivider className="mt-6" />
-              </div>
-              <div className="space-y-4">
-                {groupSections.map((section) => (
-                  <SectionBlock key={section.id} section={section} onSelect={onSelect} />
-                ))}
-              </div>
-            </div>
-          );
-        })}
-
-        {ungroupedSections.length > 0 && (
-          <div className="space-y-4">
-            {ungroupedSections.map((section) => (
-              <SectionBlock key={section.id} section={section} onSelect={onSelect} />
-            ))}
-          </div>
-        )}
+      <div className="space-y-4">
+        {groupSections.map((section) => (
+          <SectionBlock key={section.id} section={section} onSelect={onSelect} />
+        ))}
       </div>
     </div>
   );

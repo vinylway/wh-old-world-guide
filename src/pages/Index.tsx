@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { CodexEntry, entries } from '@/data/codex';
 import Header from '@/components/codex/Header';
 import Hero from '@/components/codex/Hero';
-import Sections from '@/components/codex/Sections';
 import Contacts from '@/components/codex/Contacts';
 import Footer from '@/components/codex/Footer';
 import SearchDialog from '@/components/codex/SearchDialog';
@@ -28,7 +27,6 @@ const Index = () => {
       <Header />
       <main>
         <Hero onSearchClick={() => setSearchOpen(true)} />
-        <Sections onSelect={setActiveEntry} />
         <Contacts />
       </main>
       <Footer />

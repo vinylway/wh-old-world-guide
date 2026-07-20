@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
+import { sectionGroups } from '@/data/codex';
 import OrnateDivider from './OrnateDivider';
 
 interface HeroProps {
@@ -31,13 +32,6 @@ const Hero = ({ onSearchClick }: HeroProps) => {
             <Icon name="Search" size={18} />
             Искать в кодексе
           </button>
-          <button
-            onClick={() => document.getElementById('sections')?.scrollIntoView({ behavior: 'smooth' })}
-            className="flex items-center gap-3 rounded border border-gold/40 px-8 py-3 font-display text-sm font-semibold uppercase tracking-widest text-parchment hover:bg-secondary transition-colors"
-          >
-            <Icon name="BookOpen" size={18} />
-            Открыть разделы
-          </button>
           <Link
             to="/generator"
             className="flex items-center gap-3 rounded border border-gold/40 px-8 py-3 font-display text-sm font-semibold uppercase tracking-widest text-parchment hover:bg-secondary transition-colors"
@@ -47,10 +41,20 @@ const Hero = ({ onSearchClick }: HeroProps) => {
           </Link>
         </div>
 
-        <div className="mt-14 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 font-display text-sm uppercase tracking-widest text-parchment/60">
-          <span className="flex items-center gap-2"><Icon name="ScrollText" size={16} className="text-gold" /> 7 разделов</span>
-          <span className="flex items-center gap-2"><Icon name="Search" size={16} className="text-gold" /> Полнотекстовый поиск</span>
-          <span className="flex items-center gap-2"><Icon name="Skull" size={16} className="text-gold" /> Бестиарий</span>
+        <div className="mt-14 flex flex-wrap items-center justify-center gap-4">
+          {sectionGroups.map((g) => (
+            <Link
+              key={g.id}
+              to={g.path}
+              className="group flex items-center gap-3 rounded border border-gold/40 px-6 py-4 font-display text-sm uppercase tracking-widest text-parchment hover:bg-secondary transition-colors"
+            >
+              <Icon name={g.icon} size={20} className="text-gold" />
+              <span className="text-left">
+                <span className="block text-base font-semibold group-hover:text-gold-bright transition-colors">{g.title}</span>
+                <span className="block text-xs normal-case tracking-normal text-muted-foreground font-body">{g.description}</span>
+              </span>
+            </Link>
+          ))}
         </div>
       </div>
     </section>

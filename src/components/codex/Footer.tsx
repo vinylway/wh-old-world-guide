@@ -1,10 +1,8 @@
+import { Link } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
-import { sections, sectionGroups } from '@/data/codex';
+import { sectionGroups } from '@/data/codex';
 
 const Footer = () => {
-  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  const navSections = sections.filter((s) => !s.group && s.id !== 'contacts');
-
   return (
     <footer className="border-t border-gold/25 bg-background">
       <div className="container py-12">
@@ -22,23 +20,20 @@ const Footer = () => {
 
           <div className="grid grid-cols-2 gap-x-10 gap-y-2">
             {sectionGroups.map((g) => (
-              <button
+              <Link
                 key={g.id}
-                onClick={() => scrollTo(`group-${g.id}`)}
+                to={g.path}
                 className="story-link text-left font-display text-sm uppercase tracking-wide text-parchment/70 hover:text-gold transition-colors"
               >
                 {g.title}
-              </button>
+              </Link>
             ))}
-            {navSections.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => scrollTo(`section-${s.id}`)}
-                className="story-link text-left font-display text-sm uppercase tracking-wide text-parchment/70 hover:text-gold transition-colors"
-              >
-                {s.title}
-              </button>
-            ))}
+            <Link
+              to="/#section-contacts"
+              className="story-link text-left font-display text-sm uppercase tracking-wide text-parchment/70 hover:text-gold transition-colors"
+            >
+              Контакты
+            </Link>
           </div>
         </div>
 

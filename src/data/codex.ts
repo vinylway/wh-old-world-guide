@@ -119,19 +119,26 @@ export const itemCategories: ItemCategory[] = [
 
 export type SectionId = 'rules' | 'abilities' | 'origins' | 'creatures' | 'items' | 'magic' | 'contacts';
 
-export type SectionGroupId = 'player-corner';
+export type SectionGroupId = 'player-corner' | 'gm-corner';
 
 export interface SectionGroup {
   id: SectionGroupId;
   title: string;
   icon: string;
   description: string;
+  path: string;
 }
 
 export const sectionGroups: SectionGroup[] = [
   {
     id: 'player-corner', title: 'Уголок игрока', icon: 'UserRound',
     description: 'Всё необходимое для создания и развития персонажа игрока',
+    path: '/player-corner',
+  },
+  {
+    id: 'gm-corner', title: 'Уголок ведущего', icon: 'Crown',
+    description: 'Инструменты мастера игры: бестиарий, персонажи ведущего и правила боя',
+    path: '/gm-corner',
   },
 ];
 
@@ -141,7 +148,7 @@ export interface Section {
   icon: string;
   description: string;
   sourceIds?: SourceId[];
-  group?: SectionGroupId;
+  groups?: SectionGroupId[];
 }
 
 export const defaultSourceIds: SourceId[] = ['gm', 'player'];
@@ -150,34 +157,35 @@ export const sections: Section[] = [
   {
     id: 'rules', title: 'Правила', icon: 'ScrollText',
     description: 'Механики, характеристики, броски и боевая система',
-    group: 'player-corner',
+    groups: ['player-corner', 'gm-corner'],
   },
   {
     id: 'abilities', title: 'Способности', icon: 'Sparkle',
     description: 'Характеристики, навыки, таланты, знания и контакты персонажа',
     sourceIds: ['player'],
-    group: 'player-corner',
+    groups: ['player-corner'],
   },
   {
     id: 'origins', title: 'Происхождения', icon: 'Users',
     description: 'Народы и родины персонажей игроков: люди, эльфы, гномы и полурослики',
     sourceIds: ['player'],
-    group: 'player-corner',
+    groups: ['player-corner'],
   },
   {
     id: 'items', title: 'Предметы', icon: 'Sword',
     description: 'Оружие, доспехи, артефакты и снаряжение',
-    group: 'player-corner',
+    groups: ['player-corner'],
   },
   {
     id: 'magic', title: 'Магия', icon: 'Sparkles',
     description: 'Ветра магии, заклинания и колдовские традиции',
-    group: 'player-corner',
+    groups: ['player-corner'],
   },
   {
     id: 'creatures', title: 'Персонажи ведущего', icon: 'Skull',
     description: 'Готовые NPC, чудовища и противники для сюжетных встреч: характеристики, повадки и советы по отыгрышу',
     sourceIds: ['gm', 'trinity', 'talagaad-guide', 'talagaad-adventures'],
+    groups: ['gm-corner'],
   },
   { id: 'contacts', title: 'Контакты', icon: 'Feather', description: 'Гильдия мастеров и связь с летописцами' },
 ];

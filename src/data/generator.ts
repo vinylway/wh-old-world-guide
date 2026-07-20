@@ -88,8 +88,11 @@ export const bretonOathTalentId = 'talent-breton-oath-of-honour';
 // Навыки, которые бретонец обязан поднять до 3 (плюс ещё любые два на выбор игрока)
 export const bretonMandatoryBoostedSkillIds = ['skill-melee', 'skill-labour'];
 
-// Варианты знания от происхождения для бретонца: «Королевство Бретония», «Высший свет» или «Фермерство»
-export const bretonLoreChoiceIds = ['lore-bretonnia', 'lore-high-society', 'lore-farming'];
+// Базовое знание, которым бретонец владеет от рождения (не требует выбора)
+export const bretonBaseLoreId = 'lore-bretonnia';
+
+// Варианты знания от происхождения для бретонца на выбор: «Высший свет» или «Фермерство»
+export const bretonLoreChoiceIds = ['lore-high-society', 'lore-farming'];
 
 export const bretonNames: string[] = [
   'Жиль', 'Жак', 'Перрен', 'Марсель', 'Рауль', 'Этьен', 'Анри', 'Бертран', 'Одо', 'Томен',
