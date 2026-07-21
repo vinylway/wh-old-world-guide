@@ -9,7 +9,8 @@ export interface Source {
 export const sources: Source[] = [
   { id: 'gm', title: 'Руководство ведущего', icon: 'Crown' },
   { id: 'player', title: 'Руководство игрока', icon: 'UserRound' },
-  { id: 'trinity', title: 'Жажда Троицы', icon: 'Droplets' },
+  { id: 'trinity', title: 'Жажда троицы', icon: 'Compass' },
+  { id: 'talagaad-guide', title: 'Кормящая рука', icon: 'Compass' },
   { id: 'talagaad-guide', title: 'Путеводитель по Талагааду', icon: 'MapPinned' },
   { id: 'talagaad-adventures', title: 'Приключения в Талагааде', icon: 'Compass' },
 ];
