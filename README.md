@@ -1,2 +1,0 @@
-# wh-old-world-guide
-
