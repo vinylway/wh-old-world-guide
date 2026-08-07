@@ -7,6 +7,7 @@ interface CharacterSummaryProps {
   allRoundsDone: boolean;
   finalStats: StatRow[] | null;
   bretonStepsDone: boolean;
+  career: CodexEntry | null | undefined;
   fateStat: StatRow | null;
   characteristicStats: StatRow[];
   isBreton: boolean;
@@ -30,6 +31,7 @@ const CharacterSummary = ({
   allRoundsDone,
   finalStats,
   bretonStepsDone,
+  career,
   fateStat,
   characteristicStats,
   isBreton,
@@ -58,6 +60,20 @@ const CharacterSummary = ({
           Итоговый лист персонажа
         </h2>
       </div>
+
+      {career && (
+        <div className="mb-5 flex justify-center">
+          <button
+            onClick={() => openEntry(career.id)}
+            className="flex items-center gap-2 rounded border border-gold/30 px-4 py-2 hover:bg-secondary transition-colors"
+          >
+            <Icon name="Briefcase" size={16} className="text-gold" />
+            <span className="font-display text-sm text-parchment/90">
+              Карьера: <span className="text-gold-bright font-semibold">{career.title}</span>
+            </span>
+          </button>
+        </div>
+      )}
 
       {fateStat && (
         <div className="mb-4 flex justify-center">

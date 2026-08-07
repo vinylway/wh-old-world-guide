@@ -6,6 +6,7 @@ import Footer from '@/components/codex/Footer';
 import OrnateDivider from '@/components/codex/OrnateDivider';
 import EntryDialog from '@/components/codex/EntryDialog';
 import OriginStep from '@/components/generator/OriginStep';
+import CareerStep from '@/components/generator/CareerStep';
 import CharacteristicsStep from '@/components/generator/CharacteristicsStep';
 import BretonSteps from '@/components/generator/BretonSteps';
 import CharacterSummary, { SavedCharactersList } from '@/components/generator/CharacterSummary';
@@ -13,6 +14,7 @@ import CharacterSheetDialog from '@/components/generator/CharacterSheetDialog';
 import { entries, CodexEntry } from '@/data/codex';
 import {
   rollD10,
+  rollD100,
   getOriginIdByRoll,
   characteristicModifierTable,
   getSavedCharacters,
@@ -26,6 +28,8 @@ import {
   bretonLoreChoiceIds,
   bretonBaseLoreId,
   characteristicAbilityEntryId,
+  careerRollTables,
+  getCareerIdByRoll,
 } from '@/data/generator';
 
 const ALL_LABELS = ['ББ', 'ДБ', 'С', 'В', 'И', 'Пр', 'Р', 'Х', 'Судьба'];
@@ -47,6 +51,12 @@ const CharacterGenerator = () => {
   const [originId, setOriginId] = useState<string | null>(null);
   const [originManual, setOriginManual] = useState(false);
   const [originPickerOpen, setOriginPickerOpen] = useState(false);
+
+  const [careerRolling, setCareerRolling] = useState(false);
+  const [careerRoll, setCareerRoll] = useState<number | null>(null);
+  const [careerId, setCareerId] = useState<string | null>(null);
+  const [careerManual, setCareerManual] = useState(false);
+  const [careerPickerOpen, setCareerPickerOpen] = useState(false);
 
   const [rounds, setRounds] = useState<RoundState[]>([emptyRound(), emptyRound(), emptyRound()]);
   const [roundPickerOpen, setRoundPickerOpen] = useState<boolean[]>([false, false, false]);
@@ -80,6 +90,12 @@ const CharacterGenerator = () => {
   const origin = originId ? entries.find((e) => e.id === originId) : null;
   const originOptions = entries.filter((e) => ORIGIN_IDS.includes(e.id));
   const isBreton = origin?.id === 'o1';
+
+  const career = careerId ? entries.find((e) => e.id === careerId) : null;
+  const careerTable = originId ? careerRollTables[originId] : null;
+  const careerOptions = careerTable
+    ? (careerTable.map((r) => entries.find((e) => e.id === r.careerId)).filter(Boolean) as CodexEntry[])
+    : [];
 
   const bretonSkillEntries = entries.filter(
     (e) => e.section === 'abilities' && e.subgroup === 'Навыки' && !bretonMandatoryBoostedSkillIds.includes(e.id)
@@ -131,9 +147,18 @@ const CharacterGenerator = () => {
     });
   };
 
+  const resetCareer = () => {
+    setCareerRoll(null);
+    setCareerId(null);
+    setCareerManual(false);
+    setCareerPickerOpen(false);
+    setCareerRolling(false);
+  };
+
   const rollOrigin = () => {
     setOriginPickerOpen(false);
     setOriginRolling(true);
+    resetCareer();
     setTimeout(() => {
       const roll = rollD10();
       setOriginRoll(roll);
@@ -146,6 +171,7 @@ const CharacterGenerator = () => {
   const rerollOrigin = () => {
     setOriginPickerOpen(false);
     setOriginRolling(true);
+    resetCareer();
     setTimeout(() => {
       const roll = rollD10();
       setOriginRoll(roll);
@@ -160,6 +186,40 @@ const CharacterGenerator = () => {
     setOriginRoll(null);
     setOriginManual(true);
     setOriginPickerOpen(false);
+    resetCareer();
+  };
+
+  const rollCareer = () => {
+    if (!originId) return;
+    setCareerPickerOpen(false);
+    setCareerRolling(true);
+    setTimeout(() => {
+      const roll = rollD100();
+      setCareerRoll(roll);
+      setCareerId(getCareerIdByRoll(originId, roll));
+      setCareerManual(false);
+      setCareerRolling(false);
+    }, 600);
+  };
+
+  const rerollCareer = () => {
+    if (!originId) return;
+    setCareerPickerOpen(false);
+    setCareerRolling(true);
+    setTimeout(() => {
+      const roll = rollD100();
+      setCareerRoll(roll);
+      setCareerId(getCareerIdByRoll(originId, roll));
+      setCareerManual(true);
+      setCareerRolling(false);
+    }, 600);
+  };
+
+  const chooseCareerManually = (id: string) => {
+    setCareerId(id);
+    setCareerRoll(null);
+    setCareerManual(true);
+    setCareerPickerOpen(false);
   };
 
   const doneBoostedLabels = new Set(
@@ -230,7 +290,10 @@ const CharacterGenerator = () => {
 
   const allRoundsDone = rounds.every((r) => r.status === 'done');
   const roundsManual = rounds.some((r) => r.manual);
-  const xp = (originId && !originManual ? 1 : 0) + (allRoundsDone && !roundsManual ? 1 : 0);
+  const xp =
+    (originId && !originManual ? 1 : 0) +
+    (careerId && !careerManual ? 1 : 0) +
+    (allRoundsDone && !roundsManual ? 1 : 0);
 
   const finalStats: StatRow[] | null =
     origin && origin.stats
@@ -258,6 +321,7 @@ const CharacterGenerator = () => {
     setOriginId(null);
     setOriginManual(false);
     setOriginPickerOpen(false);
+    resetCareer();
     setRounds([emptyRound(), emptyRound(), emptyRound()]);
     setRoundPickerOpen([false, false, false]);
     setName('');
@@ -280,6 +344,8 @@ const CharacterGenerator = () => {
       stats: finalStats,
       experience: xp,
       createdAt: Date.now(),
+      careerId: career?.id,
+      careerTitle: career?.title,
       ...(isBreton
         ? {
             talentIds: finalTalentIds,
@@ -310,7 +376,7 @@ const CharacterGenerator = () => {
             Генератор персонажа
           </h1>
           <p className="mx-auto mt-4 max-w-2xl font-body text-lg text-parchment/85">
-            Бросьте кости, чтобы определить своё происхождение и сильные стороны героя.
+            Бросьте кости, чтобы определить своё происхождение, карьеру и сильные стороны героя.
             За случайную генерацию каждого этапа вы получаете 1 очко опыта — ручной выбор
             или переброс опыта не приносят.
           </p>
@@ -333,8 +399,25 @@ const CharacterGenerator = () => {
             setOriginPickerOpen={setOriginPickerOpen}
           />
 
-          {/* Шаг 2: модификаторы характеристик */}
+          {/* Шаг 2: карьера */}
           {originId && (
+            <CareerStep
+              careerId={careerId}
+              careerRolling={careerRolling}
+              careerRoll={careerRoll}
+              careerManual={careerManual}
+              careerPickerOpen={careerPickerOpen}
+              career={career}
+              careerOptions={careerOptions}
+              rollCareer={rollCareer}
+              rerollCareer={rerollCareer}
+              chooseCareerManually={chooseCareerManually}
+              setCareerPickerOpen={setCareerPickerOpen}
+            />
+          )}
+
+          {/* Шаг 3: модификаторы характеристик */}
+          {careerId && (
             <CharacteristicsStep
               rounds={rounds}
               roundPickerOpen={roundPickerOpen}
@@ -375,6 +458,7 @@ const CharacterGenerator = () => {
             allRoundsDone={allRoundsDone}
             finalStats={finalStats}
             bretonStepsDone={bretonStepsDone}
+            career={career}
             fateStat={fateStat}
             characteristicStats={characteristicStats}
             isBreton={isBreton}

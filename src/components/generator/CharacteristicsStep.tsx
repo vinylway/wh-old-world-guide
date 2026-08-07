@@ -31,7 +31,7 @@ const CharacteristicsStep = ({
       <div className="flex items-center gap-3 mb-4">
         <Icon name="Sparkles" size={22} className="text-gold" />
         <h2 className="font-display text-lg uppercase tracking-widest text-gold">
-          Шаг 2 · Сильные стороны (3 броска)
+          Шаг 3 · Сильные стороны (3 броска)
         </h2>
       </div>
       <p className="font-body text-base text-muted-foreground mb-5">

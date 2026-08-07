@@ -1,4 +1,5 @@
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import Icon from '@/components/ui/icon';
 import OrnateDivider from '@/components/codex/OrnateDivider';
 import { CodexEntry } from '@/data/codex';
 import { GeneratedCharacter, bretonBaseLoreId } from '@/data/generator';
@@ -40,6 +41,20 @@ const CharacterSheetDialog = ({
             <p className="mt-1 text-center font-body text-sm text-muted-foreground">{c.originTitle}</p>
 
             <OrnateDivider className="my-5" />
+
+            {c.careerId && c.careerTitle && (
+              <div className="mb-5 flex justify-center">
+                <button
+                  onClick={() => openEntry(c.careerId as string)}
+                  className="flex items-center gap-2 rounded border border-gold/30 px-4 py-2 hover:bg-secondary transition-colors"
+                >
+                  <Icon name="Briefcase" size={16} className="text-gold" />
+                  <span className="font-display text-sm text-parchment/90">
+                    Карьера: <span className="text-gold-bright font-semibold">{c.careerTitle}</span>
+                  </span>
+                </button>
+              </div>
+            )}
 
             {cFate && (
               <div className="mb-4 flex justify-center">

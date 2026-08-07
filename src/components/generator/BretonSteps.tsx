@@ -53,7 +53,7 @@ const BretonSteps = ({
           <div className="flex items-center gap-3 mb-4">
             <Icon name="Award" size={22} className="text-gold" />
             <h2 className="font-display text-lg uppercase tracking-widest text-gold">
-              Шаг 3 · Возможности происхождения
+              Шаг 4 · Возможности происхождения
             </h2>
           </div>
           <p className="font-body text-base text-muted-foreground mb-5">
@@ -133,7 +133,7 @@ const BretonSteps = ({
           <div className="flex items-center gap-3 mb-4">
             <Icon name="Swords" size={22} className="text-gold" fallback="Sword" />
             <h2 className="font-display text-lg uppercase tracking-widest text-gold">
-              Шаг 4 · Навыки
+              Шаг 5 · Навыки
             </h2>
           </div>
           <p className="font-body text-base text-muted-foreground mb-5">
@@ -185,7 +185,7 @@ const BretonSteps = ({
           <div className="flex items-center gap-3 mb-4">
             <Icon name="BookOpen" size={22} className="text-gold" />
             <h2 className="font-display text-lg uppercase tracking-widest text-gold">
-              Шаг 5 · Знание от происхождения
+              Шаг 6 · Знание от происхождения
             </h2>
           </div>
           <p className="font-body text-base text-muted-foreground mb-3">
