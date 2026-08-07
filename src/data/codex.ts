@@ -37,7 +37,7 @@ export interface CreatureEquipmentItem {
 export interface CreatureStatBlock {
   characteristics: { code: string; value: number }[];
   speed: string;
-  wounds: number;
+  wounds: number | string;
   type: string;
   skills: string[];
   attacks: CreatureAttack[];
@@ -1385,7 +1385,7 @@ export const entries: CodexEntry[] = [
         { code: 'Х', value: 3 },
       ],
       speed: 'Нормальная',
-      wounds: 4,
+      wounds: '4 (бронированный)',
       type: 'Прислужник',
       skills: ['обычные 2', 'рукопашный бой 3', 'мощь 3', 'наблюдательность 3', 'атлетика 3', 'лидерство 3'],
       attacks: [
