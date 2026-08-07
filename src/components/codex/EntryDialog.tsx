@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect, useRef, Fragment } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { CodexEntry, StatLink, sections, entries, SectionId } from '@/data/codex';
@@ -78,16 +78,66 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDi
   const [showSummary, setShowSummary] = useState(false);
   const [showOpinions, setShowOpinions] = useState(false);
 
+  const [history, setHistory] = useState<CodexEntry[]>([]);
+  const isInternalNav = useRef(false);
+  const isBackNav = useRef(false);
+  const prevEntryRef = useRef<CodexEntry | null>(null);
+
   useEffect(() => {
     setShowSummary(false);
     setShowOpinions(false);
   }, [entry]);
+
+  useEffect(() => {
+    if (!entry) {
+      setHistory([]);
+      isInternalNav.current = false;
+      isBackNav.current = false;
+      prevEntryRef.current = null;
+      return;
+    }
+    if (isInternalNav.current) {
+      if (!isBackNav.current && prevEntryRef.current) {
+        const prev = prevEntryRef.current;
+        setHistory((h) => [...h, prev]);
+      }
+      isInternalNav.current = false;
+      isBackNav.current = false;
+    } else {
+      setHistory([]);
+    }
+    prevEntryRef.current = entry;
+  }, [entry]);
+
+  const handleNavigate = (id: string) => {
+    isInternalNav.current = true;
+    isBackNav.current = false;
+    onNavigate?.(id);
+  };
+
+  const handleBack = () => {
+    if (history.length === 0) return;
+    const prev = history[history.length - 1];
+    setHistory((h) => h.slice(0, -1));
+    isInternalNav.current = true;
+    isBackNav.current = true;
+    onNavigate?.(prev.id);
+  };
 
   return (
     <Dialog open={!!entry} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto bg-card parchment-panel ornate-frame">
         {entry && (
           <div className="animate-fade-in">
+            {history.length > 0 && (
+              <button
+                onClick={handleBack}
+                className="absolute left-4 top-4 flex items-center gap-1 rounded border border-gold/30 px-2 py-1 font-display text-xs uppercase tracking-wide text-gold hover:bg-secondary transition-colors"
+              >
+                <Icon name="ArrowLeft" size={14} />
+                Назад
+              </button>
+            )}
             <div className="flex items-center justify-center gap-2 text-gold">
               <Icon name={section?.icon ?? 'Circle'} size={22} fallback="Circle" />
               <span className="font-display text-xs uppercase tracking-[0.2em] text-gold/80">{section?.title}</span>
@@ -126,7 +176,7 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDi
                   <div className="mt-3 space-y-3 animate-fade-in">
                     {entry.summary.split('\n\n').map((paragraph, i) => (
                       <p key={i} className="font-body text-lg leading-relaxed text-parchment/90">
-                        <TextWithLinks text={paragraph} links={entry.summaryLinks} onNavigate={onNavigate} onOpenSection={onOpenSection} />
+                        <TextWithLinks text={paragraph} links={entry.summaryLinks} onNavigate={handleNavigate} onOpenSection={onOpenSection} />
                       </p>
                     ))}
                   </div>
@@ -136,7 +186,7 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDi
               <div className="space-y-3">
                 {entry.summary.split('\n\n').map((paragraph, i) => (
                   <p key={i} className="font-body text-lg leading-relaxed text-parchment/90">
-                    <TextWithLinks text={paragraph} links={entry.summaryLinks} onNavigate={onNavigate} onOpenSection={onOpenSection} />
+                    <TextWithLinks text={paragraph} links={entry.summaryLinks} onNavigate={handleNavigate} onOpenSection={onOpenSection} />
                   </p>
                 ))}
               </div>
@@ -152,7 +202,7 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDi
                           {s.label}
                         </td>
                         <td className="px-4 py-2 text-parchment/90">
-                          <TextWithLinks text={s.value} links={s.links} onNavigate={onNavigate} onOpenSection={onOpenSection} />
+                          <TextWithLinks text={s.value} links={s.links} onNavigate={handleNavigate} onOpenSection={onOpenSection} />
                         </td>
                       </tr>
                     ))}
@@ -176,7 +226,7 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDi
                         return (
                           <li key={j} className="flex items-start gap-2 font-body text-parchment/90 leading-snug">
                             <Icon name="Dot" size={18} className="text-gold shrink-0 mt-0.5" />
-                            <TextWithLinks text={text} links={links} onNavigate={onNavigate} onOpenSection={onOpenSection} />
+                            <TextWithLinks text={text} links={links} onNavigate={handleNavigate} onOpenSection={onOpenSection} />
                           </li>
                         );
                       })}
@@ -198,7 +248,7 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDi
                     return (
                       <button
                         key={id}
-                        onClick={() => onNavigate?.(id)}
+                        onClick={() => handleNavigate(id)}
                         className="story-link flex items-center gap-1.5 rounded border border-gold/30 px-3 py-1.5 font-display text-xs uppercase tracking-wide text-gold hover:bg-secondary transition-colors"
                       >
                         <Icon name="ArrowRight" size={12} />
@@ -228,7 +278,7 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDi
                         </p>
                         {op.linkEntryId && onNavigate ? (
                           <button
-                            onClick={() => onNavigate(op.linkEntryId as string)}
+                            onClick={() => handleNavigate(op.linkEntryId as string)}
                             className="story-link mt-2 inline-block font-display text-sm text-gold hover:text-gold-bright transition-colors"
                           >
                             — {op.author}
@@ -333,7 +383,7 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDi
                           </p>
                           {ab.linkEntryId && onNavigate && (
                             <button
-                              onClick={() => onNavigate(ab.linkEntryId as string)}
+                              onClick={() => handleNavigate(ab.linkEntryId as string)}
                               className="story-link mt-2 inline-flex items-center gap-1 font-display text-xs uppercase tracking-wide text-gold hover:text-gold-bright transition-colors"
                             >
                               <Icon name="BookOpen" size={13} /> Подробнее
@@ -354,7 +404,7 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDi
                           <Icon name="Dot" size={16} className="text-gold shrink-0" />
                           {eq.linkEntryId && onNavigate ? (
                             <button
-                              onClick={() => onNavigate(eq.linkEntryId as string)}
+                              onClick={() => handleNavigate(eq.linkEntryId as string)}
                               className="story-link text-left hover:text-gold-bright transition-colors"
                             >
                               {eq.name}
