@@ -169,12 +169,17 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDi
                       {callout.title}
                     </p>
                     <ul className="space-y-1.5">
-                      {callout.items.map((item, j) => (
-                        <li key={j} className="flex items-start gap-2 font-body text-parchment/90 leading-snug">
-                          <Icon name="Dot" size={18} className="text-gold shrink-0 mt-0.5" />
-                          {item}
-                        </li>
-                      ))}
+                      {callout.items.map((item, j) => {
+                        const isObj = typeof item !== 'string';
+                        const text = isObj ? item.text : item;
+                        const links = isObj ? item.links : undefined;
+                        return (
+                          <li key={j} className="flex items-start gap-2 font-body text-parchment/90 leading-snug">
+                            <Icon name="Dot" size={18} className="text-gold shrink-0 mt-0.5" />
+                            <TextWithLinks text={text} links={links} onNavigate={onNavigate} onOpenSection={onOpenSection} />
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 ))}

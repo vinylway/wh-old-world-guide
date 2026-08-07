@@ -52,11 +52,6 @@ export interface OpinionQuote {
   linkEntryId?: string;
 }
 
-export interface Callout {
-  title: string;
-  items: string[];
-}
-
 export interface StatLink {
   // Точная подстрока в значении характеристики, которая станет ссылкой
   match: string;
@@ -64,6 +59,16 @@ export interface StatLink {
   entryId?: string;
   // ...либо ссылка, открывающая окно со всеми записями раздела (например «Происхождения»)
   sectionId?: SectionId;
+}
+
+export interface CalloutItem {
+  text: string;
+  links?: StatLink[];
+}
+
+export interface Callout {
+  title: string;
+  items: (string | CalloutItem)[];
 }
 
 export interface StatRowValue {
@@ -599,7 +604,7 @@ export const entries: CodexEntry[] = [
         items: [
           'Выронить предмет, который вы несёте',
           'Нанести внезапный ущерб чему‑либо поблизости',
-          'Получить состояние ошеломлён',
+          { text: 'Получить состояние ошеломлён', links: [{ match: 'ошеломлён', entryId: 'r16' }] },
         ],
       },
       {
