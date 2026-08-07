@@ -2,12 +2,16 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
 import { sectionGroups } from '@/data/codex';
+import headerBg from '@/assets/header-bg.webp';
 
 const Header = () => {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gold/25 bg-background/85 backdrop-blur-md">
+    <header
+      className="sticky top-0 z-50 border-b border-gold/25 bg-background/70 backdrop-blur-md bg-cover bg-center"
+      style={{ backgroundImage: `linear-gradient(rgba(10,20,25,0.55), rgba(10,20,25,0.55)), url(${headerBg})` }}
+    >
       <div className="container flex h-16 items-center justify-between">
         <Link
           to="/"
