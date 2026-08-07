@@ -9,6 +9,7 @@ import OriginStep from '@/components/generator/OriginStep';
 import CharacteristicsStep from '@/components/generator/CharacteristicsStep';
 import BretonSteps from '@/components/generator/BretonSteps';
 import CharacterSummary, { SavedCharactersList } from '@/components/generator/CharacterSummary';
+import CharacterSheetDialog from '@/components/generator/CharacterSheetDialog';
 import { entries, CodexEntry } from '@/data/codex';
 import {
   rollD10,
@@ -54,7 +55,7 @@ const CharacterGenerator = () => {
 
   const [savedList, setSavedList] = useState<GeneratedCharacter[]>([]);
   const [activeEntry, setActiveEntry] = useState<CodexEntry | null>(null);
-  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+  const [selectedCharacter, setSelectedCharacter] = useState<GeneratedCharacter | null>(null);
 
   const openEntry = (id: string) => {
     const target = entries.find((e) => e.id === id);
@@ -397,13 +398,8 @@ const CharacterGenerator = () => {
         {/* Сохранённые персонажи */}
         <SavedCharactersList
           savedList={savedList}
-          expandedCardId={expandedCardId}
-          setExpandedCardId={setExpandedCardId}
           handleDelete={handleDelete}
-          openEntry={openEntry}
-          getRelatedSkills={getRelatedSkills}
-          characteristicAbilityEntryId={characteristicAbilityEntryId}
-          entries={entries}
+          onSelectCharacter={setSelectedCharacter}
         />
 
         <div className="text-center mt-14">
@@ -421,6 +417,14 @@ const CharacterGenerator = () => {
         entry={activeEntry}
         onOpenChange={() => setActiveEntry(null)}
         onNavigate={openEntry}
+      />
+      <CharacterSheetDialog
+        character={selectedCharacter}
+        onOpenChange={() => setSelectedCharacter(null)}
+        openEntry={openEntry}
+        getRelatedSkills={getRelatedSkills}
+        characteristicAbilityEntryId={characteristicAbilityEntryId}
+        entries={entries}
       />
     </div>
   );
