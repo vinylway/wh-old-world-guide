@@ -8,7 +8,7 @@ import EntryDialog from '@/components/codex/EntryDialog';
 import OriginStep from '@/components/generator/OriginStep';
 import CareerStep from '@/components/generator/CareerStep';
 import CharacteristicsStep from '@/components/generator/CharacteristicsStep';
-import BretonSteps from '@/components/generator/BretonSteps';
+import OriginAbilitiesStep from '@/components/generator/OriginAbilitiesStep';
 import CharacterSummary, { SavedCharactersList } from '@/components/generator/CharacterSummary';
 import CharacterSheetDialog from '@/components/generator/CharacterSheetDialog';
 import { entries, CodexEntry } from '@/data/codex';
@@ -22,19 +22,16 @@ import {
   deleteCharacter,
   GeneratedCharacter,
   StatRow,
-  bretonTalentTable,
-  bretonOathTalentId,
-  bretonMandatoryBoostedSkillIds,
-  bretonLoreChoiceIds,
-  bretonBaseLoreId,
   characteristicAbilityEntryId,
   careerRollTables,
   getCareerIdByRoll,
+  getCareerStatus,
+  originAbilityConfigs,
+  getRandomNameForOrigin,
 } from '@/data/generator';
 
 const ALL_LABELS = ['ББ', 'ДБ', 'С', 'В', 'И', 'Пр', 'Р', 'Х', 'Судьба'];
 const ORIGIN_IDS = ['o1', 'o4', 'o2', 'o6', 'o3', 'o5'];
-const BRETON_EXTRA_SKILLS_COUNT = 2;
 
 interface RoundState {
   log: number[];
@@ -52,12 +49,6 @@ const CharacterGenerator = () => {
   const [originManual, setOriginManual] = useState(false);
   const [originPickerOpen, setOriginPickerOpen] = useState(false);
 
-  const [careerRolling, setCareerRolling] = useState(false);
-  const [careerRoll, setCareerRoll] = useState<number | null>(null);
-  const [careerId, setCareerId] = useState<string | null>(null);
-  const [careerManual, setCareerManual] = useState(false);
-  const [careerPickerOpen, setCareerPickerOpen] = useState(false);
-
   const [rounds, setRounds] = useState<RoundState[]>([emptyRound(), emptyRound(), emptyRound()]);
   const [roundPickerOpen, setRoundPickerOpen] = useState<boolean[]>([false, false, false]);
   const [name, setName] = useState('');
@@ -72,16 +63,24 @@ const CharacterGenerator = () => {
     if (target) setActiveEntry(target);
   };
 
-  // Бретонец: возможности происхождения (2 броска d10 по таблице талантов)
+  // Возможности происхождения: броски d10 по таблице талантов (0–2 в зависимости от расы)
   const [talentRolls, setTalentRolls] = useState<(number | null)[]>([null, null]);
   const [talentRolling, setTalentRolling] = useState<boolean[]>([false, false]);
   const [oathReplaceIdx, setOathReplaceIdx] = useState<number | null>(null);
 
-  // Бретонец: выбор двух дополнительных навыков для повышения до 3
+  // Выбор дополнительных навыков для повышения до 3
   const [selectedExtraSkills, setSelectedExtraSkills] = useState<string[]>([]);
 
-  // Бретонец: выбор знания от происхождения
-  const [selectedLoreId, setSelectedLoreId] = useState<string | null>(null);
+  // Выбор знаний от происхождения (по группам)
+  const [loreSelections, setLoreSelections] = useState<Record<string, string>>({});
+
+  // Карьера
+  const [careerRolling, setCareerRolling] = useState(false);
+  const [careerRoll, setCareerRoll] = useState<number | null>(null);
+  const [careerId, setCareerId] = useState<string | null>(null);
+  const [careerManual, setCareerManual] = useState(false);
+  const [careerPickerOpen, setCareerPickerOpen] = useState(false);
+  const [inDisgrace, setInDisgrace] = useState(false);
 
   useEffect(() => {
     setSavedList(getSavedCharacters());
@@ -89,42 +88,64 @@ const CharacterGenerator = () => {
 
   const origin = originId ? entries.find((e) => e.id === originId) : null;
   const originOptions = entries.filter((e) => ORIGIN_IDS.includes(e.id));
-  const isBreton = origin?.id === 'o1';
+  const abilityConfig = originId ? originAbilityConfigs[originId] : null;
 
   const career = careerId ? entries.find((e) => e.id === careerId) : null;
   const careerTable = originId ? careerRollTables[originId] : null;
   const careerOptions = careerTable
     ? (careerTable.map((r) => entries.find((e) => e.id === r.careerId)).filter(Boolean) as CodexEntry[])
     : [];
+  const careerStatus = careerId ? getCareerStatus(careerId) : null;
 
-  const bretonSkillEntries = entries.filter(
-    (e) => e.section === 'abilities' && e.subgroup === 'Навыки' && !bretonMandatoryBoostedSkillIds.includes(e.id)
-  );
-  const bretonMandatorySkillEntries = bretonMandatoryBoostedSkillIds
-    .map((id) => entries.find((e) => e.id === id))
-    .filter(Boolean) as typeof entries;
-  const bretonLoreEntries = bretonLoreChoiceIds
-    .map((id) => entries.find((e) => e.id === id))
-    .filter(Boolean) as typeof entries;
-  const bretonBaseLore = entries.find((e) => e.id === bretonBaseLoreId) ?? null;
+  const mandatorySkillEntries = abilityConfig
+    ? (abilityConfig.mandatorySkillIds.map((id) => entries.find((e) => e.id === id)).filter(Boolean) as CodexEntry[])
+    : [];
+  const extraSkillEntries = abilityConfig
+    ? entries.filter(
+        (e) =>
+          e.section === 'abilities' &&
+          e.subgroup === 'Навыки' &&
+          !abilityConfig.mandatorySkillIds.includes(e.id)
+      )
+    : [];
+  const baseLoreEntries = abilityConfig
+    ? (abilityConfig.baseLoreIds.map((id) => entries.find((e) => e.id === id)).filter(Boolean) as CodexEntry[])
+    : [];
 
-  const talentsDone = talentRolls.every((r) => r !== null);
-  const skillsDone = selectedExtraSkills.length === BRETON_EXTRA_SKILLS_COUNT;
-  const loreDone = !!selectedLoreId;
-  const bretonStepsDone = !isBreton || (talentsDone && skillsDone && loreDone);
+  const allRoundsDone = rounds.every((r) => r.status === 'done');
 
-  const finalTalentIds: string[] = isBreton
-    ? talentRolls
-        .map((r, i) => (oathReplaceIdx === i ? bretonOathTalentId : r !== null ? bretonTalentTable[r] : undefined))
-        .filter((v): v is string => !!v)
+  const talentsDone = abilityConfig ? talentRolls.slice(0, abilityConfig.rollsCount).every((r) => r !== null) : true;
+  const skillsDone = abilityConfig ? selectedExtraSkills.length === abilityConfig.extraSkillsCount : true;
+  const loreDone = abilityConfig ? abilityConfig.loreChoiceGroups.every((g) => !!loreSelections[g.id]) : true;
+  const abilitiesDone = talentsDone && skillsDone && loreDone;
+
+  const finalTalentIds: string[] = abilityConfig
+    ? [
+        ...(abilityConfig.fixedTalentIds ?? []),
+        ...talentRolls
+          .slice(0, abilityConfig.rollsCount)
+          .map((r, i) =>
+            oathReplaceIdx === i
+              ? abilityConfig.oathReplacement?.talentId
+              : r !== null
+              ? abilityConfig.talentTable[r]
+              : undefined
+          )
+          .filter((v): v is string => !!v),
+      ]
+    : [];
+
+  const finalLoreIds: string[] = abilityConfig
+    ? [...abilityConfig.baseLoreIds, ...Object.values(loreSelections)]
     : [];
 
   const rollTalentSlot = (idx: number, markManual: boolean) => {
+    if (!abilityConfig) return;
     setTalentRolling((prev) => prev.map((v, i) => (i === idx ? true : v)));
-    const otherRoll = talentRolls[idx === 0 ? 1 : 0];
+    const otherRolls = talentRolls.filter((_, i) => i !== idx);
     setTimeout(() => {
       let roll = rollD10();
-      for (let guard = 0; guard < 50 && roll === otherRoll; guard++) {
+      for (let guard = 0; guard < 50 && otherRolls.includes(roll); guard++) {
         roll = rollD10();
       }
       setTalentRolls((prev) => prev.map((v, i) => (i === idx ? roll : v)));
@@ -140,11 +161,16 @@ const CharacterGenerator = () => {
   };
 
   const toggleExtraSkill = (skillId: string) => {
+    if (!abilityConfig) return;
     setSelectedExtraSkills((prev) => {
       if (prev.includes(skillId)) return prev.filter((s) => s !== skillId);
-      if (prev.length >= BRETON_EXTRA_SKILLS_COUNT) return prev;
+      if (prev.length >= abilityConfig.extraSkillsCount) return prev;
       return [...prev, skillId];
     });
+  };
+
+  const setLoreSelection = (groupId: string, loreId: string) => {
+    setLoreSelections((prev) => ({ ...prev, [groupId]: loreId }));
   };
 
   const resetCareer = () => {
@@ -153,12 +179,22 @@ const CharacterGenerator = () => {
     setCareerManual(false);
     setCareerPickerOpen(false);
     setCareerRolling(false);
+    setInDisgrace(false);
+  };
+
+  const resetAbilities = () => {
+    setTalentRolls([null, null]);
+    setTalentRolling([false, false]);
+    setOathReplaceIdx(null);
+    setSelectedExtraSkills([]);
+    setLoreSelections({});
   };
 
   const rollOrigin = () => {
     setOriginPickerOpen(false);
     setOriginRolling(true);
     resetCareer();
+    resetAbilities();
     setTimeout(() => {
       const roll = rollD10();
       setOriginRoll(roll);
@@ -172,6 +208,7 @@ const CharacterGenerator = () => {
     setOriginPickerOpen(false);
     setOriginRolling(true);
     resetCareer();
+    resetAbilities();
     setTimeout(() => {
       const roll = rollD10();
       setOriginRoll(roll);
@@ -187,6 +224,7 @@ const CharacterGenerator = () => {
     setOriginManual(true);
     setOriginPickerOpen(false);
     resetCareer();
+    resetAbilities();
   };
 
   const rollCareer = () => {
@@ -199,6 +237,7 @@ const CharacterGenerator = () => {
       setCareerId(getCareerIdByRoll(originId, roll));
       setCareerManual(false);
       setCareerRolling(false);
+      setInDisgrace(false);
     }, 600);
   };
 
@@ -212,6 +251,7 @@ const CharacterGenerator = () => {
       setCareerId(getCareerIdByRoll(originId, roll));
       setCareerManual(true);
       setCareerRolling(false);
+      setInDisgrace(false);
     }, 600);
   };
 
@@ -220,6 +260,11 @@ const CharacterGenerator = () => {
     setCareerRoll(null);
     setCareerManual(true);
     setCareerPickerOpen(false);
+    setInDisgrace(false);
+  };
+
+  const toggleDisgrace = () => {
+    setInDisgrace((v) => !v);
   };
 
   const doneBoostedLabels = new Set(
@@ -288,12 +333,12 @@ const CharacterGenerator = () => {
     return ALL_LABELS.filter((l) => !otherBoosted.has(l));
   };
 
-  const allRoundsDone = rounds.every((r) => r.status === 'done');
   const roundsManual = rounds.some((r) => r.manual);
   const xp =
     (originId && !originManual ? 1 : 0) +
     (careerId && !careerManual ? 1 : 0) +
-    (allRoundsDone && !roundsManual ? 1 : 0);
+    (allRoundsDone && !roundsManual ? 1 : 0) +
+    (inDisgrace ? 1 : 0);
 
   const finalStats: StatRow[] | null =
     origin && origin.stats
@@ -306,7 +351,7 @@ const CharacterGenerator = () => {
 
   const fateStat = finalStats?.find((s) => s.label === 'Судьба') ?? null;
   const characteristicStats = finalStats?.filter((s) => s.label !== 'Судьба') ?? [];
-  const boostedSkillIds = [...bretonMandatoryBoostedSkillIds, ...selectedExtraSkills];
+  const boostedSkillIds = abilityConfig ? [...abilityConfig.mandatorySkillIds, ...selectedExtraSkills] : [];
 
   const getRelatedSkills = (abilityId: string): CodexEntry[] => {
     const ability = entries.find((e) => e.id === abilityId);
@@ -322,15 +367,11 @@ const CharacterGenerator = () => {
     setOriginManual(false);
     setOriginPickerOpen(false);
     resetCareer();
+    resetAbilities();
     setRounds([emptyRound(), emptyRound(), emptyRound()]);
     setRoundPickerOpen([false, false, false]);
     setName('');
     setSaved(false);
-    setTalentRolls([null, null]);
-    setTalentRolling([false, false]);
-    setOathReplaceIdx(null);
-    setSelectedExtraSkills([]);
-    setSelectedLoreId(null);
   };
 
   const handleSave = () => {
@@ -346,13 +387,11 @@ const CharacterGenerator = () => {
       createdAt: Date.now(),
       careerId: career?.id,
       careerTitle: career?.title,
-      ...(isBreton
-        ? {
-            talentIds: finalTalentIds,
-            boostedSkillIds: [...bretonMandatoryBoostedSkillIds, ...selectedExtraSkills],
-            loreId: selectedLoreId ?? undefined,
-          }
-        : {}),
+      careerStatus: careerStatus ?? undefined,
+      inDisgrace,
+      talentIds: finalTalentIds,
+      boostedSkillIds,
+      loreIds: finalLoreIds,
     };
     saveCharacter(character);
     setSavedList(getSavedCharacters());
@@ -362,6 +401,12 @@ const CharacterGenerator = () => {
   const handleDelete = (id: string) => {
     deleteCharacter(id);
     setSavedList(getSavedCharacters());
+  };
+
+  const handleRandomName = () => {
+    if (!originId) return;
+    const random = getRandomNameForOrigin(originId);
+    if (random) setName(random);
   };
 
   return (
@@ -376,7 +421,7 @@ const CharacterGenerator = () => {
             Генератор персонажа
           </h1>
           <p className="mx-auto mt-4 max-w-2xl font-body text-lg text-parchment/85">
-            Бросьте кости, чтобы определить своё происхождение, карьеру и сильные стороны героя.
+            Бросьте кости, чтобы определить своё происхождение, сильные стороны и карьеру героя.
             За случайную генерацию каждого этапа вы получаете 1 очко опыта — ручной выбор
             или переброс опыта не приносят.
           </p>
@@ -399,25 +444,8 @@ const CharacterGenerator = () => {
             setOriginPickerOpen={setOriginPickerOpen}
           />
 
-          {/* Шаг 2: карьера */}
+          {/* Шаг 2: модификаторы характеристик */}
           {originId && (
-            <CareerStep
-              careerId={careerId}
-              careerRolling={careerRolling}
-              careerRoll={careerRoll}
-              careerManual={careerManual}
-              careerPickerOpen={careerPickerOpen}
-              career={career}
-              careerOptions={careerOptions}
-              rollCareer={rollCareer}
-              rerollCareer={rerollCareer}
-              chooseCareerManually={chooseCareerManually}
-              setCareerPickerOpen={setCareerPickerOpen}
-            />
-          )}
-
-          {/* Шаг 3: модификаторы характеристик */}
-          {careerId && (
             <CharacteristicsStep
               rounds={rounds}
               roundPickerOpen={roundPickerOpen}
@@ -429,10 +457,12 @@ const CharacterGenerator = () => {
             />
           )}
 
-          {/* Шаги 3–5 (только для бретонца) */}
-          {isBreton && (
-            <BretonSteps
-              allRoundsDone={allRoundsDone}
+          {/* Шаг 3: возможности происхождения (таланты, навыки, знания) */}
+          {abilityConfig && (
+            <OriginAbilitiesStep
+              config={abilityConfig}
+              originTitle={origin?.title ?? ''}
+              ready={allRoundsDone}
               talentsDone={talentsDone}
               skillsDone={skillsDone}
               talentRolls={talentRolls}
@@ -441,15 +471,33 @@ const CharacterGenerator = () => {
               rollTalentSlot={rollTalentSlot}
               toggleOathReplace={toggleOathReplace}
               entries={entries}
-              bretonMandatorySkillEntries={bretonMandatorySkillEntries}
-              bretonSkillEntries={bretonSkillEntries}
+              mandatorySkillEntries={mandatorySkillEntries}
+              extraSkillEntries={extraSkillEntries}
               selectedExtraSkills={selectedExtraSkills}
               toggleExtraSkill={toggleExtraSkill}
-              bretonExtraSkillsCount={BRETON_EXTRA_SKILLS_COUNT}
-              bretonBaseLore={bretonBaseLore}
-              bretonLoreEntries={bretonLoreEntries}
-              selectedLoreId={selectedLoreId}
-              setSelectedLoreId={setSelectedLoreId}
+              baseLoreEntries={baseLoreEntries}
+              loreSelections={loreSelections}
+              setLoreSelection={setLoreSelection}
+            />
+          )}
+
+          {/* Шаг 4: карьера (только после всех предыдущих бросков) */}
+          {allRoundsDone && abilitiesDone && (
+            <CareerStep
+              careerId={careerId}
+              careerRolling={careerRolling}
+              careerRoll={careerRoll}
+              careerManual={careerManual}
+              careerPickerOpen={careerPickerOpen}
+              career={career}
+              careerOptions={careerOptions}
+              careerStatus={careerStatus}
+              inDisgrace={inDisgrace}
+              toggleDisgrace={toggleDisgrace}
+              rollCareer={rollCareer}
+              rerollCareer={rerollCareer}
+              chooseCareerManually={chooseCareerManually}
+              setCareerPickerOpen={setCareerPickerOpen}
             />
           )}
 
@@ -457,20 +505,23 @@ const CharacterGenerator = () => {
           <CharacterSummary
             allRoundsDone={allRoundsDone}
             finalStats={finalStats}
-            bretonStepsDone={bretonStepsDone}
+            abilitiesDone={abilitiesDone}
+            careerId={careerId}
             career={career}
+            careerStatus={careerStatus}
+            inDisgrace={inDisgrace}
             fateStat={fateStat}
             characteristicStats={characteristicStats}
-            isBreton={isBreton}
+            hasAbilities={!!abilityConfig}
             boostedSkillIds={boostedSkillIds}
             finalTalentIds={finalTalentIds}
-            bretonBaseLore={bretonBaseLore}
-            selectedLoreId={selectedLoreId}
+            finalLoreIds={finalLoreIds}
             xp={xp}
             saved={saved}
             name={name}
             setName={setName}
             handleSave={handleSave}
+            handleRandomName={handleRandomName}
             reset={reset}
             openEntry={openEntry}
             getRelatedSkills={getRelatedSkills}

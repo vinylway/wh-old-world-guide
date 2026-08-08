@@ -5,6 +5,8 @@ export interface StatRow {
   final: number;
 }
 
+export type CareerStatus = 'copper' | 'silver' | 'gold';
+
 export interface GeneratedCharacter {
   id: string;
   name: string;
@@ -17,8 +19,11 @@ export interface GeneratedCharacter {
   talentIds?: string[];
   boostedSkillIds?: string[];
   loreId?: string;
+  loreIds?: string[];
   careerId?: string;
   careerTitle?: string;
+  careerStatus?: CareerStatus;
+  inDisgrace?: boolean;
 }
 
 interface OriginRollRange {
@@ -96,6 +101,214 @@ export const bretonBaseLoreId = 'lore-bretonnia';
 
 // Варианты знания от происхождения для бретонца на выбор: «Высший свет» или «Фермерство»
 export const bretonLoreChoiceIds = ['lore-high-society', 'lore-farming'];
+
+// ---------------------------------------------------------------------------
+// Универсальная конфигурация «Возможностей происхождения» для всех рас.
+// ---------------------------------------------------------------------------
+
+export interface LoreChoiceGroup {
+  id: string;
+  label: string;
+  options: string[];
+}
+
+export interface OriginAbilityConfig {
+  originId: string;
+  // Таблица d10 → id таланта
+  talentTable: Record<number, string>;
+  // Сколько раз бросают d10 по таблице талантов (перебрасывая повторы)
+  rollsCount: number;
+  // Замена одного из выпавших талантов на фиксированный (Обет чести, Устойчивость к магии и т.п.)
+  oathReplacement?: { talentId: string; label: string };
+  // true — замена обязательна (нужно выбрать слот); false/undefined — замена по желанию игрока
+  oathMandatory?: boolean;
+  // Таланты, которые персонаж получает гарантированно, без броска
+  fixedTalentIds?: string[];
+  // Навыки, автоматически поднимаемые до 3
+  mandatorySkillIds: string[];
+  // Сколько дополнительных навыков можно выбрать (поднимаются до 3)
+  extraSkillsCount: number;
+  // Знания, которыми персонаж владеет от рождения (без выбора)
+  baseLoreIds: string[];
+  // Группы знаний на выбор — из каждой группы нужно выбрать один вариант
+  loreChoiceGroups: LoreChoiceGroup[];
+  namesList: string[];
+}
+
+export const dwarfOathTalentId = 'talent-dwarf-resistance-to-magic';
+export const elfLightningTalentId = 'talent-lightning-reflexes';
+
+export const bretonNames: string[] = [
+  'Жиль', 'Жак', 'Перрен', 'Марсель', 'Рауль', 'Этьен', 'Анри', 'Бертран', 'Одо', 'Томен',
+  'Моник', 'Изабо', 'Томасс', 'Перрет', 'Жизель', 'Женевьев', 'Марго', 'Симона', 'Жюльот', 'Беатрис',
+];
+
+export const dwarfNames: string[] = [
+  'Алрик', 'Кеттри', 'Снорек', 'Хергар', 'Каразин', 'Ульфар', 'Скот', 'Дурегар', 'Градни', 'Нарго',
+  'Ленка', 'Бритта', 'Хунни', 'Магдарит', 'Элдрида', 'Кобальта', 'Гронден', 'Фреда', 'Лога', 'Виннифер',
+];
+
+export const highElfNames: string[] = [
+  'Линкор', 'Аскафин', 'Сенга', 'Ульсамор', 'Дорандрил', 'Илдорик', 'Танмар', 'Селлион', 'Валвинг', 'Тирон',
+  'Тиранна', 'Кальдия', 'Лоранель', 'Веспа', 'Тина', 'Аспет', 'Минари', 'Дженна', 'Квеллари', 'Алондра',
+];
+
+export const woodElfNames: string[] = [
+  'Кэрот', 'Мендас', 'Фенелок', 'Дараху', 'Кинвик', 'Мерток', 'Валахан', 'Лурик', 'Гартот', 'Тралан',
+  'Саула', 'Фарлак', 'Морланна', 'Тестра', 'Аварин', 'Скендда', 'Гладвит', 'Эстра', 'Отроли', 'Ханадда',
+];
+
+export const halflingNames: string[] = [
+  'Горацио (Рэй)', 'Бродерик (Брод)', 'Борегард (Бо)', 'Деметриус (Деми)', 'Корнелиус (Нил)', 'Максимилиан (Макс)',
+  'Натаниэль (Нейт)', 'Клементина (Клем)', 'Анна-Лиза (Анн)', 'Франческа (Фран)', 'Эдвардин (Эдди)', 'Имоген (Мо)', 'Александра (Алекс)',
+];
+
+export const imperialNames: string[] = [
+  'Ларс', 'Готфрид', 'Рейнхард', 'Вольфганг', 'Ультар', 'Фридрих', 'Вальтер', 'Кедрик', 'Дитер', 'Густав',
+  'Гертрун', 'Фреда', 'Эрика', 'Ольга', 'Катарина', 'Агнес', 'Лина', 'Ингрид', 'Берта', 'Тора',
+];
+
+export const originAbilityConfigs: Record<string, OriginAbilityConfig> = {
+  // Бретонец
+  o1: {
+    originId: 'o1',
+    talentTable: bretonTalentTable,
+    rollsCount: 2,
+    oathReplacement: { talentId: bretonOathTalentId, label: '«Обет чести»' },
+    mandatorySkillIds: ['skill-melee', 'skill-labour'],
+    extraSkillsCount: 2,
+    baseLoreIds: ['lore-bretonnia'],
+    loreChoiceGroups: [
+      { id: 'breton-lore', label: 'Знание от происхождения', options: ['lore-high-society', 'lore-farming'] },
+    ],
+    namesList: bretonNames,
+  },
+  // Гном
+  o4: {
+    originId: 'o4',
+    talentTable: {
+      1: 'talent-dwarf-armour-piercing',
+      2: 'talent-breton-strong-build',
+      3: 'talent-dwarf-hatred',
+      4: bretonOathTalentId,
+      5: 'talent-dwarf-scrutiny',
+      6: 'talent-breton-iron-stomach',
+      7: 'talent-dwarf-long-beard',
+      8: 'talent-dwarf-night-owl',
+      9: 'talent-quick-reload',
+      10: 'talent-dwarf-single-minded',
+    },
+    rollsCount: 2,
+    oathReplacement: { talentId: dwarfOathTalentId, label: '«Устойчивость к магии»' },
+    oathMandatory: true,
+    mandatorySkillIds: ['skill-melee', 'skill-labour', 'skill-resilience', 'skill-willpower'],
+    extraSkillsCount: 0,
+    baseLoreIds: ['lore-dwarf-holds', 'lore-literacy'],
+    loreChoiceGroups: [
+      { id: 'dwarf-home', label: 'Родная твердыня', options: ['lore-empire', 'lore-underground'] },
+    ],
+    namesList: dwarfNames,
+  },
+  // Высший эльф
+  o3: {
+    originId: 'o3',
+    talentTable: {
+      1: 'talent-breton-acrobatic',
+      2: 'talent-elf-close-order-drill',
+      3: 'talent-elf-excellent-hearing',
+      4: 'talent-breton-golden-voice',
+      5: 'talent-elf-discerning-eye',
+      6: 'talent-elf-savant',
+      7: 'talent-breton-secret-heritage',
+      8: 'talent-elf-wind-touched',
+      9: 'talent-elf-marksman',
+      10: 'talent-elf-valour-of-ages',
+    },
+    rollsCount: 2,
+    oathReplacement: { talentId: elfLightningTalentId, label: '«Молниеносная реакция»' },
+    oathMandatory: true,
+    mandatorySkillIds: ['skill-observation', 'skill-athletics', 'skill-willpower', 'skill-memory'],
+    extraSkillsCount: 0,
+    baseLoreIds: ['lore-high-elf-kingdoms', 'lore-literacy'],
+    loreChoiceGroups: [
+      { id: 'high-elf-science', label: 'Наука (на выбор)', options: ['lore-anatomy', 'lore-law', 'lore-zoology', 'lore-history', 'lore-accounting'] },
+    ],
+    namesList: highElfNames,
+  },
+  // Лесной эльф
+  o5: {
+    originId: 'o5',
+    talentTable: {
+      1: 'talent-breton-acrobatic',
+      2: 'talent-careful-aim',
+      3: 'talent-elf-close-order-drill',
+      4: 'talent-elf-excellent-hearing',
+      5: 'talent-feigned-flight',
+      6: 'talent-breton-golden-voice',
+      7: 'talent-elf-discerning-eye',
+      8: 'talent-wood-elf-prankster-sense',
+      9: 'talent-elf-wind-touched',
+      10: 'talent-breton-vanguard',
+    },
+    rollsCount: 2,
+    oathReplacement: { talentId: elfLightningTalentId, label: '«Молниеносная реакция»' },
+    oathMandatory: true,
+    mandatorySkillIds: ['skill-survival', 'skill-observation', 'skill-athletics', 'skill-stealth'],
+    extraSkillsCount: 0,
+    baseLoreIds: ['lore-wood-elf-kingdom', 'lore-forestry'],
+    loreChoiceGroups: [
+      { id: 'wood-elf-neighbours', label: 'Соседи', options: ['lore-bretonnia', 'lore-beastmen-herds'] },
+    ],
+    namesList: woodElfNames,
+  },
+  // Полурослик
+  o6: {
+    originId: 'o6',
+    talentTable: {
+      1: 'talent-careful-aim',
+      2: 'talent-breton-defensive-stance',
+      3: 'talent-feigned-flight',
+      4: 'talent-breton-iron-stomach',
+      5: 'talent-elf-discerning-eye',
+      6: elfLightningTalentId,
+      7: 'talent-halfling-fortune',
+      8: 'talent-breton-allies-in-arms',
+      9: 'talent-wag',
+      10: 'talent-breton-vanguard',
+    },
+    rollsCount: 1,
+    fixedTalentIds: ['talent-breton-resistance-to-corruption', 'talent-halfling-small'],
+    mandatorySkillIds: ['skill-shooting', 'skill-stealth', 'skill-cunning', 'skill-charm'],
+    extraSkillsCount: 0,
+    baseLoreIds: ['lore-province', 'lore-cooking'],
+    loreChoiceGroups: [],
+    namesList: halflingNames,
+  },
+  // Имперец
+  o2: {
+    originId: 'o2',
+    talentTable: {
+      1: 'talent-elf-excellent-hearing',
+      2: 'talent-imperial-faith',
+      3: 'talent-breton-strong-build',
+      4: 'talent-imperial-camaraderie',
+      5: bretonOathTalentId,
+      6: 'talent-imperial-savvy',
+      7: 'talent-breton-helmsman',
+      8: 'talent-wag',
+      9: 'talent-quick-reload',
+      10: 'talent-elf-wind-touched',
+    },
+    rollsCount: 2,
+    mandatorySkillIds: [],
+    extraSkillsCount: 3,
+    baseLoreIds: ['lore-empire'],
+    loreChoiceGroups: [
+      { id: 'imperial-home', label: 'Дом', options: ['lore-city', 'lore-province'] },
+    ],
+    namesList: imperialNames,
+  },
+};
 
 interface CareerRollRange {
   min: number;
@@ -255,13 +468,48 @@ export const getCareerIdByRoll = (originId: string, roll: number): string | null
   return found?.careerId ?? null;
 };
 
-export const bretonNames: string[] = [
-  'Жиль', 'Жак', 'Перрен', 'Марсель', 'Рауль', 'Этьен', 'Анри', 'Бертран', 'Одо', 'Томен',
-  'Моник', 'Изабо', 'Томасс', 'Перрет', 'Жизель', 'Женевьев', 'Марго', 'Симона', 'Жюльот', 'Беатрис',
+// Статус, который даёт карьера персонажу
+const goldCareerIds = ['career-noble', 'career-knight', 'career-courtier'];
+const copperCareerIds = [
+  'career-apothecary', 'career-sailor', 'career-outlaw', 'career-charlatan', 'career-artist',
+  'career-witch-doctor', 'career-labourer', 'career-ratcatcher', 'career-shadow-warrior',
+  'career-sniper', 'career-slayer', 'career-thief', 'career-watchman', 'career-road-warden',
+  'career-forest-ranger',
 ];
+
+export const getCareerStatus = (careerId: string): CareerStatus => {
+  if (goldCareerIds.includes(careerId)) return 'gold';
+  if (copperCareerIds.includes(careerId)) return 'copper';
+  return 'silver';
+};
+
+export const careerStatusLabels: Record<CareerStatus, string> = {
+  copper: 'Медный',
+  silver: 'Серебряный',
+  gold: 'Золотой',
+};
+
+export const careerStatusIcons: Record<CareerStatus, string> = {
+  copper: 'Circle',
+  silver: 'CircleDot',
+  gold: 'CircleDollarSign',
+};
+
+// «Жизнь в опале» понижает статус на ступень и даёт дополнительный опыт.
+// Медный статус не может опускаться — опала для него недоступна.
+export const canDisgrace = (status: CareerStatus): boolean => status !== 'copper';
+
+export const disgracedStatus = (status: CareerStatus): CareerStatus =>
+  status === 'gold' ? 'silver' : 'copper';
 
 export const getRandomBretonName = (): string =>
   bretonNames[Math.floor(Math.random() * bretonNames.length)];
+
+export const getRandomNameForOrigin = (originId: string): string => {
+  const list = originAbilityConfigs[originId]?.namesList;
+  if (!list || list.length === 0) return '';
+  return list[Math.floor(Math.random() * list.length)];
+};
 
 const STORAGE_KEY = 'codex-generated-characters';
 

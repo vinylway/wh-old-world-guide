@@ -2,7 +2,19 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import OrnateDivider from '@/components/codex/OrnateDivider';
 import { CodexEntry } from '@/data/codex';
-import { GeneratedCharacter, bretonBaseLoreId } from '@/data/generator';
+import {
+  GeneratedCharacter,
+  CareerStatus,
+  careerStatusLabels,
+  careerStatusIcons,
+  disgracedStatus,
+} from '@/data/generator';
+
+const statusColorClasses: Record<CareerStatus, string> = {
+  copper: 'border-orange-700/60 text-orange-400',
+  silver: 'border-slate-400/60 text-slate-300',
+  gold: 'border-gold text-gold-bright',
+};
 
 interface CharacterSheetDialogProps {
   character: GeneratedCharacter | null;
@@ -24,6 +36,8 @@ const CharacterSheetDialog = ({
   const c = character;
   const cFate = c?.stats.find((s) => s.label === 'Судьба');
   const cCharacteristics = c?.stats.filter((s) => s.label !== 'Судьба') ?? [];
+  const displayedStatus = c?.careerStatus && c.inDisgrace ? disgracedStatus(c.careerStatus) : c?.careerStatus;
+  const loreIds = c?.loreIds ?? (c?.loreId ? [c.loreId] : []);
 
   return (
     <Dialog open={!!character} onOpenChange={onOpenChange}>
@@ -43,7 +57,7 @@ const CharacterSheetDialog = ({
             <OrnateDivider className="my-5" />
 
             {c.careerId && c.careerTitle && (
-              <div className="mb-5 flex justify-center">
+              <div className="mb-5 flex flex-col items-center gap-2">
                 <button
                   onClick={() => openEntry(c.careerId as string)}
                   className="flex items-center gap-2 rounded border border-gold/30 px-4 py-2 hover:bg-secondary transition-colors"
@@ -53,6 +67,15 @@ const CharacterSheetDialog = ({
                     Карьера: <span className="text-gold-bright font-semibold">{c.careerTitle}</span>
                   </span>
                 </button>
+                {displayedStatus && (
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-display text-xs uppercase tracking-wide ${statusColorClasses[displayedStatus]}`}
+                  >
+                    <Icon name={careerStatusIcons[displayedStatus]} size={13} />
+                    {careerStatusLabels[displayedStatus]} статус
+                    {c.inDisgrace && <span className="text-parchment/50">(в опале)</span>}
+                  </span>
+                )}
               </div>
             )}
 
@@ -130,26 +153,25 @@ const CharacterSheetDialog = ({
               </div>
             )}
 
-            {c.originId === 'o1' && (
+            {loreIds.length > 0 && (
               <div className="mb-3 rounded border border-gold/20 p-3">
                 <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
                   Знания
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => openEntry(bretonBaseLoreId)}
-                    className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
-                  >
-                    {entries.find((e) => e.id === bretonBaseLoreId)?.title}
-                  </button>
-                  {c.loreId && (
-                    <button
-                      onClick={() => openEntry(c.loreId as string)}
-                      className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
-                    >
-                      {entries.find((e) => e.id === c.loreId)?.title}
-                    </button>
-                  )}
+                  {loreIds.map((id) => {
+                    const lore = entries.find((e) => e.id === id);
+                    if (!lore) return null;
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => openEntry(id)}
+                        className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
+                      >
+                        {lore.title}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}

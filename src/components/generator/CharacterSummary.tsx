@@ -1,25 +1,41 @@
 import Icon from '@/components/ui/icon';
 import OrnateDivider from '@/components/codex/OrnateDivider';
 import { CodexEntry } from '@/data/codex';
-import { GeneratedCharacter, StatRow, getRandomBretonName } from '@/data/generator';
+import {
+  GeneratedCharacter,
+  StatRow,
+  CareerStatus,
+  careerStatusLabels,
+  careerStatusIcons,
+  disgracedStatus,
+} from '@/data/generator';
+
+const statusColorClasses: Record<CareerStatus, string> = {
+  copper: 'border-orange-700/60 text-orange-400',
+  silver: 'border-slate-400/60 text-slate-300',
+  gold: 'border-gold text-gold-bright',
+};
 
 interface CharacterSummaryProps {
   allRoundsDone: boolean;
   finalStats: StatRow[] | null;
-  bretonStepsDone: boolean;
+  abilitiesDone: boolean;
+  careerId: string | null;
   career: CodexEntry | null | undefined;
+  careerStatus: CareerStatus | null;
+  inDisgrace: boolean;
   fateStat: StatRow | null;
   characteristicStats: StatRow[];
-  isBreton: boolean;
+  hasAbilities: boolean;
   boostedSkillIds: string[];
   finalTalentIds: string[];
-  bretonBaseLore: CodexEntry | null;
-  selectedLoreId: string | null;
+  finalLoreIds: string[];
   xp: number;
   saved: boolean;
   name: string;
   setName: (name: string) => void;
   handleSave: () => void;
+  handleRandomName: () => void;
   reset: () => void;
   openEntry: (id: string) => void;
   getRelatedSkills: (abilityId: string) => CodexEntry[];
@@ -30,27 +46,32 @@ interface CharacterSummaryProps {
 const CharacterSummary = ({
   allRoundsDone,
   finalStats,
-  bretonStepsDone,
+  abilitiesDone,
+  careerId,
   career,
+  careerStatus,
+  inDisgrace,
   fateStat,
   characteristicStats,
-  isBreton,
+  hasAbilities,
   boostedSkillIds,
   finalTalentIds,
-  bretonBaseLore,
-  selectedLoreId,
+  finalLoreIds,
   xp,
   saved,
   name,
   setName,
   handleSave,
+  handleRandomName,
   reset,
   openEntry,
   getRelatedSkills,
   characteristicAbilityEntryId,
   entries,
 }: CharacterSummaryProps) => {
-  if (!(allRoundsDone && finalStats && bretonStepsDone)) return null;
+  if (!(allRoundsDone && finalStats && abilitiesDone && careerId)) return null;
+
+  const displayedStatus = careerStatus && inDisgrace ? disgracedStatus(careerStatus) : careerStatus;
 
   return (
     <section className="parchment-panel ornate-frame p-6 animate-fade-in">
@@ -62,7 +83,7 @@ const CharacterSummary = ({
       </div>
 
       {career && (
-        <div className="mb-5 flex justify-center">
+        <div className="mb-5 flex flex-col items-center gap-2">
           <button
             onClick={() => openEntry(career.id)}
             className="flex items-center gap-2 rounded border border-gold/30 px-4 py-2 hover:bg-secondary transition-colors"
@@ -72,6 +93,15 @@ const CharacterSummary = ({
               Карьера: <span className="text-gold-bright font-semibold">{career.title}</span>
             </span>
           </button>
+          {displayedStatus && (
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-display text-xs uppercase tracking-wide ${statusColorClasses[displayedStatus]}`}
+            >
+              <Icon name={careerStatusIcons[displayedStatus]} size={13} />
+              {careerStatusLabels[displayedStatus]} статус
+              {inDisgrace && <span className="text-parchment/50">(в опале)</span>}
+            </span>
+          )}
         </div>
       )}
 
@@ -109,7 +139,7 @@ const CharacterSummary = ({
               {relatedSkills.length > 0 && (
                 <div className="mt-2 pt-2 border-t border-gold/15 space-y-1">
                   {relatedSkills.map((skill) => {
-                    const boosted = isBreton && boostedSkillIds.includes(skill.id);
+                    const boosted = hasAbilities && boostedSkillIds.includes(skill.id);
                     return (
                       <button
                         key={skill.id}
@@ -117,7 +147,7 @@ const CharacterSummary = ({
                         className="block w-full text-left font-body text-xs text-parchment/75 leading-snug hover:text-gold-bright transition-colors"
                       >
                         {skill.title}
-                        {isBreton && (
+                        {hasAbilities && (
                           <span className={boosted ? 'text-gold-bright font-semibold' : 'text-parchment/50'}>
                             {' '}{boosted ? 3 : 2}
                           </span>
@@ -132,7 +162,7 @@ const CharacterSummary = ({
         })}
       </div>
 
-      {isBreton && (
+      {hasAbilities && (
         <div className="mb-5 space-y-3">
           {finalTalentIds.length > 0 && (
             <div className="rounded border border-gold/20 p-3">
@@ -156,29 +186,28 @@ const CharacterSummary = ({
               </div>
             </div>
           )}
-          <div className="rounded border border-gold/20 p-3">
-            <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
-              Знания
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {bretonBaseLore && (
-                <button
-                  onClick={() => openEntry(bretonBaseLore.id)}
-                  className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
-                >
-                  {bretonBaseLore.title}
-                </button>
-              )}
-              {selectedLoreId && (
-                <button
-                  onClick={() => openEntry(selectedLoreId)}
-                  className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
-                >
-                  {entries.find((e) => e.id === selectedLoreId)?.title}
-                </button>
-              )}
+          {finalLoreIds.length > 0 && (
+            <div className="rounded border border-gold/20 p-3">
+              <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
+                Знания
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {finalLoreIds.map((id) => {
+                  const lore = entries.find((e) => e.id === id);
+                  if (!lore) return null;
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => openEntry(id)}
+                      className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
+                    >
+                      {lore.title}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -196,16 +225,14 @@ const CharacterSummary = ({
               placeholder="Имя персонажа"
               className="w-full rounded border border-gold/25 bg-background/60 px-4 py-2.5 font-body text-parchment placeholder:text-muted-foreground focus:border-gold focus:outline-none"
             />
-            {isBreton && (
-              <button
-                onClick={() => setName(getRandomBretonName())}
-                title="Случайное бретонское имя"
-                className="flex shrink-0 items-center gap-2 rounded border border-gold/40 px-4 py-2.5 font-display text-xs font-semibold uppercase tracking-widest text-parchment hover:bg-secondary transition-colors"
-              >
-                <Icon name="Shuffle" size={16} />
-                <span className="hidden sm:inline">Имя</span>
-              </button>
-            )}
+            <button
+              onClick={handleRandomName}
+              title="Случайное имя"
+              className="flex shrink-0 items-center gap-2 rounded border border-gold/40 px-4 py-2.5 font-display text-xs font-semibold uppercase tracking-widest text-parchment hover:bg-secondary transition-colors"
+            >
+              <Icon name="Shuffle" size={16} />
+              <span className="hidden sm:inline">Имя</span>
+            </button>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
@@ -263,46 +290,67 @@ export const SavedCharactersList = ({
         <OrnateDivider className="mt-4" />
       </div>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {savedList.map((c) => (
-          <div key={c.id} className="parchment-panel ornate-frame p-4 relative">
-            <button
-              onClick={() => handleDelete(c.id)}
-              className="absolute top-3 right-3 text-blood/70 hover:text-blood transition-colors"
-              aria-label="Удалить персонажа"
-            >
-              <Icon name="Trash2" size={16} />
-            </button>
+        {savedList.map((c) => {
+          const displayedStatus = c.careerStatus && c.inDisgrace ? disgracedStatus(c.careerStatus) : c.careerStatus;
+          return (
+            <div key={c.id} className="parchment-panel ornate-frame p-4 relative">
+              <button
+                onClick={() => handleDelete(c.id)}
+                className="absolute top-3 right-3 text-blood/70 hover:text-blood transition-colors"
+                aria-label="Удалить персонажа"
+              >
+                <Icon name="Trash2" size={16} />
+              </button>
 
-            <button
-              onClick={() => onSelectCharacter(c)}
-              className="w-full text-left hover-scale"
-            >
-              {c.portrait && (
-                <div className="mx-auto mb-3 h-16 w-16 overflow-hidden rounded-full border-2 border-gold/50 shadow-md">
-                  <img src={c.portrait} alt={c.name} className="h-full w-full object-cover" />
+              <button
+                onClick={() => onSelectCharacter(c)}
+                className="w-full text-left hover-scale"
+              >
+                {c.portrait && (
+                  <div className="mx-auto mb-3 h-16 w-16 overflow-hidden rounded-full border-2 border-gold/50 shadow-md">
+                    <img src={c.portrait} alt={c.name} className="h-full w-full object-cover" />
+                  </div>
+                )}
+                <h3 className="text-center font-display text-lg font-semibold text-parchment">{c.name}</h3>
+                <p className="text-center font-body text-sm text-muted-foreground">{c.originTitle}</p>
+                {c.careerTitle && (
+                  <p className="text-center font-body text-xs text-gold/70 mb-2">
+                    {c.careerTitle}
+                    {displayedStatus && (
+                      <span
+                        className={`ml-1.5 ${
+                          displayedStatus === 'gold'
+                            ? 'text-gold-bright'
+                            : displayedStatus === 'silver'
+                            ? 'text-slate-300'
+                            : 'text-orange-400'
+                        }`}
+                      >
+                        · {careerStatusLabels[displayedStatus]}
+                      </span>
+                    )}
+                  </p>
+                )}
+                <div className="flex flex-wrap justify-center gap-1.5 mb-2">
+                  {c.stats.map((s) => (
+                    <span
+                      key={s.label}
+                      className={`rounded-full border px-2 py-0.5 font-display text-[10px] uppercase tracking-wide ${
+                        s.boosted ? 'border-gold text-gold-bright' : 'border-gold/25 text-parchment/70'
+                      }`}
+                    >
+                      {s.label} {s.final}
+                    </span>
+                  ))}
                 </div>
-              )}
-              <h3 className="text-center font-display text-lg font-semibold text-parchment">{c.name}</h3>
-              <p className="text-center font-body text-sm text-muted-foreground mb-3">{c.originTitle}</p>
-              <div className="flex flex-wrap justify-center gap-1.5 mb-2">
-                {c.stats.map((s) => (
-                  <span
-                    key={s.label}
-                    className={`rounded-full border px-2 py-0.5 font-display text-[10px] uppercase tracking-wide ${
-                      s.boosted ? 'border-gold text-gold-bright' : 'border-gold/25 text-parchment/70'
-                    }`}
-                  >
-                    {s.label} {s.final}
-                  </span>
-                ))}
-              </div>
-              <p className="flex items-center justify-center gap-1.5 text-center font-display text-xs uppercase tracking-wide text-gold/70">
-                {c.experience} XP
-                <Icon name="ScrollText" size={14} />
-              </p>
-            </button>
-          </div>
-        ))}
+                <p className="flex items-center justify-center gap-1.5 text-center font-display text-xs uppercase tracking-wide text-gold/70">
+                  {c.experience} XP
+                  <Icon name="ScrollText" size={14} />
+                </p>
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

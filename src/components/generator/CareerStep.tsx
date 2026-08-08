@@ -1,5 +1,6 @@
 import Icon from '@/components/ui/icon';
 import { CodexEntry } from '@/data/codex';
+import { CareerStatus, careerStatusLabels, careerStatusIcons, canDisgrace, disgracedStatus } from '@/data/generator';
 
 interface CareerStepProps {
   careerId: string | null;
@@ -9,11 +10,20 @@ interface CareerStepProps {
   careerPickerOpen: boolean;
   career: CodexEntry | null | undefined;
   careerOptions: CodexEntry[];
+  careerStatus: CareerStatus | null;
+  inDisgrace: boolean;
+  toggleDisgrace: () => void;
   rollCareer: () => void;
   rerollCareer: () => void;
   chooseCareerManually: (id: string) => void;
   setCareerPickerOpen: (updater: (v: boolean) => boolean) => void;
 }
+
+const statusColorClasses: Record<CareerStatus, string> = {
+  copper: 'border-orange-700/60 text-orange-400',
+  silver: 'border-slate-400/60 text-slate-300',
+  gold: 'border-gold text-gold-bright',
+};
 
 const CareerStep = ({
   careerId,
@@ -23,17 +33,22 @@ const CareerStep = ({
   careerPickerOpen,
   career,
   careerOptions,
+  careerStatus,
+  inDisgrace,
+  toggleDisgrace,
   rollCareer,
   rerollCareer,
   chooseCareerManually,
   setCareerPickerOpen,
 }: CareerStepProps) => {
+  const displayedStatus = careerStatus && inDisgrace ? disgracedStatus(careerStatus) : careerStatus;
+
   return (
     <section className="parchment-panel ornate-frame p-6 animate-fade-in">
       <div className="flex items-center gap-3 mb-4">
         <Icon name="Briefcase" size={22} className="text-gold" />
         <h2 className="font-display text-lg uppercase tracking-widest text-gold">
-          Шаг 2 · Карьера
+          Карьера
         </h2>
       </div>
 
@@ -72,6 +87,15 @@ const CareerStep = ({
                   Выбрано вручную · опыт не начислен
                 </p>
               )}
+              {displayedStatus && (
+                <span
+                  className={`mt-1.5 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-display text-xs uppercase tracking-wide ${statusColorClasses[displayedStatus]}`}
+                >
+                  <Icon name={careerStatusIcons[displayedStatus]} size={12} />
+                  {careerStatusLabels[displayedStatus]} статус
+                  {inDisgrace && <span className="text-parchment/50">(в опале)</span>}
+                </span>
+              )}
             </div>
           </div>
 
@@ -88,6 +112,19 @@ const CareerStep = ({
             >
               <Icon name="Pencil" size={14} /> Выбрать вручную
             </button>
+            {careerStatus && canDisgrace(careerStatus) && (
+              <button
+                onClick={toggleDisgrace}
+                className={`flex items-center gap-2 rounded border px-4 py-1.5 font-display text-xs font-semibold uppercase tracking-widest transition-colors ${
+                  inDisgrace
+                    ? 'border-gold bg-secondary text-gold-bright'
+                    : 'border-gold/40 text-parchment hover:bg-secondary'
+                }`}
+              >
+                <Icon name="TrendingDown" size={14} />
+                {inDisgrace ? 'Отменить опалу' : 'Жизнь в опале (+1 XP)'}
+              </button>
+            )}
           </div>
 
           {careerPickerOpen && (
