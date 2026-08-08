@@ -114,7 +114,10 @@ const CharacterGenerator = () => {
 
   const allRoundsDone = rounds.every((r) => r.status === 'done');
 
-  const talentsDone = abilityConfig ? talentRolls.slice(0, abilityConfig.rollsCount).every((r) => r !== null) : true;
+  const talentsDone = abilityConfig
+    ? talentRolls.slice(0, abilityConfig.rollsCount).every((r) => r !== null) &&
+      (!abilityConfig.oathMandatory || oathReplaceIdx !== null)
+    : true;
   const skillsDone = abilityConfig ? selectedExtraSkills.length === abilityConfig.extraSkillsCount : true;
   const loreDone = abilityConfig ? abilityConfig.loreChoiceGroups.every((g) => !!loreSelections[g.id]) : true;
   const abilitiesDone = talentsDone && skillsDone && loreDone;
