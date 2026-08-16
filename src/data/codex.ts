@@ -1,4 +1,4 @@
-export type SourceId = 'gm' | 'player' | 'trinity' | 'talagaad-guide' | 'talagaad-adventures' | 'starter-kit';
+export type SourceId = 'gm' | 'player' | 'trinity' | 'talagaad-adventures' | 'starter-kit';
 
 export interface Source {
   id: SourceId;
@@ -10,8 +10,6 @@ export const sources: Source[] = [
   { id: 'gm', title: 'Руководство ведущего', icon: 'Crown' },
   { id: 'player', title: 'Руководство игрока', icon: 'UserRound' },
   { id: 'trinity', title: 'Жажда троицы', icon: 'Compass' },
-  { id: 'talagaad-guide', title: 'Кормящая рука', icon: 'Hand' },
-  { id: 'talagaad-guide', title: 'Путеводитель по Талагааду', icon: 'MapPinned' },
   { id: 'talagaad-adventures', title: 'Приключения в Талагааде', icon: 'Compass' },
   { id: 'starter-kit', title: 'Стартовый набор', icon: 'Package' },
 ];
@@ -232,7 +230,7 @@ export const sections: Section[] = [
   {
     id: 'creatures', title: 'Персонажи ведущего', icon: 'Skull',
     description: 'Готовые NPC, чудовища и противники для сюжетных сцен',
-    sourceIds: ['gm', 'trinity', 'talagaad-guide', 'talagaad-adventures'],
+    sourceIds: ['gm', 'trinity', 'talagaad-adventures', 'starter-kit'],
     groups: ['gm-corner'],
   },
   { id: 'contacts', title: 'Контакты', icon: 'Feather', description: 'Гильдия мастеров и связь с летописцами' },
