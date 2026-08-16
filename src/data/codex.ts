@@ -1598,7 +1598,7 @@ export const entries: CodexEntry[] = [
     id: 'c9', section: 'creatures', source: 'gm', title: 'Грабитель', subgroup: 'Великое герцогство Талабек',
     summary: 'Ловкий преступник, промышляющий кражами и грабежами в тени городских переулков. Действует скрытно, наносит удар из засады и предпочитает исчезнуть до того, как жертва успеет позвать на помощь.',
     tags: ['преступник'], meta: 'Угроза: низкая',
-    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/8b411abd-d917-433c-93db-5a08b1f8a58c.webp',
+    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/fcc0e0d9-353e-415d-87cf-6546bdb50317.webp',
     creatureStats: {
       characteristics: [
         { code: 'ББ', value: 3 },
@@ -1635,7 +1635,7 @@ export const entries: CodexEntry[] = [
     id: 'c10', section: 'creatures', source: 'gm', title: 'Разбойник', subgroup: 'Великое герцогство Талабек',
     summary: 'Разбойник с большой дороги, промышляющий грабежом одиноких путников и небольших караванов. В одиночку не так опасен, но разбойники редко действуют поодиночке — трусливая по своей природе банда становится куда смелее и опаснее, стоит ей ощутить численный перевес.',
     tags: ['разбойник'], meta: 'Угроза: низкая',
-    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/8b411abd-d917-433c-93db-5a08b1f8a58c.webp',
+    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/51bc4e67-a392-4be6-8d75-37ccdc10ef92.webp',
     creatureStats: {
       characteristics: [
         { code: 'ББ', value: 3 },
@@ -1900,7 +1900,7 @@ export const entries: CodexEntry[] = [
     id: 'c16', section: 'creatures', source: 'gm', title: 'Имперский огр', subgroup: 'Огры и полурослики',
     summary: 'Огры-наёмники нанимаются на службу Империи целыми ротами — их огромная сила и живучесть делают из них грозных штурмовиков передовой линии. Одним ударом двуручного молота огр способен сбить с ног закованного в броню рыцаря, а разъярённый рывком в самую гущу боя — сокрушить всё, что встанет на пути.',
     tags: ['огр'], meta: 'Угроза: высокая',
-    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/ebcd3105-c1bf-4863-816c-9394e2cedb17.png',
+    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/adbb8de7-e75b-4cad-bc1a-e18acf3efa99.webp',
     creatureStats: {
       characteristics: [
         { code: 'ББ', value: 3 },
@@ -2012,7 +2012,7 @@ export const entries: CodexEntry[] = [
     id: 'c18', section: 'creatures', source: 'gm', title: 'Полурослик-вор', subgroup: 'Огры и полурослики',
     summary: 'Ловкие пальцы и незаметная поступь делают полуросликов прирождёнными карманниками. Такой вор скорее исчезнет в толпе, чем ввяжется в драку, но если жертва замечает пропажу — та уже давно скрылась с добычей.',
     tags: ['полурослик', 'вор'], meta: 'Угроза: низкая',
-    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/f794c511-d71f-40f9-9c66-653d5e30fdca.png',
+    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/589f1950-c7ef-4232-9d87-4d9dae2e667d.webp',
     creatureStats: {
       characteristics: [
         { code: 'ББ', value: 2 },
