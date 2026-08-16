@@ -39,8 +39,8 @@ const Contacts = () => {
 
         <div className="grid gap-10 md:grid-cols-2 max-w-4xl mx-auto">
           <div className="space-y-5 font-body text-lg text-parchment/85">
-            <p className="flex items-center gap-3"><Icon name="Mail" size={20} className="text-gold" /> loremaster@codex-oldworld.ru</p>
-            <p className="flex items-center gap-3"><Icon name="MapPin" size={20} className="text-gold" /> Библиотека Альтдорфа, Рейкланд</p>
+            <p className="flex items-center gap-3"><Icon name="Mail" size={20} className="text-gold" /> loremaster-codex-oldworld@yandex.ru</p>
+            <p className="flex items-center gap-3"><Icon name="MapPin" size={20} className="text-gold" /> Библиотека Храма Верены, Талагаад</p>
             <p className="flex items-center gap-3"><Icon name="Clock" size={20} className="text-gold" /> Свитки читаются от рассвета до заката</p>
             <p className="flex items-center gap-3"><Icon name="Users" size={20} className="text-gold" /> Сообщество мастеров игры</p>
             <a
