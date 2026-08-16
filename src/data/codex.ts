@@ -1,4 +1,4 @@
-export type SourceId = 'gm' | 'player' | 'trinity' | 'talagaad-guide' | 'talagaad-adventures';
+export type SourceId = 'gm' | 'player' | 'trinity' | 'talagaad-guide' | 'talagaad-adventures' | 'starter-kit';
 
 export interface Source {
   id: SourceId;
@@ -13,6 +13,7 @@ export const sources: Source[] = [
   { id: 'talagaad-guide', title: 'Кормящая рука', icon: 'Hand' },
   { id: 'talagaad-guide', title: 'Путеводитель по Талагааду', icon: 'MapPinned' },
   { id: 'talagaad-adventures', title: 'Приключения в Талагааде', icon: 'Compass' },
+  { id: 'starter-kit', title: 'Стартовый набор', icon: 'Package' },
 ];
 
 export interface CreatureAttack {
@@ -217,6 +218,7 @@ export const sections: Section[] = [
   {
     id: 'items', title: 'Предметы', icon: 'Sword',
     description: 'Снаряжение ваших героев',
+    sourceIds: ['player', 'trinity', 'talagaad-guide', 'talagaad-adventures', 'starter-kit'],
     groups: ['player-corner'],
   },
   {
