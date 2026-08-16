@@ -13,8 +13,8 @@ const Footer = () => {
               <span className="font-display text-lg font-bold text-gradient-gold">Кодекс Мира Легенд</span>
             </div>
             <p className="font-body text-base text-muted-foreground">
-              Неофициальный справочник по настольной ролевой игре Warhammer: The Old World.
-              Создан фанатами для летописцев и героев.
+              Неофициальный справочник по Warhammer: the Old World Roleplaying Game.
+              Создан фанатами для ведущих и героев.
             </p>
           </div>
 

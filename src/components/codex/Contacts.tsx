@@ -43,6 +43,14 @@ const Contacts = () => {
             <p className="flex items-center gap-3"><Icon name="MapPin" size={20} className="text-gold" /> Библиотека Альтдорфа, Рейкланд</p>
             <p className="flex items-center gap-3"><Icon name="Clock" size={20} className="text-gold" /> Свитки читаются от рассвета до заката</p>
             <p className="flex items-center gap-3"><Icon name="Users" size={20} className="text-gold" /> Сообщество мастеров игры</p>
+            <a
+              href="https://boosty.to/zelyonyykardinal"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 hover:text-gold transition-colors"
+            >
+              <Icon name="Heart" size={20} className="text-gold" /> Поддержать на Boosty
+            </a>
           </div>
 
           <form onSubmit={submit} className="space-y-4 parchment-panel rounded border border-gold/25 p-6">
