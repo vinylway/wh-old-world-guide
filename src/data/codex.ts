@@ -123,6 +123,8 @@ export const subgroups: Subgroup[] = [
   { id: 'asset-magic-items', title: 'Магические предметы', sectionId: 'items', sourceId: 'player' },
   { id: 'asset-other', title: 'Остальные активы', sectionId: 'items', sourceId: 'player' },
   { id: 'talabek', title: 'Великое герцогство Талабек', sectionId: 'creatures', sourceId: 'gm' },
+  { id: 'nechtostrem', title: 'Нечто подозрительное', sectionId: 'creatures', sourceId: 'talagaad-adventures' },
+  { id: 'holodnybashni', title: 'Голодные башни', sectionId: 'creatures', sourceId: 'talagaad-adventures' },
   { id: 'gnomogryz', title: 'Огры и полурослики', sectionId: 'creatures', sourceId: 'gm' },
   { id: 'bretonnia', title: 'Королевство Бретония', sectionId: 'creatures', sourceId: 'gm' },
   { id: 'osterlund', title: 'Великое графство Остерлунд', sectionId: 'creatures', sourceId: 'gm' },
@@ -1888,9 +1890,10 @@ export const entries: CodexEntry[] = [
     },
   },
   {
-    id: 'c17', section: 'creatures', source: 'gm', title: 'Пещерный сквиг', subgroup: 'Племена орков и гоблинов',
+    id: 'c17', section: 'creatures', source: 'talagaad-adventures', title: 'Пещерный сквиг', subgroup: 'Голодные башни',
     summary: 'Пещерные сквиги — невероятные создания: их почти шарообразные тела в основном занимает огромная пасть, усеянная зазубренными рядами клыков. Над ней возвышаются приплюснутые носы и глаза‑бусинки. Передвигаются они прыжками — подпрыгивают на паре мускулистых ног, управляя ими (за неимением лучшего слова) с помощью толстых хвостов.\n\nЭти грубые твари высоко ценятся ночными гоблинами — и как боевые звери, и ради мяса, которое считается деликатесом. Смелые ночные гоблины сгоняют пещерных сквигов в стада и подгоняют их в бой длинными острыми палками под шумную музыку. Надо признать, такое сочетание отлично приводит сквигов в ярость!',
-    tags: ['сквиг', 'орки и гоблины', 'ночные гоблины', 'силач'], meta: 'Угроза: средняя',
+    tags: ['сквиг'], meta: 'Угроза: средняя',
+    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/bb6429f6-3593-4228-9c58-b4e4166fc08d.png',
     creatureStats: {
       characteristics: [
         { code: 'ББ', value: 2 },
