@@ -352,13 +352,20 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDi
                         </thead>
                         <tbody>
                           {cs.attacks.map((a, i) => (
-                            <tr key={a.name} className={i % 2 === 0 ? 'bg-secondary/20' : ''}>
-                              <td className="px-3 py-1.5 text-parchment/90">{a.name}</td>
-                              <td className="px-3 py-1.5 text-parchment/90">{a.range}</td>
-                              <td className="px-3 py-1.5 text-parchment/90">{a.formula}</td>
-                              <td className="px-3 py-1.5 text-parchment/90">{a.damage}</td>
-                              <td className="px-3 py-1.5 text-parchment/90">{a.rounds}</td>
-                            </tr>
+                            <Fragment key={a.name}>
+                              <tr className={i % 2 === 0 ? 'bg-secondary/20' : ''}>
+                                <td className="px-3 py-1.5 text-parchment/90">{a.name}</td>
+                                <td className="px-3 py-1.5 text-parchment/90">{a.range}</td>
+                                <td className="px-3 py-1.5 text-parchment/90">{a.formula}</td>
+                                <td className="px-3 py-1.5 text-parchment/90">{a.damage}</td>
+                                <td className="px-3 py-1.5 text-parchment/90">{a.rounds}</td>
+                              </tr>
+                              {a.traits && (
+                                <tr className={i % 2 === 0 ? 'bg-secondary/20' : ''}>
+                                  <td colSpan={5} className="px-3 pb-1.5 text-xs text-parchment/70 italic">{a.traits}</td>
+                                </tr>
+                              )}
+                            </Fragment>
                           ))}
                         </tbody>
                       </table>
