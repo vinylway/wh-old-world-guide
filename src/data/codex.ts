@@ -1896,19 +1896,19 @@ export const entries: CodexEntry[] = [
     portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/bb6429f6-3593-4228-9c58-b4e4166fc08d.png',
     creatureStats: {
       characteristics: [
-        { code: 'ББ', value: 2 },
-        { code: 'ДБ', value: 2 },
-        { code: 'С', value: 3 },
+        { code: 'ББ', value: 4 },
+        { code: 'ДБ', value: 0 },
+        { code: 'С', value: 5 },
         { code: 'В', value: 3 },
-        { code: 'И', value: 3 },
-        { code: 'Пр', value: 3 },
-        { code: 'Р', value: 3 },
-        { code: 'Х', value: 2 },
+        { code: 'И', value: 4 },
+        { code: 'Пр', value: 4 },
+        { code: 'Р', value: 2 },
+        { code: 'Х', value: 1 },
       ],
       speed: 'Нормальная',
       wounds: 3,
       type: 'Силач',
-      skills: ['обычные 2', 'тяжёлый труд 4', 'сноровка 4', 'сила воли 3'],
+      skills: ['атлетика 3, наблюдательность 3, обычные 1, рукопашный бой 4, сила воли 3'],
       attacks: [
         { name: 'Импровизированное оружие', range: 'Ближняя', formula: '2d/2', damage: '2', rounds: '1Р' },
       ],
@@ -1926,8 +1926,7 @@ export const entries: CodexEntry[] = [
         },
       ],
       equipment: [
-        { name: 'Длинные клыки' },
-        { name: 'Мелочь (медь)' },
+        { name: 'Длинные клыки (медь)' },
       ],
     },
     callouts: [
