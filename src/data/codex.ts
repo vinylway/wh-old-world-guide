@@ -218,7 +218,7 @@ export const sections: Section[] = [
   {
     id: 'items', title: 'Предметы', icon: 'Sword',
     description: 'Снаряжение ваших героев',
-    sourceIds: ['player', 'trinity', 'talagaad-guide', 'talagaad-adventures', 'starter-kit'],
+    sourceIds: ['player', 'trinity', 'talagaad-adventures', 'starter-kit'],
     groups: ['player-corner'],
   },
   {
