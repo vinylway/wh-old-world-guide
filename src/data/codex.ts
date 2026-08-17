@@ -2960,7 +2960,7 @@ export const entries: CodexEntry[] = [
     id: 'c40', section: 'creatures', source: 'gm', title: 'Ополченец вольной роты', subgroup: 'Великое графство Остерлунд',
    summary: 'Терзаемые души умерших без обряда, восставшие из реки Талабек и слившиеся в единую мстительную орду.',
     tags: ['нежить'], meta: 'Угроза: низкая',
-    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/1dd71b62-6040-4cf1-b245-a53f93d50b5e.webp',
+    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/5b485431-fb96-4bee-b2ec-9a713b0649b4.webp',
    creatureStats: {
       characteristics: [
         { code: 'ББ', value: 3 },
@@ -3001,7 +3001,7 @@ export const entries: CodexEntry[] = [
     id: 'c41', section: 'creatures', source: 'gm', title: 'Хохландский снайпер', subgroup: 'Великое графство Остерлунд',
    summary: 'Терзаемые души умерших без обряда, восставшие из реки Талабек и слившиеся в единую мстительную орду.',
     tags: ['нежить'], meta: 'Угроза: низкая',
-    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/1dd71b62-6040-4cf1-b245-a53f93d50b5e.webp',
+    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/51eb00df-99fe-4ff5-9133-4531bdf5e8b2.webp',
    creatureStats: {
       characteristics: [
         { code: 'ББ', value: 3 },
@@ -3042,7 +3042,7 @@ export const entries: CodexEntry[] = [
     id: 'c42', section: 'creatures', source: 'gm', title: 'Рыцарь Белого Волка', subgroup: 'Великое графство Остерлунд',
    summary: 'Терзаемые души умерших без обряда, восставшие из реки Талабек и слившиеся в единую мстительную орду.',
     tags: ['нежить'], meta: 'Угроза: низкая',
-    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/1dd71b62-6040-4cf1-b245-a53f93d50b5e.webp',
+    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/4bb83b6c-7f4c-49cf-86a4-a930c0981095.webp',
    creatureStats: {
       characteristics: [
         { code: 'ББ', value: 3 },
@@ -3083,7 +3083,7 @@ export const entries: CodexEntry[] = [
     id: 'c43', section: 'creatures', source: 'gm', title: 'Жрец-воин Ульрика', subgroup: 'Великое графство Остерлунд',
    summary: 'Терзаемые души умерших без обряда, восставшие из реки Талабек и слившиеся в единую мстительную орду.',
     tags: ['нежить'], meta: 'Угроза: низкая',
-    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/1dd71b62-6040-4cf1-b245-a53f93d50b5e.webp',
+    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/cfff0ef5-f3bc-4057-9cec-fe916775764b.webp',
    creatureStats: {
       characteristics: [
         { code: 'ББ', value: 3 },
