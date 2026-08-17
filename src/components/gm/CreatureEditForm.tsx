@@ -5,9 +5,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
-import { CodexEntry, CreatureAttack, CreatureAbility, CreatureEquipmentItem } from '@/data/codex';
+import { CodexEntry, CreatureAttack, CreatureAbility, CreatureEquipmentItem, entries as staticEntries } from '@/data/codex';
 import { useCreatureOverrides } from '@/hooks/useCreatureOverrides';
 import { useToast } from '@/hooks/use-toast';
+import LinkedTextEditor from './LinkedTextEditor';
+import EntryLinkPicker from './EntryLinkPicker';
 
 interface CreatureEditFormProps {
   entry: CodexEntry | null;
@@ -48,10 +50,12 @@ const SectionCard = ({ title, children }: { title: string; children: React.React
 );
 
 const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFormProps) => {
-  const { saveCreature } = useCreatureOverrides();
+  const { saveCreature, entries: allEntries } = useCreatureOverrides();
   const { toast } = useToast();
   const [form, setForm] = useState<CodexEntry>(entry ?? emptyEntry());
   const [saving, setSaving] = useState(false);
+  const [equipmentPickerIdx, setEquipmentPickerIdx] = useState<number | null>(null);
+  const linkableEntries = allEntries.length ? allEntries : staticEntries;
 
   useEffect(() => {
     if (open) {
@@ -169,7 +173,13 @@ const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFo
               </div>
               <div className="col-span-2">
                 <Label>Описание</Label>
-                <Textarea rows={3} value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} />
+                <LinkedTextEditor
+                  rows={3}
+                  value={form.summary}
+                  links={form.summaryLinks}
+                  entries={linkableEntries}
+                  onChange={(value, summaryLinks) => setForm((f) => ({ ...f, summary: value, summaryLinks }))}
+                />
               </div>
             </div>
           </SectionCard>
@@ -244,7 +254,14 @@ const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFo
             {cs.abilities.map((ab, idx) => (
               <div key={idx} className="rounded border border-gold/15 p-2 space-y-2">
                 <Input placeholder="Название способности" value={ab.name} onChange={(e) => updateAbility(idx, { name: e.target.value })} />
-                <Textarea rows={3} placeholder="Описание" value={ab.description} onChange={(e) => updateAbility(idx, { description: e.target.value })} />
+                <LinkedTextEditor
+                  rows={3}
+                  placeholder="Описание"
+                  value={ab.description}
+                  links={ab.descriptionLinks}
+                  entries={linkableEntries}
+                  onChange={(value, descriptionLinks) => updateAbility(idx, { description: value, descriptionLinks })}
+                />
                 <Button type="button" variant="ghost" size="sm" onClick={() => removeAbility(idx)} className="text-destructive">
                   <Icon name="Trash2" size={14} className="mr-1" /> Удалить способность
                 </Button>
@@ -257,8 +274,18 @@ const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFo
 
           <SectionCard title="Типичное снаряжение">
             {(cs.equipment ?? []).map((eq, idx) => (
-              <div key={idx} className="flex gap-2">
+              <div key={idx} className="flex gap-2 items-center">
                 <Input placeholder="Название предмета" value={eq.name} onChange={(e) => updateEquipment(idx, { name: e.target.value })} />
+                <Button
+                  type="button"
+                  variant={eq.linkEntryId ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setEquipmentPickerIdx(idx)}
+                  className="shrink-0"
+                  title={eq.linkEntryId ? 'Ссылка привязана' : 'Привязать ссылку'}
+                >
+                  <Icon name="Link2" size={14} />
+                </Button>
                 <Button type="button" variant="ghost" size="sm" onClick={() => removeEquipment(idx)} className="text-destructive shrink-0">
                   <Icon name="Trash2" size={14} />
                 </Button>
@@ -276,6 +303,18 @@ const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFo
             </Button>
           </div>
         </div>
+
+        <EntryLinkPicker
+          open={equipmentPickerIdx !== null}
+          onOpenChange={(v) => !v && setEquipmentPickerIdx(null)}
+          entries={linkableEntries}
+          title="Найдите карточку предмета"
+          onSelect={(target) => {
+            if (equipmentPickerIdx !== null) {
+              updateEquipment(equipmentPickerIdx, { linkEntryId: target.id });
+            }
+          }}
+        />
       </DialogContent>
     </Dialog>
   );
