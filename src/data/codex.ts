@@ -2521,7 +2521,7 @@ export const entries: CodexEntry[] = [
   },
     {
     id: 'c31', section: 'creatures', source: 'talagaad-adventures', title: 'Лина Дункель', subgroup: 'Нечто подозрительное',
-    summary: 'Шультер — юная травница и работница фермы. Она лелеет надежду в будущем сменить Адельхайд Пеффер на посту избранного толкователя воли Старого Хюгеля. Чтобы доказать свою состоятельность, она активно помогает общине в поиске и захвате требуемых жертв.',
+    summary: 'Сержант 11-го талабхаймского полка.',
     tags: ['стража'], meta: 'Угроза: низкая',
     portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/fc4146b3-c069-4c00-bece-cbe198e9f76b.webp',
     creatureStats: {
@@ -2606,7 +2606,7 @@ export const entries: CodexEntry[] = [
   },
   {
     id: 'c33', section: 'creatures', source: 'talagaad-adventures', title: 'Фридал «Бык» Докхорн', subgroup: 'Нечто подозрительное',
-   summary: 'Ловкий преступник промышляет кражами и грабежами в тени городских переулков. Он действует скрытно, наносит удар из засады и предпочитает исчезнуть до того, как жертва успеет позвать на помощь.',
+   summary: 'Атаман банды «Краснохмылов».',
     tags: ['преступник'], meta: 'Угроза: низкая',
     portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/369f3582-e8a7-41ca-9e31-1cec819c75e1.webp',
     creatureStats: {
@@ -2714,7 +2714,7 @@ export const entries: CodexEntry[] = [
   },
   {
     id: 'c36', section: 'creatures', source: 'talagaad-adventures', title: 'Пьетра Винклер', subgroup: 'Нечто подозрительное',
-   summary: 'Ловкий преступник промышляет кражами и грабежами в тени городских переулков. Он действует скрытно, наносит удар из засады и предпочитает исчезнуть до того, как жертва успеет позвать на помощь.',
+   summary: 'Вестерландская купчиха.',
     tags: ['преступник'], meta: 'Угроза: низкая',
     portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/bc5b4755-8470-4bb6-8955-b68fe302df02.webp',
    creatureStats: {
@@ -2752,7 +2752,7 @@ export const entries: CodexEntry[] = [
   },
    {
     id: 'c37', section: 'creatures', source: 'talagaad-adventures', title: 'Харальд Моенбрук', subgroup: 'Нечто подозрительное',
-   summary: 'Ловкий преступник промышляет кражами и грабежами в тени городских переулков. Он действует скрытно, наносит удар из засады и предпочитает исчезнуть до того, как жертва успеет позвать на помощь.',
+   summary: 'Торговец рыбой.',
     tags: ['преступник'], meta: 'Угроза: низкая',
     portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/10d6885c-42dc-4389-aad0-330c53081b8d.webp',
    creatureStats: {
@@ -2790,7 +2790,7 @@ export const entries: CodexEntry[] = [
   },
     {
     id: 'c38', section: 'creatures', source: 'talagaad-adventures', title: 'Симона Костек', subgroup: 'Нечто подозрительное',
-   summary: 'Ловкий преступник промышляет кражами и грабежами в тени городских переулков. Он действует скрытно, наносит удар из засады и предпочитает исчезнуть до того, как жертва успеет позвать на помощь.',
+   summary: 'Наёмник, защищающий Пьетру Винклер.',
     tags: ['преступник'], meta: 'Угроза: низкая',
     portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/57e54baf-8191-496b-ae7b-e416a21fe447.webp',
    creatureStats: {
