@@ -427,13 +427,6 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDi
               </div>
             )}
 
-            <div className="mt-6 flex flex-wrap gap-2">
-              {entry.tags.map((t) => (
-                <span key={t} className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/70">
-                  #{t}
-                </span>
-              ))}
-            </div>
           </div>
         )}
       </DialogContent>

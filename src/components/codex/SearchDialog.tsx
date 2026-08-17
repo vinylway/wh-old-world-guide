@@ -28,7 +28,7 @@ const SearchDialog = ({ open, onOpenChange, onSelect, initialFilter }: SearchDia
     return entries.filter((e) => {
       if (filter !== 'all' && e.section !== filter) return false;
       if (!q) return true;
-      const haystack = `${e.title} ${e.summary} ${e.tags.join(' ')} ${e.meta ?? ''}`.toLowerCase();
+      const haystack = `${e.title} ${e.summary} ${e.meta ?? ''}`.toLowerCase();
       return q.split(/\s+/).every((word) => haystack.includes(word));
     });
   }, [query, filter]);

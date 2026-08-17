@@ -83,7 +83,7 @@ export interface CodexEntry {
   section: SectionId;
   source: SourceId;
   summary: string;
-  tags: string[];
+  tags?: string[];
   meta?: string;
   category?: ItemCategoryId;
   stats?: StatRowValue[];
