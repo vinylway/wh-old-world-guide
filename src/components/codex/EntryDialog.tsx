@@ -386,7 +386,7 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDi
                         <div key={ab.name} className="rounded border border-gold/20 p-3">
                           <p className="font-display font-semibold text-gold-bright mb-1">{ab.name}</p>
                           <p className="font-body text-parchment/85 leading-snug whitespace-pre-line">
-                            {ab.description}
+                            <TextWithLinks text={ab.description} links={ab.descriptionLinks} onNavigate={handleNavigate} onOpenSection={onOpenSection} />
                           </p>
                           {ab.linkEntryId && onNavigate && (
                             <button
