@@ -2620,7 +2620,7 @@ export const entries: CodexEntry[] = [
     id: 'c33', section: 'creatures', source: 'talagaad-adventures', title: 'Фридал «Бык» Докхорн', subgroup: 'Нечто подозрительное',
    summary: 'Атаман банды «Краснохмылов».',
     tags: ['преступник'], meta: 'Угроза: низкая',
-    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/369f3582-e8a7-41ca-9e31-1cec819c75e1.webp',
+    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/fc4146b3-c069-4c00-bece-cbe198e9f76b.webp',
     creatureStats: {
       characteristics: [
         { code: 'ББ', value: 4 },
@@ -2660,7 +2660,7 @@ export const entries: CodexEntry[] = [
     id: 'c34', section: 'creatures', source: 'talagaad-adventures', title: 'Одноглазый призрак', subgroup: 'Нечто подозрительное',
    summary: 'Неупокоенный дух, скитающийся среди живых. Его ледяное присутствие вселяет ужас в каждого, кто встречается с ним взглядом.',
     tags: ['нежить'], meta: 'Угроза: низкая',
-    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/369f3582-e8a7-41ca-9e31-1cec819c75e1.webp',
+    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/fc4146b3-c069-4c00-bece-cbe198e9f76b.webp',
     creatureStats: {
       characteristics: [
         { code: 'ББ', value: 3 },
