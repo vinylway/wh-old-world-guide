@@ -3162,7 +3162,7 @@ export const entries: CodexEntry[] = [
     id: 'c44', section: 'creatures', source: 'gm', title: 'Сигмаритский культист', subgroup: 'Княжество Рейкланд',
    summary: 'Терзаемые души умерших без обряда, восставшие из реки Талабек и слившиеся в единую мстительную орду.',
     tags: ['нежить'], meta: 'Угроза: низкая',
-    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/1dd71b62-6040-4cf1-b245-a53f93d50b5e.webp',
+    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/c3cf9d28-f9f8-451a-9069-9dc62c834a7d.webp',
    creatureStats: {
       characteristics: [
         { code: 'ББ', value: 3 },
@@ -3203,7 +3203,7 @@ export const entries: CodexEntry[] = [
     id: 'c45', section: 'creatures', source: 'gm', title: 'Флагеллант', subgroup: 'Княжество Рейкланд',
    summary: 'Терзаемые души умерших без обряда, восставшие из реки Талабек и слившиеся в единую мстительную орду.',
     tags: ['нежить'], meta: 'Угроза: низкая',
-    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/1dd71b62-6040-4cf1-b245-a53f93d50b5e.webp',
+    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/803082ee-551c-4924-8a57-a09504172e0b.webp',
    creatureStats: {
       characteristics: [
         { code: 'ББ', value: 3 },
@@ -3244,7 +3244,7 @@ export const entries: CodexEntry[] = [
     id: 'c46', section: 'creatures', source: 'gm', title: 'Охотник на ведьм', subgroup: 'Княжество Рейкланд',
    summary: 'Терзаемые души умерших без обряда, восставшие из реки Талабек и слившиеся в единую мстительную орду.',
     tags: ['нежить'], meta: 'Угроза: низкая',
-    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/1dd71b62-6040-4cf1-b245-a53f93d50b5e.webp',
+    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/8d2dd9ab-5f1b-41bb-bc41-10b763312c96.webp',
    creatureStats: {
       characteristics: [
         { code: 'ББ', value: 3 },
@@ -3285,7 +3285,7 @@ export const entries: CodexEntry[] = [
     id: 'c47', section: 'creatures', source: 'gm', title: 'Жрец Сигмара', subgroup: 'Княжество Рейкланд',
    summary: 'Терзаемые души умерших без обряда, восставшие из реки Талабек и слившиеся в единую мстительную орду.',
     tags: ['нежить'], meta: 'Угроза: низкая',
-    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/1dd71b62-6040-4cf1-b245-a53f93d50b5e.webp',
+    portrait: 'https://cdn.poehali.dev/projects/8ea67526-cf7e-472d-ad6c-bad53fcea4bc/bucket/c306c709-2d78-4d8b-9004-71b0596c8fbd.webp',
    creatureStats: {
       characteristics: [
         { code: 'ББ', value: 3 },
