@@ -11,15 +11,15 @@ const Contacts = () => {
           </span>
           <h2 className="font-display text-3xl md:text-5xl font-black text-gradient-gold">Контакты</h2>
           <p className="mt-3 font-body text-lg text-muted-foreground max-w-xl mx-auto">
-            Гильдия летописцев принимает предложения, поправки и просьбы. Присоединяйтесь к нашей общине.
+            Гильдия Летописцев принимает предложения, поправки и просьбы. Присоединяйтесь к нашей общине.
           </p>
           <OrnateDivider className="mt-6" />
         </div>
 
         <div className="max-w-md mx-auto space-y-5 font-body text-lg text-parchment/85">
-          <p className="flex items-center gap-3"><Icon name="MapPin" size={20} className="text-gold" /> Библиотека Храма Верены, Талагаад</p>
+          <p className="flex items-center gap-3"><Icon name="MapPin" size={20} className="text-gold" /> Гильдия Летописцев, Талагаад</p>
           <p className="flex items-center gap-3"><Icon name="Clock" size={20} className="text-gold" /> Свитки читаются от рассвета до заката</p>
-          <p className="flex items-center gap-3"><Icon name="Users" size={20} className="text-gold" /> Сообщество мастеров игры</p>
+          <p className="flex items-center gap-3"><Icon name="Users" size={20} className="text-gold" /> Сообщество для ведущих и героев</p>
           <a
             href="https://boosty.to/zelyonyykardinal"
             target="_blank"
