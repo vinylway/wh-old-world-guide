@@ -3,9 +3,12 @@ import Icon from '@/components/ui/icon';
 import { toast } from '@/components/ui/use-toast';
 import OrnateDivider from './OrnateDivider';
 
+const CONTACT_API_URL = 'https://functions.poehali.dev/f3e192da-0e95-4fe7-aa20-42757af165ec';
+
 const Contacts = () => {
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -16,11 +19,24 @@ const Contacts = () => {
     return Object.keys(e).length === 0;
   };
 
-  const submit = (ev: React.FormEvent) => {
+  const submit = async (ev: React.FormEvent) => {
     ev.preventDefault();
     if (!validate()) return;
-    toast({ title: 'Ворон отправлен!', description: 'Летописцы получат ваше послание.' });
-    setForm({ name: '', email: '', message: '' });
+    setLoading(true);
+    try {
+      const res = await fetch(CONTACT_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error('Request failed');
+      toast({ title: 'Ворон отправлен!', description: 'Летописцы получат ваше послание.' });
+      setForm({ name: '', email: '', message: '' });
+    } catch {
+      toast({ title: 'Ворон не долетел', description: 'Попробуйте отправить послание ещё раз.', variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -84,9 +100,11 @@ const Contacts = () => {
             </div>
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded bg-gold px-6 py-3 font-display text-sm font-semibold uppercase tracking-widest text-primary-foreground hover-scale glow-gold"
+              disabled={loading}
+              className="flex w-full items-center justify-center gap-2 rounded bg-gold px-6 py-3 font-display text-sm font-semibold uppercase tracking-widest text-primary-foreground hover-scale glow-gold disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <Icon name="Send" size={18} /> Отправить ворона
+              <Icon name={loading ? 'Loader2' : 'Send'} size={18} className={loading ? 'animate-spin' : ''} />
+              {loading ? 'Отправка…' : 'Отправить ворона'}
             </button>
           </form>
         </div>
