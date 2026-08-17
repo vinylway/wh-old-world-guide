@@ -1,16 +1,18 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
-import { entries, sections, CodexEntry, SectionId } from '@/data/codex';
+import { entries as staticEntries, sections, CodexEntry, SectionId } from '@/data/codex';
 
 interface SearchDialogProps {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onSelect: (entry: CodexEntry) => void;
   initialFilter?: SectionId | 'all';
+  entries?: CodexEntry[];
 }
 
-const SearchDialog = ({ open, onOpenChange, onSelect, initialFilter }: SearchDialogProps) => {
+const SearchDialog = ({ open, onOpenChange, onSelect, initialFilter, entries }: SearchDialogProps) => {
+  const activeEntries = entries ?? staticEntries;
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<SectionId | 'all'>('all');
 
@@ -25,13 +27,13 @@ const SearchDialog = ({ open, onOpenChange, onSelect, initialFilter }: SearchDia
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return entries.filter((e) => {
+    return activeEntries.filter((e) => {
       if (filter !== 'all' && e.section !== filter) return false;
       if (!q) return true;
       const haystack = `${e.title} ${e.summary} ${e.meta ?? ''}`.toLowerCase();
       return q.split(/\s+/).every((word) => haystack.includes(word));
     });
-  }, [query, filter]);
+  }, [query, filter, activeEntries]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

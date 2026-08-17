@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, Fragment } from 'react';
+import { useState, useEffect, useRef, Fragment, ReactNode } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
-import { CodexEntry, StatLink, sections, entries, SectionId } from '@/data/codex';
+import { CodexEntry, StatLink, sections, entries as staticEntries, SectionId } from '@/data/codex';
 import OrnateDivider from './OrnateDivider';
 
 interface EntryDialogProps {
@@ -9,6 +9,8 @@ interface EntryDialogProps {
   onOpenChange: (v: boolean) => void;
   onNavigate?: (entryId: string) => void;
   onOpenSection?: (sectionId: SectionId) => void;
+  entries?: CodexEntry[];
+  headerExtra?: ReactNode;
 }
 
 const TextWithLinks = ({
@@ -72,7 +74,8 @@ const TextWithLinks = ({
   );
 };
 
-const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDialogProps) => {
+const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection, entries, headerExtra }: EntryDialogProps) => {
+  const activeEntries = entries ?? staticEntries;
   const section = entry ? sections.find((s) => s.id === entry.section) : null;
   const cs = entry?.creatureStats;
   const [showSummary, setShowSummary] = useState(false);
@@ -161,6 +164,8 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDi
               </p>
             )}
 
+            {headerExtra && <div className="mt-3 flex justify-center">{headerExtra}</div>}
+
             <OrnateDivider className="my-5" />
 
             {cs || (entry.stats && entry.stats.length > 0) ? (
@@ -243,7 +248,7 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection }: EntryDi
                 </p>
                 <div className="flex flex-wrap justify-center gap-2">
                   {entry.relatedEntryIds.map((id) => {
-                    const related = entries.find((e) => e.id === id);
+                    const related = activeEntries.find((e) => e.id === id);
                     if (!related) return null;
                     return (
                       <button

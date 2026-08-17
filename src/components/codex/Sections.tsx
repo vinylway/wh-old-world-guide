@@ -1,12 +1,14 @@
 import { useState, ReactNode } from 'react';
 import Icon from '@/components/ui/icon';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { sections, entries, itemCategories, sources, subgroups, defaultSourceIds, Source, Section, SectionId, SourceId, SectionGroupId, CodexEntry } from '@/data/codex';
+import { sections, entries as staticEntries, itemCategories, sources, subgroups, defaultSourceIds, Source, Section, SectionId, SourceId, SectionGroupId, CodexEntry } from '@/data/codex';
 import EntryCard from './EntryCard';
 
 interface SectionsProps {
   onSelect: (entry: CodexEntry) => void;
   groupId: SectionGroupId;
+  entries?: CodexEntry[];
+  renderExtra?: (entry: CodexEntry) => ReactNode;
 }
 
 const SubgroupBlock = ({
@@ -116,10 +118,12 @@ const SectionBlock = ({
   section,
   onSelect,
   defaultOpen = false,
+  entries,
 }: {
   section: Section;
   onSelect: (e: CodexEntry) => void;
   defaultOpen?: boolean;
+  entries: CodexEntry[];
 }) => {
   const [open, setOpen] = useState(defaultOpen);
   const sectionEntries = entries.filter((e) => e.section === section.id);
@@ -266,14 +270,15 @@ const SectionBlock = ({
   );
 };
 
-const Sections = ({ onSelect, groupId }: SectionsProps) => {
+const Sections = ({ onSelect, groupId, entries }: SectionsProps) => {
   const groupSections = sections.filter((s) => s.groups?.includes(groupId));
+  const activeEntries = entries ?? staticEntries;
 
   return (
     <div id="sections" className="container py-16 md:py-24">
       <div className="space-y-4">
         {groupSections.map((section) => (
-          <SectionBlock key={section.id} section={section} onSelect={onSelect} />
+          <SectionBlock key={section.id} section={section} onSelect={onSelect} entries={activeEntries} />
         ))}
       </div>
     </div>
