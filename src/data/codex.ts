@@ -100,6 +100,10 @@ export interface CodexEntry {
   callouts?: Callout[];
   // Ссылки на подстроки внутри текста summary (аналогично links в StatRowValue)
   summaryLinks?: StatLink[];
+  // Ссылка на карточку навыка (раздел «Способности»), показывается отдельным
+  // выделенным блоком вверху карточки — используется там, где применим бросок навыка
+  // (например, «Затеи» и «Вера»)
+  skillEntryId?: string;
 }
 
 export interface Subgroup {
@@ -6635,11 +6639,12 @@ export const entries: CodexEntry[] = [
     id: 'faith-test', section: 'faith', source: 'player', title: 'Тест', subgroup: 'Ульрик',
     summary: 'Тестовая карточка молитвы для проверки раздела «Вера».',
     tags: ['тест'], meta: 'Молитва',
+    skillEntryId: 'skill-willpower',
   },
   {
     id: 'venture-test', section: 'ventures', source: 'player', title: 'Тест',
-    summary: 'Тестовая затея для проверки раздела: требует проверки Сноровки, чтобы найти нестандартный выход из положения.',
-    summaryLinks: [{ match: 'Сноровки', entryId: 'skill-cunning' }],
+    summary: 'Тестовая затея для проверки раздела: требует найти нестандартный выход из положения.',
     tags: ['тест'], meta: 'Затея',
+    skillEntryId: 'skill-cunning',
   },
 ];

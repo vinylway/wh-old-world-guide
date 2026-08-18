@@ -21,6 +21,7 @@ import { useCodexOverrides } from '@/hooks/useCodexOverrides';
 import { useCodexMeta } from '@/hooks/useCodexMeta';
 import { useToast } from '@/hooks/use-toast';
 import LinkedTextEditor from './LinkedTextEditor';
+import EntryLinkPicker from './EntryLinkPicker';
 
 interface GenericEntryEditFormProps {
   entry: CodexEntry | null;
@@ -35,6 +36,9 @@ const SECTION_LABELS: Record<string, string> = {
   rules: 'правила',
   careers: 'карьеры',
 };
+
+// Разделы, где применим бросок навыка (показывается отдельным блоком вверху карточки)
+const SKILL_APPLICABLE_SECTIONS: SectionId[] = ['ventures', 'faith'];
 
 const emptyEntry = (section: SectionId, source: SourceId): CodexEntry => ({
   id: `${section}-custom-${Date.now()}`,
@@ -66,7 +70,10 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
     entry ?? emptyEntry(activeSection ?? 'items', sectionSources[0]?.id ?? 'player')
   );
   const [saving, setSaving] = useState(false);
+  const [skillPickerOpen, setSkillPickerOpen] = useState(false);
   const linkableEntries = allEntries.length ? allEntries : staticEntries;
+  const skillEntries = linkableEntries.filter((e) => e.section === 'abilities' && e.subgroup === 'Навыки');
+  const selectedSkill = form.skillEntryId ? linkableEntries.find((e) => e.id === form.skillEntryId) : null;
 
   useEffect(() => {
     if (open) {
@@ -263,6 +270,27 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
             </div>
           </SectionCard>
 
+          {activeSection && SKILL_APPLICABLE_SECTIONS.includes(activeSection) && (
+            <SectionCard title="Навык (если применимо)">
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant={selectedSkill ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSkillPickerOpen(true)}
+                >
+                  <Icon name="Dices" size={14} className="mr-1.5" />
+                  {selectedSkill ? selectedSkill.title : 'Выбрать навык'}
+                </Button>
+                {selectedSkill && (
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setForm((f) => ({ ...f, skillEntryId: undefined }))} className="text-destructive">
+                    <Icon name="X" size={14} />
+                  </Button>
+                )}
+              </div>
+            </SectionCard>
+          )}
+
           <SectionCard title="Характеристики (таблица параметров)">
             {stats.map((s, idx) => (
               <div key={idx} className="flex gap-2 items-start">
@@ -321,6 +349,14 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
           </div>
         </div>
       </DialogContent>
+
+      <EntryLinkPicker
+        open={skillPickerOpen}
+        onOpenChange={setSkillPickerOpen}
+        entries={skillEntries}
+        title="Найдите навык"
+        onSelect={(picked) => setForm((f) => ({ ...f, skillEntryId: picked.id }))}
+      />
     </Dialog>
   );
 };

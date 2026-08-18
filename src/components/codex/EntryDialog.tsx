@@ -78,6 +78,7 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection, entries, 
   const activeEntries = entries ?? staticEntries;
   const section = entry ? sections.find((s) => s.id === entry.section) : null;
   const cs = entry?.creatureStats;
+  const skillEntry = entry?.skillEntryId ? activeEntries.find((e) => e.id === entry.skillEntryId) : null;
   const [showSummary, setShowSummary] = useState(false);
   const [showOpinions, setShowOpinions] = useState(false);
 
@@ -165,6 +166,16 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection, entries, 
             )}
 
             {headerExtra && <div className="mt-3 flex justify-center">{headerExtra}</div>}
+
+            {skillEntry && (
+              <button
+                onClick={() => handleNavigate(skillEntry.id)}
+                className="story-link mx-auto mt-4 flex items-center gap-2 rounded border border-gold/40 bg-secondary/50 px-4 py-2 font-display text-sm uppercase tracking-wide text-gold hover:bg-secondary transition-colors"
+              >
+                <Icon name="Dices" size={15} />
+                Навык: <span className="font-semibold">{skillEntry.title}</span>
+              </button>
+            )}
 
             <OrnateDivider className="my-5" />
 
