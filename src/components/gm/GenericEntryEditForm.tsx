@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -15,12 +14,11 @@ import {
   SourceId,
   ItemCategoryId,
   entries as staticEntries,
-  sources,
-  subgroups,
   sections,
   itemCategories,
 } from '@/data/codex';
 import { useCodexOverrides } from '@/hooks/useCodexOverrides';
+import { useCodexMeta } from '@/hooks/useCodexMeta';
 import { useToast } from '@/hooks/use-toast';
 import LinkedTextEditor from './LinkedTextEditor';
 
@@ -36,12 +34,6 @@ const SECTION_LABELS: Record<string, string> = {
   items: 'предмета',
   rules: 'правила',
   careers: 'карьеры',
-};
-
-const DEFAULT_SOURCES_BY_SECTION: Record<string, SourceId[]> = {
-  items: ['player', 'trinity', 'talagaad-adventures', 'starter-kit'],
-  rules: ['player'],
-  careers: ['player'],
 };
 
 const emptyEntry = (section: SectionId, source: SourceId): CodexEntry => ({
@@ -65,9 +57,10 @@ const SectionCard = ({ title, children }: { title: string; children: React.React
 
 const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: GenericEntryEditFormProps) => {
   const { saveEntry, entries: allEntries } = useCodexOverrides();
+  const { sourcesForSection, subgroups } = useCodexMeta();
   const { toast } = useToast();
   const activeSection = entry?.section ?? section;
-  const sectionSources = sources.filter((s) => (DEFAULT_SOURCES_BY_SECTION[activeSection ?? ''] ?? ['player']).includes(s.id));
+  const sectionSources = sourcesForSection(activeSection ?? 'items');
 
   const [form, setForm] = useState<CodexEntry>(() =>
     entry ?? emptyEntry(activeSection ?? 'items', sectionSources[0]?.id ?? 'player')
@@ -96,7 +89,7 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
             )
         )
       ),
-    [form.section, form.source, linkableEntries]
+    [form.section, form.source, linkableEntries, subgroups]
   );
 
   const stats = form.stats ?? [];

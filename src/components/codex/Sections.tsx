@@ -2,11 +2,14 @@ import { useState, ReactNode } from 'react';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { sections, entries as staticEntries, itemCategories, sources, subgroups, defaultSourceIds, Source, Section, SectionId, SourceId, SectionGroupId, CodexEntry } from '@/data/codex';
+import { sections, entries as staticEntries, itemCategories, Source, Subgroup, Section, SectionId, SourceId, SectionGroupId, CodexEntry } from '@/data/codex';
 import EntryCard from './EntryCard';
 import { useCodexOverrides } from '@/hooks/useCodexOverrides';
 import { useCodexEditorUI } from '@/hooks/useCodexEditorUI';
+import { useCodexMeta } from '@/hooks/useCodexMeta';
 import { EDITABLE_SECTIONS } from '@/components/gm/EntryActions';
+import SourcesManagerDialog from '@/components/gm/SourcesManagerDialog';
+import SubgroupsManagerDialog from '@/components/gm/SubgroupsManagerDialog';
 
 interface SectionsProps {
   onSelect: (entry: CodexEntry) => void;
@@ -65,9 +68,10 @@ interface ItemsGridProps {
   onSelect: (e: CodexEntry) => void;
   sectionId: SectionId;
   sourceId: SourceId;
+  subgroups: Subgroup[];
 }
 
-const ItemsGrid = ({ items, onSelect, sectionId, sourceId }: ItemsGridProps) => {
+const ItemsGrid = ({ items, onSelect, sectionId, sourceId, subgroups }: ItemsGridProps) => {
   const allGroups = subgroups.filter((g) => g.sectionId === sectionId && g.sourceId === sourceId);
   const groups = allGroups.filter((g) => !g.parentId);
   const knownTitles = new Set(allGroups.map((g) => g.title));
@@ -144,11 +148,13 @@ const SectionBlock = ({
   entries: CodexEntry[];
 }) => {
   const [open, setOpen] = useState(defaultOpen);
+  const [sourcesManagerOpen, setSourcesManagerOpen] = useState(false);
+  const [subgroupsManagerSource, setSubgroupsManagerSource] = useState<SourceId | null>(null);
   const sectionEntries = entries.filter((e) => e.section === section.id);
-  const sectionSourceIds = section.sourceIds ?? defaultSourceIds;
-  const sectionSources = sources.filter((s) => sectionSourceIds.includes(s.id));
   const { isEditMode } = useCodexOverrides();
   const { openNewForm } = useCodexEditorUI();
+  const { sourcesForSection, subgroups } = useCodexMeta();
+  const sectionSources = sourcesForSection(section.id);
   const isEditable = EDITABLE_SECTIONS.includes(section.id);
 
   return (
@@ -171,15 +177,26 @@ const SectionBlock = ({
       {open && (
         <div className="px-5 pb-6 animate-fade-in">
           {isEditMode && isEditable && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="mb-4 border-gold/40"
-              onClick={() => openNewForm(section.id)}
-            >
-              <Icon name="Plus" size={14} className="mr-1.5" />
-              Добавить запись
-            </Button>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-gold/40"
+                onClick={() => openNewForm(section.id)}
+              >
+                <Icon name="Plus" size={14} className="mr-1.5" />
+                Добавить запись
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-gold/40"
+                onClick={() => setSourcesManagerOpen(true)}
+              >
+                <Icon name="BookOpen" size={14} className="mr-1.5" />
+                Вкладки
+              </Button>
+            </div>
           )}
           {section.id === 'items' ? (
             <Tabs defaultValue="equipment">
@@ -213,6 +230,12 @@ const SectionBlock = ({
                     const items = sectionEntries.filter((e) => e.source === src.id && e.category !== 'assets');
                     return (
                       <TabsContent key={src.id} value={src.id} className="mt-0">
+                        {isEditMode && isEditable && (
+                          <Button variant="ghost" size="sm" className="mb-3 text-gold/80" onClick={() => setSubgroupsManagerSource(src.id)}>
+                            <Icon name="MapPin" size={13} className="mr-1.5" />
+                            Управлять подразделами «{src.title}»
+                          </Button>
+                        )}
                         <Tabs defaultValue="all">
                           <TabsList className="mb-6 flex-wrap h-auto gap-1 bg-secondary/40 border border-gold/15">
                             <TabsTrigger value="all" className="font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground">
@@ -231,11 +254,11 @@ const SectionBlock = ({
                           </TabsList>
 
                           <TabsContent value="all" className="mt-0">
-                            <ItemsGrid items={items} onSelect={onSelect} sectionId={section.id} sourceId={src.id} />
+                            <ItemsGrid items={items} onSelect={onSelect} sectionId={section.id} sourceId={src.id} subgroups={subgroups} />
                           </TabsContent>
                           {itemCategories.map((cat) => (
                             <TabsContent key={cat.id} value={cat.id} className="mt-0">
-                              <ItemsGrid items={items.filter((e) => e.category === cat.id)} onSelect={onSelect} sectionId={section.id} sourceId={src.id} />
+                              <ItemsGrid items={items.filter((e) => e.category === cat.id)} onSelect={onSelect} sectionId={section.id} sourceId={src.id} subgroups={subgroups} />
                             </TabsContent>
                           ))}
                         </Tabs>
@@ -264,7 +287,13 @@ const SectionBlock = ({
                     const items = sectionEntries.filter((e) => e.source === src.id && e.category === 'assets');
                     return (
                       <TabsContent key={src.id} value={src.id} className="mt-0">
-                        <ItemsGrid items={items} onSelect={onSelect} sectionId={section.id} sourceId={src.id} />
+                        {isEditMode && isEditable && (
+                          <Button variant="ghost" size="sm" className="mb-3 text-gold/80" onClick={() => setSubgroupsManagerSource(src.id)}>
+                            <Icon name="MapPin" size={13} className="mr-1.5" />
+                            Управлять подразделами «{src.title}»
+                          </Button>
+                        )}
+                        <ItemsGrid items={items} onSelect={onSelect} sectionId={section.id} sourceId={src.id} subgroups={subgroups} />
                       </TabsContent>
                     );
                   })}
@@ -290,13 +319,29 @@ const SectionBlock = ({
                 const items = sectionEntries.filter((e) => e.source === src.id);
                 return (
                   <TabsContent key={src.id} value={src.id} className="mt-0">
-                    <ItemsGrid items={items} onSelect={onSelect} sectionId={section.id} sourceId={src.id} />
+                    {isEditMode && isEditable && (
+                      <Button variant="ghost" size="sm" className="mb-3 text-gold/80" onClick={() => setSubgroupsManagerSource(src.id)}>
+                        <Icon name="MapPin" size={13} className="mr-1.5" />
+                        Управлять подразделами «{src.title}»
+                      </Button>
+                    )}
+                    <ItemsGrid items={items} onSelect={onSelect} sectionId={section.id} sourceId={src.id} subgroups={subgroups} />
                   </TabsContent>
                 );
               })}
             </Tabs>
           )}
         </div>
+      )}
+
+      <SourcesManagerDialog open={sourcesManagerOpen} onOpenChange={setSourcesManagerOpen} sectionId={section.id} />
+      {subgroupsManagerSource && (
+        <SubgroupsManagerDialog
+          open={!!subgroupsManagerSource}
+          onOpenChange={(v) => !v && setSubgroupsManagerSource(null)}
+          sectionId={section.id}
+          sourceId={subgroupsManagerSource}
+        />
       )}
     </section>
   );

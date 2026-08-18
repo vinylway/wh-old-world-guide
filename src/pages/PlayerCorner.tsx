@@ -10,6 +10,7 @@ import OrnateDivider from '@/components/codex/OrnateDivider';
 import Icon from '@/components/ui/icon';
 import { CodexOverridesProvider, useCodexOverrides } from '@/hooks/useCodexOverrides';
 import { CodexEditorUIProvider, useCodexEditorUI } from '@/hooks/useCodexEditorUI';
+import { CodexMetaProvider } from '@/hooks/useCodexMeta';
 import EditModeToggle from '@/components/gm/EditModeToggle';
 import EntryActions from '@/components/gm/EntryActions';
 import GmEditGlobalUI from '@/components/gm/GmEditGlobalUI';
@@ -115,9 +116,11 @@ const PlayerCornerContent = () => {
 
 const PlayerCorner = () => (
   <CodexOverridesProvider>
-    <CodexEditorUIProvider>
-      <PlayerCornerContent />
-    </CodexEditorUIProvider>
+    <CodexMetaProvider>
+      <CodexEditorUIProvider>
+        <PlayerCornerContent />
+      </CodexEditorUIProvider>
+    </CodexMetaProvider>
   </CodexOverridesProvider>
 );
 

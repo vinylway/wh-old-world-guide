@@ -15,6 +15,7 @@ interface CodexOverridesContextValue {
   isEditMode: boolean;
   isUnlocking: boolean;
   loginError: string | null;
+  password: string | null;
   unlock: (password: string) => Promise<boolean>;
   lock: () => void;
   saveEntry: (entry: CodexEntry) => Promise<boolean>;
@@ -178,6 +179,7 @@ export const CodexOverridesProvider = ({ children }: { children: ReactNode }) =>
     isEditMode: !!password,
     isUnlocking,
     loginError,
+    password,
     unlock,
     lock,
     saveEntry,

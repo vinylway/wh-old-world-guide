@@ -6,13 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
-import { CodexEntry, CreatureAttack, CreatureAbility, CreatureEquipmentItem, Callout, StatLink, entries as staticEntries, sources, subgroups, SourceId } from '@/data/codex';
+import { CodexEntry, CreatureAttack, CreatureAbility, CreatureEquipmentItem, Callout, StatLink, entries as staticEntries, SourceId } from '@/data/codex';
 import { useCodexOverrides } from '@/hooks/useCodexOverrides';
+import { useCodexMeta } from '@/hooks/useCodexMeta';
 import { useToast } from '@/hooks/use-toast';
 import LinkedTextEditor from './LinkedTextEditor';
 import EntryLinkPicker from './EntryLinkPicker';
-
-const CREATURE_SOURCES = sources.filter((s) => ['gm', 'trinity', 'talagaad-adventures', 'starter-kit'].includes(s.id));
 
 interface CreatureEditFormProps {
   entry: CodexEntry | null;
@@ -55,11 +54,13 @@ const SectionCard = ({ title, children }: { title: string; children: React.React
 
 const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFormProps) => {
   const { saveEntry, entries: allEntries } = useCodexOverrides();
+  const { sourcesForSection, subgroups } = useCodexMeta();
   const { toast } = useToast();
   const [form, setForm] = useState<CodexEntry>(entry ?? emptyEntry());
   const [saving, setSaving] = useState(false);
   const [equipmentPickerIdx, setEquipmentPickerIdx] = useState<number | null>(null);
   const linkableEntries = allEntries.length ? allEntries : staticEntries;
+  const creatureSources = sourcesForSection('creatures');
 
   const existingSubgroups = useMemo(
     () =>
@@ -75,7 +76,7 @@ const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFo
             )
         )
       ),
-    [form.source, linkableEntries]
+    [form.source, linkableEntries, subgroups]
   );
 
   useEffect(() => {
@@ -234,7 +235,7 @@ const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFo
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {CREATURE_SOURCES.map((s) => (
+                    {creatureSources.map((s) => (
                       <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
                     ))}
                   </SelectContent>

@@ -1,4 +1,7 @@
-export type SourceId = 'gm' | 'player' | 'trinity' | 'talagaad-adventures' | 'starter-kit';
+// Строковый идентификатор источника (руководства/книги). Помимо предустановленных
+// значений ('gm', 'player' и т.д.) может быть произвольным пользовательским id,
+// созданным через управление вкладками в разделах кодекса.
+export type SourceId = string;
 
 export interface Source {
   id: SourceId;
