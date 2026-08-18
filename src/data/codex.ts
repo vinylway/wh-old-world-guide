@@ -21,6 +21,7 @@ export interface CreatureAttack {
   damage: string;
   rounds: string;
   traits?: string;
+  linkEntryId?: string;
 }
 
 export interface CreatureAbility {

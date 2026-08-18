@@ -359,7 +359,18 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection, entries, 
                           {cs.attacks.map((a, i) => (
                             <Fragment key={a.name}>
                               <tr className={i % 2 === 0 ? 'bg-secondary/20' : ''}>
-                                <td className="px-3 py-1.5 text-parchment/90">{a.name}</td>
+                                <td className="px-3 py-1.5 text-parchment/90">
+                                  {a.linkEntryId && onNavigate ? (
+                                    <button
+                                      onClick={() => handleNavigate(a.linkEntryId as string)}
+                                      className="story-link text-left text-gold hover:text-gold-bright transition-colors font-semibold"
+                                    >
+                                      {a.name}
+                                    </button>
+                                  ) : (
+                                    a.name
+                                  )}
+                                </td>
                                 <td className="px-3 py-1.5 text-parchment/90">{a.range}</td>
                                 <td className="px-3 py-1.5 text-parchment/90">{a.formula}</td>
                                 <td className="px-3 py-1.5 text-parchment/90">{a.damage}</td>

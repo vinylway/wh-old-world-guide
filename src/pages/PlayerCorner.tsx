@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { CodexEntry, SectionId, entries, sectionGroups } from '@/data/codex';
+import { CodexEntry, SectionId, sectionGroups } from '@/data/codex';
 import Header from '@/components/codex/Header';
 import Footer from '@/components/codex/Footer';
 import Sections from '@/components/codex/Sections';
@@ -8,12 +8,17 @@ import SearchDialog from '@/components/codex/SearchDialog';
 import EntryDialog from '@/components/codex/EntryDialog';
 import OrnateDivider from '@/components/codex/OrnateDivider';
 import Icon from '@/components/ui/icon';
+import { useCreatureOverrides } from '@/hooks/useCreatureOverrides';
+import { useCreatureEditorUI } from '@/hooks/useCreatureEditorUI';
+import CreatureEntryActions from '@/components/gm/CreatureEntryActions';
 
 const PlayerCorner = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchFilter, setSearchFilter] = useState<SectionId | 'all'>('all');
   const [activeEntry, setActiveEntry] = useState<CodexEntry | null>(null);
   const group = sectionGroups.find((g) => g.id === 'player-corner');
+  const { entries } = useCreatureOverrides();
+  const { lastSavedEntry, lastRemovedId, setLastSavedEntry, setLastRemovedId } = useCreatureEditorUI();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -25,6 +30,20 @@ const PlayerCorner = () => {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  useEffect(() => {
+    if (lastSavedEntry) {
+      setActiveEntry(lastSavedEntry);
+      setLastSavedEntry(null);
+    }
+  }, [lastSavedEntry, setLastSavedEntry]);
+
+  useEffect(() => {
+    if (lastRemovedId && activeEntry?.id === lastRemovedId) {
+      setActiveEntry(null);
+      setLastRemovedId(null);
+    }
+  }, [lastRemovedId, activeEntry, setLastRemovedId]);
 
   return (
     <div className="min-h-screen">
@@ -59,7 +78,7 @@ const PlayerCorner = () => {
           <OrnateDivider className="mt-8" />
         </div>
 
-        <Sections onSelect={setActiveEntry} groupId="player-corner" />
+        <Sections onSelect={setActiveEntry} groupId="player-corner" entries={entries} />
       </main>
       <Footer />
 
@@ -68,9 +87,11 @@ const PlayerCorner = () => {
         onOpenChange={setSearchOpen}
         onSelect={setActiveEntry}
         initialFilter={searchFilter}
+        entries={entries}
       />
       <EntryDialog
         entry={activeEntry}
+        entries={entries}
         onOpenChange={() => setActiveEntry(null)}
         onNavigate={(id) => {
           const target = entries.find((e) => e.id === id);
@@ -81,6 +102,7 @@ const PlayerCorner = () => {
           setSearchFilter(sectionId);
           setSearchOpen(true);
         }}
+        headerExtra={activeEntry ? <CreatureEntryActions entry={activeEntry} onAfterReset={() => setActiveEntry(null)} /> : undefined}
       />
     </div>
   );

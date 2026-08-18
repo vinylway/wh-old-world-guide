@@ -7,32 +7,18 @@ import SearchDialog from '@/components/codex/SearchDialog';
 import EntryDialog from '@/components/codex/EntryDialog';
 import OrnateDivider from '@/components/codex/OrnateDivider';
 import Icon from '@/components/ui/icon';
-import { Button } from '@/components/ui/button';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { CreatureOverridesProvider, useCreatureOverrides } from '@/hooks/useCreatureOverrides';
-import EditPasswordDialog from '@/components/gm/EditPasswordDialog';
-import CreatureEditForm from '@/components/gm/CreatureEditForm';
-import { useToast } from '@/hooks/use-toast';
+import { useCreatureOverrides } from '@/hooks/useCreatureOverrides';
+import { useCreatureEditorUI } from '@/hooks/useCreatureEditorUI';
+import EditModeToggle from '@/components/gm/EditModeToggle';
+import CreatureEntryActions from '@/components/gm/CreatureEntryActions';
 
-const GmCornerContent = () => {
+const GmCorner = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchFilter, setSearchFilter] = useState<SectionId | 'all'>('all');
   const [activeEntry, setActiveEntry] = useState<CodexEntry | null>(null);
-  const [passwordOpen, setPasswordOpen] = useState(false);
-  const [editForm, setEditForm] = useState<{ open: boolean; entry: CodexEntry | null }>({ open: false, entry: null });
-  const [deleteTarget, setDeleteTarget] = useState<CodexEntry | null>(null);
   const group = sectionGroups.find((g) => g.id === 'gm-corner');
-  const { entries, isEditMode, lock, removeCreature, resetCreature } = useCreatureOverrides();
-  const { toast } = useToast();
+  const { entries } = useCreatureOverrides();
+  const { lastSavedEntry, lastRemovedId, setLastSavedEntry, setLastRemovedId } = useCreatureEditorUI();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -45,19 +31,19 @@ const GmCornerContent = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-    const ok = await removeCreature(deleteTarget);
-    if (ok) {
-      toast({ title: 'Существо удалено из кодекса' });
-      setActiveEntry(null);
-      setDeleteTarget(null);
-    } else {
-      toast({ title: 'Не удалось удалить', variant: 'destructive' });
+  useEffect(() => {
+    if (lastSavedEntry) {
+      setActiveEntry(lastSavedEntry);
+      setLastSavedEntry(null);
     }
-  };
+  }, [lastSavedEntry, setLastSavedEntry]);
 
-  const isCustomEntry = (entry: CodexEntry) => entry.id.startsWith('c-custom-');
+  useEffect(() => {
+    if (lastRemovedId && activeEntry?.id === lastRemovedId) {
+      setActiveEntry(null);
+      setLastRemovedId(null);
+    }
+  }, [lastRemovedId, activeEntry, setLastRemovedId]);
 
   return (
     <div className="min-h-screen">
@@ -81,23 +67,7 @@ const GmCornerContent = () => {
               <Icon name="Search" size={16} />
               Искать в кодексе
             </button>
-            {isEditMode ? (
-              <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={() => setEditForm({ open: true, entry: null })} className="border-gold/40">
-                  <Icon name="Plus" size={16} className="mr-2" />
-                  Новое существо
-                </Button>
-                <Button variant="outline" onClick={lock} className="border-gold/40">
-                  <Icon name="Unlock" size={16} className="mr-2" />
-                  Выйти из редактирования
-                </Button>
-              </div>
-            ) : (
-              <Button variant="outline" onClick={() => setPasswordOpen(true)} className="border-gold/40">
-                <Icon name="Lock" size={16} className="mr-2" />
-                Режим редактирования
-              </Button>
-            )}
+            <EditModeToggle />
           </div>
           <OrnateDivider className="mt-8" />
         </div>
@@ -126,73 +96,10 @@ const GmCornerContent = () => {
           setSearchFilter(sectionId);
           setSearchOpen(true);
         }}
-        headerExtra={
-          isEditMode && activeEntry?.section === 'creatures' ? (
-            <div className="flex flex-wrap justify-center gap-2">
-              <Button size="sm" variant="outline" className="border-gold/40" onClick={() => setEditForm({ open: true, entry: activeEntry })}>
-                <Icon name="Pencil" size={14} className="mr-1.5" />
-                Редактировать
-              </Button>
-              {!isCustomEntry(activeEntry) && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-gold/40"
-                  onClick={async () => {
-                    const ok = await resetCreature(activeEntry.id);
-                    if (ok) {
-                      toast({ title: 'Правки сброшены' });
-                      setActiveEntry(null);
-                    }
-                  }}
-                >
-                  <Icon name="RotateCcw" size={14} className="mr-1.5" />
-                  Сбросить правки
-                </Button>
-              )}
-              <Button size="sm" variant="outline" className="border-destructive/40 text-destructive" onClick={() => setDeleteTarget(activeEntry)}>
-                <Icon name="Trash2" size={14} className="mr-1.5" />
-                Удалить
-              </Button>
-            </div>
-          ) : undefined
-        }
+        headerExtra={activeEntry ? <CreatureEntryActions entry={activeEntry} onAfterReset={() => setActiveEntry(null)} /> : undefined}
       />
-
-      <EditPasswordDialog open={passwordOpen} onOpenChange={setPasswordOpen} />
-
-      <CreatureEditForm
-        key={editForm.entry?.id ?? 'new'}
-        entry={editForm.entry}
-        open={editForm.open}
-        onOpenChange={(v) => setEditForm((f) => ({ ...f, open: v }))}
-        onSaved={(saved) => {
-          setActiveEntry(saved);
-        }}
-      />
-
-      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Удалить «{deleteTarget?.title}»?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Карточка будет скрыта из Уголка ведущего. Это действие можно отменить только вручную через повторное создание карточки.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Отмена</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Удалить</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };
-
-const GmCorner = () => (
-  <CreatureOverridesProvider>
-    <GmCornerContent />
-  </CreatureOverridesProvider>
-);
 
 export default GmCorner;

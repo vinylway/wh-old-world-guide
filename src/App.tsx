@@ -9,6 +9,9 @@ import CharacterGenerator from "./pages/CharacterGenerator";
 import PlayerCorner from "./pages/PlayerCorner";
 import GmCorner from "./pages/GmCorner";
 import NotFound from "./pages/NotFound";
+import { CreatureOverridesProvider } from "@/hooks/useCreatureOverrides";
+import { CreatureEditorUIProvider } from "@/hooks/useCreatureEditorUI";
+import GmEditGlobalUI from "@/components/gm/GmEditGlobalUI";
 
 const queryClient = new QueryClient();
 
@@ -17,16 +20,21 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/generator" element={<CharacterGenerator />} />
-          <Route path="/player-corner" element={<PlayerCorner />} />
-          <Route path="/gm-corner" element={<GmCorner />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <CreatureOverridesProvider>
+        <CreatureEditorUIProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/generator" element={<CharacterGenerator />} />
+              <Route path="/player-corner" element={<PlayerCorner />} />
+              <Route path="/gm-corner" element={<GmCorner />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+          <GmEditGlobalUI />
+        </CreatureEditorUIProvider>
+      </CreatureOverridesProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
