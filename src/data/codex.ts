@@ -142,6 +142,10 @@ export const subgroups: Subgroup[] = [
   { id: 'orcs-goblins', title: 'Племена орков и гоблинов', sectionId: 'creatures', sourceId: 'gm' },
   { id: 'undead', title: 'Нежить', sectionId: 'creatures', sourceId: 'gm' },
   { id: 'great-forest', title: 'Чудовища Великого леса', sectionId: 'creatures', sourceId: 'gm' },
+  { id: 'magic-school-combat', title: 'Школа магии (Боевая магия)', sectionId: 'magic', sourceId: 'player' },
+  { id: 'magic-school-elementalism', title: 'Школа магии (Элементализм)', sectionId: 'magic', sourceId: 'player' },
+  { id: 'magic-school-illusion', title: 'Школа магии (Иллюзия)', sectionId: 'magic', sourceId: 'player' },
+  { id: 'magic-school-necromancy', title: 'Школа магии (Некромантия)', sectionId: 'magic', sourceId: 'player' },
 ];
 
 export type ItemCategoryId = 'melee' | 'throwing' | 'ranged' | 'armor' | 'tools' | 'magic-items' | 'assets';
@@ -6372,19 +6376,16 @@ export const entries: CodexEntry[] = [
     tags: ['контакт', 'странники', 'путешествия'], meta: 'Контакт',
   },
   {
-    id: 'm1', section: 'magic', source: 'player', title: 'Ветер Азир (Небеса)',
-    summary: 'Голубой ветер магии предвидения и молний. Даёт заклинания призыва бури и прорицания судьбы противника.',
-    tags: ['азир', 'небеса', 'ветер', 'молния'], meta: 'Ветер магии',
-  },
-  {
-    id: 'm2', section: 'magic', source: 'player', title: 'Клятвенный огонь Аквши',
-    summary: 'Заклинание Багрового ветра: столб пламени, поглощающий врагов и усиливающийся против трусливых противников.',
-    tags: ['аквши', 'огонь', 'пламя', 'заклинание'], meta: 'Заклинание',
-  },
-  {
-    id: 'm3', section: 'magic', source: 'gm', title: 'Ветер Шиш (Смерть)',
-    summary: 'Фиолетовый ветер увядания. Некроманты вытягивают жизнь из живых и поднимают павших воинов.',
-    tags: ['шиш', 'смерть', 'некромантия', 'нежить'], meta: 'Ветер магии',
+    id: 'm-test', section: 'magic', source: 'player', title: 'Тест', subgroup: 'Школа магии (Боевая магия)',
+    summary: 'Тестовое заклинание для проверки карточки: крутая штука работает и тому подобное.',
+    tags: ['тест'], meta: 'Заклинание',
+    stats: [
+      { label: 'Порог сотворения', value: '3' },
+      { label: 'Цель', value: 'Персонаж' },
+      { label: 'Дистанция', value: 'Ближняя' },
+      { label: 'Продолжительность', value: '1 раунд' },
+      { label: 'Эффект', value: 'Крутая штука работает, тому подобное и т.д.' },
+    ],
   },
   {
     id: 'career-apothecary', section: 'careers', source: 'player', title: 'Аптекарь',
