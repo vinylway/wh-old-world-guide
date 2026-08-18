@@ -75,9 +75,12 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
   const [skillPickerOpen, setSkillPickerOpen] = useState(false);
   const [knowledgePickerOpen, setKnowledgePickerOpen] = useState(false);
   const linkableEntries = allEntries.length ? allEntries : staticEntries;
-  const skillEntries = linkableEntries.filter((e) => e.section === 'abilities' && e.subgroup === 'Навыки');
+  const availableSkillEntries = linkableEntries.filter((e) => e.section === 'abilities' && e.subgroup === 'Навыки');
   const knowledgeEntries = linkableEntries.filter((e) => e.section === 'abilities' && e.id.startsWith('lore-'));
-  const selectedSkill = form.skillEntryId ? linkableEntries.find((e) => e.id === form.skillEntryId) : null;
+  const selectedSkillIds = form.skillEntryIds?.length ? form.skillEntryIds : form.skillEntryId ? [form.skillEntryId] : [];
+  const selectedSkills = selectedSkillIds
+    .map((id) => linkableEntries.find((e) => e.id === id))
+    .filter((e): e is CodexEntry => !!e);
   const selectedKnowledge = form.knowledgeEntryId ? linkableEntries.find((e) => e.id === form.knowledgeEntryId) : null;
 
   useEffect(() => {
@@ -255,7 +258,7 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
                 </datalist>
               </div>
 
-              {activeSection === 'careers' && (
+              {(activeSection === 'careers' || activeSection === 'origins') && (
                 <div className="col-span-2">
                   <Label>Портрет (URL, необязательно)</Label>
                   <Input value={form.portrait ?? ''} onChange={(e) => setForm({ ...form, portrait: e.target.value })} />
@@ -276,22 +279,27 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
           </SectionCard>
 
           {activeSection && SKILL_APPLICABLE_SECTIONS.includes(activeSection) && (
-            <SectionCard title="Рекомендованный навык (если применимо)">
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant={selectedSkill ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setSkillPickerOpen(true)}
-                >
-                  <Icon name="Dices" size={14} className="mr-1.5" />
-                  {selectedSkill ? selectedSkill.title : 'Выбрать навык'}
+            <SectionCard title="Рекомендованные навыки (если применимо)">
+              <div className="flex flex-wrap items-center gap-2">
+                {selectedSkills.map((s) => (
+                  <span
+                    key={s.id}
+                    className="inline-flex items-center gap-1.5 rounded border border-gold/40 bg-secondary/50 px-2.5 py-1 font-display text-xs uppercase tracking-wide text-gold"
+                  >
+                    {s.title}
+                    <button
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, skillEntryIds: selectedSkillIds.filter((id) => id !== s.id), skillEntryId: undefined }))}
+                      className="text-gold/70 hover:text-destructive"
+                    >
+                      <Icon name="X" size={12} />
+                    </button>
+                  </span>
+                ))}
+                <Button type="button" variant="outline" size="sm" onClick={() => setSkillPickerOpen(true)}>
+                  <Icon name="Plus" size={14} className="mr-1.5" />
+                  Добавить навык
                 </Button>
-                {selectedSkill && (
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setForm((f) => ({ ...f, skillEntryId: undefined }))} className="text-destructive">
-                    <Icon name="X" size={14} />
-                  </Button>
-                )}
               </div>
             </SectionCard>
           )}
@@ -379,9 +387,9 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
       <EntryLinkPicker
         open={skillPickerOpen}
         onOpenChange={setSkillPickerOpen}
-        entries={skillEntries}
+        entries={availableSkillEntries.filter((e) => !selectedSkillIds.includes(e.id))}
         title="Найдите навык"
-        onSelect={(picked) => setForm((f) => ({ ...f, skillEntryId: picked.id }))}
+        onSelect={(picked) => setForm((f) => ({ ...f, skillEntryIds: [...selectedSkillIds, picked.id], skillEntryId: undefined }))}
       />
 
       <EntryLinkPicker

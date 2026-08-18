@@ -30,8 +30,9 @@ const SearchDialog = ({ open, onOpenChange, onSelect, initialFilter, entries }: 
     return activeEntries.filter((e) => {
       if (filter !== 'all' && e.section !== filter) return false;
       if (!q) return true;
-      const haystack = `${e.title} ${e.summary} ${e.meta ?? ''}`.toLowerCase();
-      return q.split(/\s+/).every((word) => haystack.includes(word));
+      // Точный поиск по названию: все введённые слова должны встречаться в title записи
+      const title = e.title.toLowerCase();
+      return q.split(/\s+/).every((word) => title.includes(word));
     });
   }, [query, filter, activeEntries]);
 

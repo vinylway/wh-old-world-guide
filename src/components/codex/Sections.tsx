@@ -136,25 +136,36 @@ const ItemsGrid = ({ items, onSelect, sectionId, sourceId, subgroups }: ItemsGri
   );
 };
 
+// Источники, которые нужно скрыть для раздела, когда он отображается в определённой
+// группе (например, «Правила» показываются и игроку, и ведущему, но каждому — только
+// его собственное руководство).
+const HIDDEN_SOURCES_BY_GROUP: Partial<Record<SectionGroupId, SourceId[]>> = {
+  'player-corner': ['gm'],
+  'gm-corner': ['player'],
+};
+
 const SectionBlock = ({
   section,
   onSelect,
   defaultOpen = false,
   entries,
+  groupId,
 }: {
   section: Section;
   onSelect: (e: CodexEntry) => void;
   defaultOpen?: boolean;
   entries: CodexEntry[];
+  groupId: SectionGroupId;
 }) => {
   const [open, setOpen] = useState(defaultOpen);
   const [sourcesManagerOpen, setSourcesManagerOpen] = useState(false);
   const [subgroupsManagerSource, setSubgroupsManagerSource] = useState<SourceId | null>(null);
-  const sectionEntries = entries.filter((e) => e.section === section.id);
   const { isEditMode } = useCodexOverrides();
   const { openNewForm } = useCodexEditorUI();
   const { sourcesForSection, subgroups } = useCodexMeta();
-  const sectionSources = sourcesForSection(section.id);
+  const hiddenSourceIds = (section.groups?.length ?? 0) > 1 ? HIDDEN_SOURCES_BY_GROUP[groupId] ?? [] : [];
+  const sectionSources = sourcesForSection(section.id).filter((s) => !hiddenSourceIds.includes(s.id));
+  const sectionEntries = entries.filter((e) => e.section === section.id && !hiddenSourceIds.includes(e.source));
   const isEditable = EDITABLE_SECTIONS.includes(section.id);
 
   return (
@@ -355,7 +366,7 @@ const Sections = ({ onSelect, groupId, entries }: SectionsProps) => {
     <div id="sections" className="container py-16 md:py-24">
       <div className="space-y-4">
         {groupSections.map((section) => (
-          <SectionBlock key={section.id} section={section} onSelect={onSelect} entries={activeEntries} />
+          <SectionBlock key={section.id} section={section} onSelect={onSelect} entries={activeEntries} groupId={groupId} />
         ))}
       </div>
     </div>

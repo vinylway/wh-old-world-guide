@@ -78,7 +78,10 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection, entries, 
   const activeEntries = entries ?? staticEntries;
   const section = entry ? sections.find((s) => s.id === entry.section) : null;
   const cs = entry?.creatureStats;
-  const skillEntry = entry?.skillEntryId ? activeEntries.find((e) => e.id === entry.skillEntryId) : null;
+  const skillEntryIds = entry?.skillEntryIds?.length ? entry.skillEntryIds : entry?.skillEntryId ? [entry.skillEntryId] : [];
+  const skillEntries = skillEntryIds
+    .map((id) => activeEntries.find((e) => e.id === id))
+    .filter((e): e is CodexEntry => !!e);
   const knowledgeEntry = entry?.knowledgeEntryId ? activeEntries.find((e) => e.id === entry.knowledgeEntryId) : null;
   const [showSummary, setShowSummary] = useState(false);
   const [showOpinions, setShowOpinions] = useState(false);
@@ -168,14 +171,22 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection, entries, 
 
             {headerExtra && <div className="mt-3 flex justify-center">{headerExtra}</div>}
 
-            {skillEntry && (
-              <button
-                onClick={() => handleNavigate(skillEntry.id)}
-                className="story-link mx-auto mt-4 flex items-center gap-2 rounded border border-gold/40 bg-secondary/50 px-4 py-2 font-display text-sm uppercase tracking-wide text-gold hover:bg-secondary transition-colors"
-              >
-                <Icon name="Dices" size={15} />
-                Рекомендованный навык: <span className="font-semibold">{skillEntry.title}</span>
-              </button>
+            {skillEntries.length > 0 && (
+              <div className="mx-auto mt-4 flex flex-wrap justify-center gap-2">
+                <span className="flex items-center gap-1.5 font-display text-sm uppercase tracking-wide text-gold/80 self-center">
+                  <Icon name="Dices" size={15} />
+                  {skillEntries.length > 1 ? 'Рекомендованные навыки:' : 'Рекомендованный навык:'}
+                </span>
+                {skillEntries.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => handleNavigate(s.id)}
+                    className="story-link rounded border border-gold/40 bg-secondary/50 px-3 py-1.5 font-display text-sm font-semibold uppercase tracking-wide text-gold hover:bg-secondary transition-colors"
+                  >
+                    {s.title}
+                  </button>
+                ))}
+              </div>
             )}
 
             {knowledgeEntry && (
