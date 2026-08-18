@@ -1,13 +1,13 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { CodexEntry } from '@/data/codex';
+import { CodexEntry, SectionId } from '@/data/codex';
 
-interface CreatureEditorUIContextValue {
+interface CodexEditorUIContextValue {
   passwordOpen: boolean;
   openLogin: () => void;
   closeLogin: () => void;
-  editForm: { open: boolean; entry: CodexEntry | null };
+  editForm: { open: boolean; entry: CodexEntry | null; newSection: SectionId | null };
   openEditForm: (entry: CodexEntry) => void;
-  openNewForm: () => void;
+  openNewForm: (section: SectionId) => void;
   closeEditForm: () => void;
   deleteTarget: CodexEntry | null;
   openDeleteConfirm: (entry: CodexEntry) => void;
@@ -18,24 +18,28 @@ interface CreatureEditorUIContextValue {
   setLastRemovedId: (id: string | null) => void;
 }
 
-const CreatureEditorUIContext = createContext<CreatureEditorUIContextValue | null>(null);
+const CodexEditorUIContext = createContext<CodexEditorUIContextValue | null>(null);
 
-export const CreatureEditorUIProvider = ({ children }: { children: ReactNode }) => {
+export const CodexEditorUIProvider = ({ children }: { children: ReactNode }) => {
   const [passwordOpen, setPasswordOpen] = useState(false);
-  const [editForm, setEditForm] = useState<{ open: boolean; entry: CodexEntry | null }>({ open: false, entry: null });
+  const [editForm, setEditForm] = useState<{ open: boolean; entry: CodexEntry | null; newSection: SectionId | null }>({
+    open: false,
+    entry: null,
+    newSection: null,
+  });
   const [deleteTarget, setDeleteTarget] = useState<CodexEntry | null>(null);
   const [lastSavedEntry, setLastSavedEntry] = useState<CodexEntry | null>(null);
   const [lastRemovedId, setLastRemovedId] = useState<string | null>(null);
 
   const openLogin = useCallback(() => setPasswordOpen(true), []);
   const closeLogin = useCallback(() => setPasswordOpen(false), []);
-  const openEditForm = useCallback((entry: CodexEntry) => setEditForm({ open: true, entry }), []);
-  const openNewForm = useCallback(() => setEditForm({ open: true, entry: null }), []);
+  const openEditForm = useCallback((entry: CodexEntry) => setEditForm({ open: true, entry, newSection: null }), []);
+  const openNewForm = useCallback((section: SectionId) => setEditForm({ open: true, entry: null, newSection: section }), []);
   const closeEditForm = useCallback(() => setEditForm((f) => ({ ...f, open: false })), []);
   const openDeleteConfirm = useCallback((entry: CodexEntry) => setDeleteTarget(entry), []);
   const closeDeleteConfirm = useCallback(() => setDeleteTarget(null), []);
 
-  const value: CreatureEditorUIContextValue = {
+  const value: CodexEditorUIContextValue = {
     passwordOpen,
     openLogin,
     closeLogin,
@@ -52,11 +56,11 @@ export const CreatureEditorUIProvider = ({ children }: { children: ReactNode }) 
     setLastRemovedId,
   };
 
-  return <CreatureEditorUIContext.Provider value={value}>{children}</CreatureEditorUIContext.Provider>;
+  return <CodexEditorUIContext.Provider value={value}>{children}</CodexEditorUIContext.Provider>;
 };
 
-export const useCreatureEditorUI = () => {
-  const ctx = useContext(CreatureEditorUIContext);
-  if (!ctx) throw new Error('useCreatureEditorUI must be used within CreatureEditorUIProvider');
+export const useCodexEditorUI = () => {
+  const ctx = useContext(CodexEditorUIContext);
+  if (!ctx) throw new Error('useCodexEditorUI must be used within CodexEditorUIProvider');
   return ctx;
 };

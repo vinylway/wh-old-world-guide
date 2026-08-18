@@ -1,8 +1,12 @@
 import { useState, ReactNode } from 'react';
 import Icon from '@/components/ui/icon';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { sections, entries as staticEntries, itemCategories, sources, subgroups, defaultSourceIds, Source, Section, SectionId, SourceId, SectionGroupId, CodexEntry } from '@/data/codex';
 import EntryCard from './EntryCard';
+import { useCodexOverrides } from '@/hooks/useCodexOverrides';
+import { useCodexEditorUI } from '@/hooks/useCodexEditorUI';
+import { EDITABLE_SECTIONS } from '@/components/gm/EntryActions';
 
 interface SectionsProps {
   onSelect: (entry: CodexEntry) => void;
@@ -143,6 +147,9 @@ const SectionBlock = ({
   const sectionEntries = entries.filter((e) => e.section === section.id);
   const sectionSourceIds = section.sourceIds ?? defaultSourceIds;
   const sectionSources = sources.filter((s) => sectionSourceIds.includes(s.id));
+  const { isEditMode } = useCodexOverrides();
+  const { openNewForm } = useCodexEditorUI();
+  const isEditable = EDITABLE_SECTIONS.includes(section.id);
 
   return (
     <section id={`section-${section.id}`} className="scroll-mt-24 ornate-frame parchment-panel">
@@ -163,6 +170,17 @@ const SectionBlock = ({
 
       {open && (
         <div className="px-5 pb-6 animate-fade-in">
+          {isEditMode && isEditable && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="mb-4 border-gold/40"
+              onClick={() => openNewForm(section.id)}
+            >
+              <Icon name="Plus" size={14} className="mr-1.5" />
+              Добавить запись
+            </Button>
+          )}
           {section.id === 'items' ? (
             <Tabs defaultValue="equipment">
               <TabsList className="mb-6 flex-wrap h-auto gap-1 bg-secondary/60 border border-gold/20">

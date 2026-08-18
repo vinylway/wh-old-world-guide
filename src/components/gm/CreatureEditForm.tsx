@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
 import { CodexEntry, CreatureAttack, CreatureAbility, CreatureEquipmentItem, entries as staticEntries, sources, subgroups, SourceId } from '@/data/codex';
-import { useCreatureOverrides } from '@/hooks/useCreatureOverrides';
+import { useCodexOverrides } from '@/hooks/useCodexOverrides';
 import { useToast } from '@/hooks/use-toast';
 import LinkedTextEditor from './LinkedTextEditor';
 import EntryLinkPicker from './EntryLinkPicker';
@@ -53,7 +53,7 @@ const SectionCard = ({ title, children }: { title: string; children: React.React
 );
 
 const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFormProps) => {
-  const { saveCreature, entries: allEntries } = useCreatureOverrides();
+  const { saveEntry, entries: allEntries } = useCodexOverrides();
   const { toast } = useToast();
   const [form, setForm] = useState<CodexEntry>(entry ?? emptyEntry());
   const [saving, setSaving] = useState(false);
@@ -152,7 +152,7 @@ const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFo
         equipment: (cs.equipment ?? []).filter((e) => e.name.trim()),
       },
     };
-    const ok = await saveCreature(cleanedForm);
+    const ok = await saveEntry(cleanedForm);
     setSaving(false);
     if (ok) {
       toast({ title: 'Карточка сохранена' });

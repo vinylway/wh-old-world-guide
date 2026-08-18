@@ -8,16 +8,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useCreatureOverrides } from '@/hooks/useCreatureOverrides';
-import { useCreatureEditorUI } from '@/hooks/useCreatureEditorUI';
+import { useCodexOverrides } from '@/hooks/useCodexOverrides';
+import { useCodexEditorUI } from '@/hooks/useCodexEditorUI';
 import { useToast } from '@/hooks/use-toast';
 import EditPasswordDialog from './EditPasswordDialog';
-import CreatureEditForm from './CreatureEditForm';
+import EntryEditFormRouter from './EntryEditFormRouter';
 
-/** Глобальные диалоги редактирования существ: логин, форма создания/правки, подтверждение удаления.
+/** Глобальные диалоги редактирования кодекса: логин, форма создания/правки, подтверждение удаления.
  * Рендерится один раз в App.tsx, чтобы режим редактирования работал на любой странице сайта. */
 const GmEditGlobalUI = () => {
-  const { removeCreature } = useCreatureOverrides();
+  const { removeEntry } = useCodexOverrides();
   const { toast } = useToast();
   const {
     passwordOpen,
@@ -28,13 +28,13 @@ const GmEditGlobalUI = () => {
     closeDeleteConfirm,
     setLastSavedEntry,
     setLastRemovedId,
-  } = useCreatureEditorUI();
+  } = useCodexEditorUI();
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    const ok = await removeCreature(deleteTarget);
+    const ok = await removeEntry(deleteTarget);
     if (ok) {
-      toast({ title: 'Существо удалено из кодекса' });
+      toast({ title: 'Запись удалена из кодекса' });
       setLastRemovedId(deleteTarget.id);
       closeDeleteConfirm();
     } else {
@@ -46,9 +46,10 @@ const GmEditGlobalUI = () => {
     <>
       <EditPasswordDialog open={passwordOpen} onOpenChange={(v) => !v && closeLogin()} />
 
-      <CreatureEditForm
-        key={editForm.entry?.id ?? 'new'}
+      <EntryEditFormRouter
+        key={editForm.entry?.id ?? editForm.newSection ?? 'new'}
         entry={editForm.entry}
+        section={editForm.newSection}
         open={editForm.open}
         onOpenChange={(v) => !v && closeEditForm()}
         onSaved={(saved) => setLastSavedEntry(saved)}

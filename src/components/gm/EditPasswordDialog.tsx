@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
-import { useCreatureOverrides } from '@/hooks/useCreatureOverrides';
+import { useCodexOverrides } from '@/hooks/useCodexOverrides';
 
 interface EditPasswordDialogProps {
   open: boolean;
@@ -11,7 +11,7 @@ interface EditPasswordDialogProps {
 }
 
 const EditPasswordDialog = ({ open, onOpenChange }: EditPasswordDialogProps) => {
-  const { unlock, isUnlocking, loginError } = useCreatureOverrides();
+  const { unlock, isUnlocking, loginError } = useCodexOverrides();
   const [password, setPassword] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -7,10 +7,10 @@ import SearchDialog from '@/components/codex/SearchDialog';
 import EntryDialog from '@/components/codex/EntryDialog';
 import OrnateDivider from '@/components/codex/OrnateDivider';
 import Icon from '@/components/ui/icon';
-import { CreatureOverridesProvider, useCreatureOverrides } from '@/hooks/useCreatureOverrides';
-import { CreatureEditorUIProvider, useCreatureEditorUI } from '@/hooks/useCreatureEditorUI';
+import { CodexOverridesProvider, useCodexOverrides } from '@/hooks/useCodexOverrides';
+import { CodexEditorUIProvider, useCodexEditorUI } from '@/hooks/useCodexEditorUI';
 import EditModeToggle from '@/components/gm/EditModeToggle';
-import CreatureEntryActions from '@/components/gm/CreatureEntryActions';
+import EntryActions from '@/components/gm/EntryActions';
 import GmEditGlobalUI from '@/components/gm/GmEditGlobalUI';
 
 const GmCornerContent = () => {
@@ -18,8 +18,8 @@ const GmCornerContent = () => {
   const [searchFilter, setSearchFilter] = useState<SectionId | 'all'>('all');
   const [activeEntry, setActiveEntry] = useState<CodexEntry | null>(null);
   const group = sectionGroups.find((g) => g.id === 'gm-corner');
-  const { entries } = useCreatureOverrides();
-  const { lastSavedEntry, lastRemovedId, setLastSavedEntry, setLastRemovedId } = useCreatureEditorUI();
+  const { entries } = useCodexOverrides();
+  const { lastSavedEntry, lastRemovedId, setLastSavedEntry, setLastRemovedId } = useCodexEditorUI();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -97,7 +97,7 @@ const GmCornerContent = () => {
           setSearchFilter(sectionId);
           setSearchOpen(true);
         }}
-        headerExtra={activeEntry ? <CreatureEntryActions entry={activeEntry} onAfterReset={() => setActiveEntry(null)} /> : undefined}
+        headerExtra={activeEntry ? <EntryActions entry={activeEntry} onAfterReset={() => setActiveEntry(null)} /> : undefined}
       />
 
       <GmEditGlobalUI />
@@ -106,11 +106,11 @@ const GmCornerContent = () => {
 };
 
 const GmCorner = () => (
-  <CreatureOverridesProvider>
-    <CreatureEditorUIProvider>
+  <CodexOverridesProvider>
+    <CodexEditorUIProvider>
       <GmCornerContent />
-    </CreatureEditorUIProvider>
-  </CreatureOverridesProvider>
+    </CodexEditorUIProvider>
+  </CodexOverridesProvider>
 );
 
 export default GmCorner;

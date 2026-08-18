@@ -9,7 +9,7 @@ interface OverridesResponse {
   removed: string[];
 }
 
-interface CreatureOverridesContextValue {
+interface CodexOverridesContextValue {
   entries: CodexEntry[];
   loading: boolean;
   isEditMode: boolean;
@@ -17,19 +17,19 @@ interface CreatureOverridesContextValue {
   loginError: string | null;
   unlock: (password: string) => Promise<boolean>;
   lock: () => void;
-  saveCreature: (entry: CodexEntry) => Promise<boolean>;
-  removeCreature: (entry: CodexEntry) => Promise<boolean>;
-  resetCreature: (id: string) => Promise<boolean>;
+  saveEntry: (entry: CodexEntry) => Promise<boolean>;
+  removeEntry: (entry: CodexEntry) => Promise<boolean>;
+  resetEntry: (id: string) => Promise<boolean>;
   refresh: () => Promise<void>;
 }
 
-const CreatureOverridesContext = createContext<CreatureOverridesContextValue | null>(null);
+const CodexOverridesContext = createContext<CodexOverridesContextValue | null>(null);
 
 const mergeEntries = (overrides: Record<string, CodexEntry>, removed: string[]): CodexEntry[] => {
   const removedSet = new Set(removed);
   const merged = baseEntries
-    .filter((e) => e.section !== 'creatures' || !removedSet.has(e.id))
-    .map((e) => (e.section === 'creatures' && overrides[e.id] ? { ...e, ...overrides[e.id] } : e));
+    .filter((e) => !removedSet.has(e.id))
+    .map((e) => (overrides[e.id] ? { ...e, ...overrides[e.id] } : e));
 
   Object.values(overrides).forEach((entry) => {
     if (!merged.some((e) => e.id === entry.id)) {
@@ -40,7 +40,7 @@ const mergeEntries = (overrides: Record<string, CodexEntry>, removed: string[]):
   return merged;
 };
 
-export const CreatureOverridesProvider = ({ children }: { children: ReactNode }) => {
+export const CodexOverridesProvider = ({ children }: { children: ReactNode }) => {
   const [overrides, setOverrides] = useState<Record<string, CodexEntry>>({});
   const [removed, setRemoved] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,7 +97,7 @@ export const CreatureOverridesProvider = ({ children }: { children: ReactNode })
     setPassword(null);
   }, []);
 
-  const saveCreature = useCallback(async (entry: CodexEntry) => {
+  const saveEntry = useCallback(async (entry: CodexEntry) => {
     if (!password) return false;
     try {
       const res = await fetch(API_URL, {
@@ -121,7 +121,7 @@ export const CreatureOverridesProvider = ({ children }: { children: ReactNode })
     }
   }, [password, lock]);
 
-  const removeCreature = useCallback(async (entry: CodexEntry) => {
+  const removeEntry = useCallback(async (entry: CodexEntry) => {
     if (!password) return false;
     try {
       const res = await fetch(API_URL, {
@@ -144,7 +144,7 @@ export const CreatureOverridesProvider = ({ children }: { children: ReactNode })
     }
   }, [password, lock]);
 
-  const resetCreature = useCallback(async (id: string) => {
+  const resetEntry = useCallback(async (id: string) => {
     if (!password) return false;
     try {
       const res = await fetch(API_URL, {
@@ -172,7 +172,7 @@ export const CreatureOverridesProvider = ({ children }: { children: ReactNode })
     }
   }, [password, lock]);
 
-  const value: CreatureOverridesContextValue = {
+  const value: CodexOverridesContextValue = {
     entries: mergeEntries(overrides, removed),
     loading,
     isEditMode: !!password,
@@ -180,17 +180,17 @@ export const CreatureOverridesProvider = ({ children }: { children: ReactNode })
     loginError,
     unlock,
     lock,
-    saveCreature,
-    removeCreature,
-    resetCreature,
+    saveEntry,
+    removeEntry,
+    resetEntry,
     refresh,
   };
 
-  return <CreatureOverridesContext.Provider value={value}>{children}</CreatureOverridesContext.Provider>;
+  return <CodexOverridesContext.Provider value={value}>{children}</CodexOverridesContext.Provider>;
 };
 
-export const useCreatureOverrides = () => {
-  const ctx = useContext(CreatureOverridesContext);
-  if (!ctx) throw new Error('useCreatureOverrides must be used within CreatureOverridesProvider');
+export const useCodexOverrides = () => {
+  const ctx = useContext(CodexOverridesContext);
+  if (!ctx) throw new Error('useCodexOverrides must be used within CodexOverridesProvider');
   return ctx;
 };

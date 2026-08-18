@@ -1,25 +1,28 @@
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
-import { CodexEntry } from '@/data/codex';
-import { useCreatureOverrides } from '@/hooks/useCreatureOverrides';
-import { useCreatureEditorUI } from '@/hooks/useCreatureEditorUI';
+import { CodexEntry, SectionId } from '@/data/codex';
+import { useCodexOverrides } from '@/hooks/useCodexOverrides';
+import { useCodexEditorUI } from '@/hooks/useCodexEditorUI';
 import { useToast } from '@/hooks/use-toast';
 
-interface CreatureEntryActionsProps {
+interface EntryActionsProps {
   entry: CodexEntry;
   onAfterReset?: () => void;
 }
 
-const isCustomEntry = (entry: CodexEntry) => entry.id.startsWith('c-custom-');
+export const EDITABLE_SECTIONS: SectionId[] = ['creatures', 'items', 'rules', 'careers'];
 
-/** Панель кнопок «Редактировать / Сбросить правки / Удалить» для карточки существа.
- * Показывается в EntryDialog как headerExtra, когда включён режим редактирования. */
-const CreatureEntryActions = ({ entry, onAfterReset }: CreatureEntryActionsProps) => {
-  const { isEditMode, resetCreature } = useCreatureOverrides();
-  const { openEditForm, openDeleteConfirm } = useCreatureEditorUI();
+const isCustomEntry = (entry: CodexEntry) => entry.id.includes('-custom-');
+
+/** Панель кнопок «Редактировать / Сбросить правки / Удалить» для карточки кодекса.
+ * Показывается в EntryDialog как headerExtra, когда включён режим редактирования
+ * и текущая секция поддерживает редактирование. */
+const EntryActions = ({ entry, onAfterReset }: EntryActionsProps) => {
+  const { isEditMode, resetEntry } = useCodexOverrides();
+  const { openEditForm, openDeleteConfirm } = useCodexEditorUI();
   const { toast } = useToast();
 
-  if (!isEditMode || entry.section !== 'creatures') return null;
+  if (!isEditMode || !EDITABLE_SECTIONS.includes(entry.section)) return null;
 
   return (
     <div className="flex flex-wrap justify-center gap-2">
@@ -33,7 +36,7 @@ const CreatureEntryActions = ({ entry, onAfterReset }: CreatureEntryActionsProps
           variant="outline"
           className="border-gold/40"
           onClick={async () => {
-            const ok = await resetCreature(entry.id);
+            const ok = await resetEntry(entry.id);
             if (ok) {
               toast({ title: 'Правки сброшены' });
               onAfterReset?.();
@@ -52,4 +55,4 @@ const CreatureEntryActions = ({ entry, onAfterReset }: CreatureEntryActionsProps
   );
 };
 
-export default CreatureEntryActions;
+export default EntryActions;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { CodexEntry, SectionId, entries, sectionGroups } from '@/data/codex';
+import { CodexEntry, SectionId, sectionGroups } from '@/data/codex';
 import Header from '@/components/codex/Header';
 import Footer from '@/components/codex/Footer';
 import Sections from '@/components/codex/Sections';
@@ -8,12 +8,19 @@ import SearchDialog from '@/components/codex/SearchDialog';
 import EntryDialog from '@/components/codex/EntryDialog';
 import OrnateDivider from '@/components/codex/OrnateDivider';
 import Icon from '@/components/ui/icon';
+import { CodexOverridesProvider, useCodexOverrides } from '@/hooks/useCodexOverrides';
+import { CodexEditorUIProvider, useCodexEditorUI } from '@/hooks/useCodexEditorUI';
+import EditModeToggle from '@/components/gm/EditModeToggle';
+import EntryActions from '@/components/gm/EntryActions';
+import GmEditGlobalUI from '@/components/gm/GmEditGlobalUI';
 
-const PlayerCorner = () => {
+const PlayerCornerContent = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchFilter, setSearchFilter] = useState<SectionId | 'all'>('all');
   const [activeEntry, setActiveEntry] = useState<CodexEntry | null>(null);
   const group = sectionGroups.find((g) => g.id === 'player-corner');
+  const { entries } = useCodexOverrides();
+  const { lastSavedEntry, lastRemovedId, setLastSavedEntry, setLastRemovedId } = useCodexEditorUI();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -25,6 +32,20 @@ const PlayerCorner = () => {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  useEffect(() => {
+    if (lastSavedEntry) {
+      setActiveEntry(lastSavedEntry);
+      setLastSavedEntry(null);
+    }
+  }, [lastSavedEntry, setLastSavedEntry]);
+
+  useEffect(() => {
+    if (lastRemovedId && activeEntry?.id === lastRemovedId) {
+      setActiveEntry(null);
+      setLastRemovedId(null);
+    }
+  }, [lastRemovedId, activeEntry, setLastRemovedId]);
 
   return (
     <div className="min-h-screen">
@@ -55,11 +76,12 @@ const PlayerCorner = () => {
               <Icon name="Dices" size={16} />
               Создать персонажа
             </Link>
+            <EditModeToggle />
           </div>
           <OrnateDivider className="mt-8" />
         </div>
 
-        <Sections onSelect={setActiveEntry} groupId="player-corner" />
+        <Sections onSelect={setActiveEntry} groupId="player-corner" entries={entries} />
       </main>
       <Footer />
 
@@ -68,9 +90,11 @@ const PlayerCorner = () => {
         onOpenChange={setSearchOpen}
         onSelect={setActiveEntry}
         initialFilter={searchFilter}
+        entries={entries}
       />
       <EntryDialog
         entry={activeEntry}
+        entries={entries}
         onOpenChange={() => setActiveEntry(null)}
         onNavigate={(id) => {
           const target = entries.find((e) => e.id === id);
@@ -81,9 +105,20 @@ const PlayerCorner = () => {
           setSearchFilter(sectionId);
           setSearchOpen(true);
         }}
+        headerExtra={activeEntry ? <EntryActions entry={activeEntry} onAfterReset={() => setActiveEntry(null)} /> : undefined}
       />
+
+      <GmEditGlobalUI />
     </div>
   );
 };
+
+const PlayerCorner = () => (
+  <CodexOverridesProvider>
+    <CodexEditorUIProvider>
+      <PlayerCornerContent />
+    </CodexEditorUIProvider>
+  </CodexOverridesProvider>
+);
 
 export default PlayerCorner;
