@@ -10,6 +10,7 @@ import {
   StatRowValue,
   Callout,
   CalloutItem,
+  StatLink,
   SectionId,
   SourceId,
   ItemCategoryId,
@@ -41,6 +42,17 @@ const SECTION_LABELS: Record<string, string> = {
 const SKILL_APPLICABLE_SECTIONS: SectionId[] = ['ventures'];
 // Разделы, где применимы предпочтительные знания (показывается отдельным блоком вверху карточки)
 const KNOWLEDGE_APPLICABLE_SECTIONS: SectionId[] = ['faith'];
+// Стандартные метки строк таблицы характеристик карьеры — используются для быстрого добавления
+const CAREER_STAT_LABELS = [
+  'Статус',
+  'Происхождения',
+  'Предпочтительные характеристики',
+  'Бонусы к навыкам',
+  'Знание',
+  'Имущество',
+  'Активы',
+  'Контакты',
+];
 
 const emptyEntry = (section: SectionId, source: SourceId): CodexEntry => ({
   id: `${section}-custom-${Date.now()}`,
@@ -119,8 +131,8 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
     setForm((f) => ({ ...f, stats: next }));
   };
 
-  const addStat = () => {
-    setForm((f) => ({ ...f, stats: [...(f.stats ?? []), { label: '', value: '' }] }));
+  const addStat = (label = '') => {
+    setForm((f) => ({ ...f, stats: [...(f.stats ?? []), { label, value: '' }] }));
   };
 
   const removeStat = (idx: number) => {
@@ -133,19 +145,18 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
     setForm((f) => ({ ...f, callouts: next }));
   };
 
-  const addCallout = () => {
-    setForm((f) => ({ ...f, callouts: [...(f.callouts ?? []), { title: '', items: [''] }] }));
+  const addCallout = (title = '') => {
+    setForm((f) => ({ ...f, callouts: [...(f.callouts ?? []), { title, items: [''] }] }));
   };
 
   const removeCallout = (idx: number) => {
     setForm((f) => ({ ...f, callouts: (f.callouts ?? []).filter((_, i) => i !== idx) }));
   };
 
-  const updateCalloutItem = (calloutIdx: number, itemIdx: number, text: string) => {
+  const updateCalloutItem = (calloutIdx: number, itemIdx: number, text: string, links?: StatLink[]) => {
     const callout = callouts[calloutIdx];
     const items = [...callout.items];
-    const prev = items[itemIdx];
-    items[itemIdx] = typeof prev === 'string' ? text : ({ ...prev, text } as CalloutItem);
+    items[itemIdx] = links && links.length > 0 ? ({ text, links } as CalloutItem) : text;
     updateCallout(calloutIdx, { items });
   };
 
@@ -335,34 +346,56 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
 
           <SectionCard title="Характеристики (таблица параметров)">
             {stats.map((s, idx) => (
-              <div key={idx} className="flex gap-2 items-start">
-                <Input placeholder="Метка (например «Цена»)" value={s.label} onChange={(e) => updateStat(idx, { label: e.target.value })} className="w-1/3" />
-                <Input placeholder="Значение" value={s.value} onChange={(e) => updateStat(idx, { value: e.target.value })} />
-                <Button type="button" variant="ghost" size="sm" onClick={() => removeStat(idx)} className="text-destructive shrink-0">
-                  <Icon name="Trash2" size={14} />
-                </Button>
+              <div key={idx} className="rounded border border-gold/15 p-2 space-y-2">
+                <div className="flex gap-2 items-start">
+                  <Input placeholder="Метка (например «Активы»)" value={s.label} onChange={(e) => updateStat(idx, { label: e.target.value })} className="w-1/3" />
+                  <Button type="button" variant="ghost" size="sm" onClick={() => removeStat(idx)} className="text-destructive shrink-0">
+                    <Icon name="Trash2" size={14} />
+                  </Button>
+                </div>
+                <LinkedTextEditor
+                  rows={2}
+                  placeholder="Значение (выделите текст, чтобы привязать ссылку)"
+                  value={s.value}
+                  links={s.links}
+                  entries={linkableEntries}
+                  onChange={(value, links) => updateStat(idx, { value, links })}
+                />
               </div>
             ))}
-            <Button type="button" variant="outline" size="sm" onClick={addStat}>
-              <Icon name="Plus" size={14} className="mr-1" /> Добавить строку
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => addStat()}>
+                <Icon name="Plus" size={14} className="mr-1" /> Добавить строку
+              </Button>
+              {activeSection === 'careers' &&
+                CAREER_STAT_LABELS.filter((label) => !stats.some((s) => s.label === label)).map((label) => (
+                  <Button key={label} type="button" variant="ghost" size="sm" onClick={() => addStat(label)} className="text-gold/80">
+                    <Icon name="Plus" size={12} className="mr-1" /> {label}
+                  </Button>
+                ))}
+            </div>
           </SectionCard>
 
-          <SectionCard title="Заметки (блоки со списками — примеры, пороги, таланты)">
+          <SectionCard title="Заметки (блоки со списками — примеры, пороги, карьерный талант)">
             {callouts.map((c, cIdx) => (
               <div key={cIdx} className="rounded border border-gold/15 p-2 space-y-2">
                 <Input
-                  placeholder="Заголовок блока"
+                  placeholder="Заголовок блока (например «Карьерный талант: Личный рецепт»)"
                   value={c.title}
                   onChange={(e) => updateCallout(cIdx, { title: e.target.value })}
                 />
                 {c.items.map((item, iIdx) => (
-                  <div key={iIdx} className="flex gap-2 items-center">
-                    <Input
-                      placeholder="Пункт списка"
-                      value={typeof item === 'string' ? item : item.text}
-                      onChange={(e) => updateCalloutItem(cIdx, iIdx, e.target.value)}
-                    />
+                  <div key={iIdx} className="flex gap-2 items-start">
+                    <div className="flex-1">
+                      <LinkedTextEditor
+                        rows={2}
+                        placeholder="Пункт списка (выделите текст, чтобы привязать ссылку)"
+                        value={typeof item === 'string' ? item : item.text}
+                        links={typeof item === 'string' ? undefined : item.links}
+                        entries={linkableEntries}
+                        onChange={(value, links) => updateCalloutItem(cIdx, iIdx, value, links)}
+                      />
+                    </div>
                     <Button type="button" variant="ghost" size="sm" onClick={() => removeCalloutItem(cIdx, iIdx)} className="text-destructive shrink-0">
                       <Icon name="Trash2" size={14} />
                     </Button>
@@ -378,9 +411,16 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
                 </div>
               </div>
             ))}
-            <Button type="button" variant="outline" size="sm" onClick={addCallout}>
-              <Icon name="Plus" size={14} className="mr-1" /> Добавить блок
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => addCallout()}>
+                <Icon name="Plus" size={14} className="mr-1" /> Добавить блок
+              </Button>
+              {activeSection === 'careers' && !callouts.some((c) => c.title.startsWith('Карьерный талант')) && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => addCallout('Карьерный талант: ')} className="text-gold/80">
+                  <Icon name="Plus" size={12} className="mr-1" /> Карьерный талант
+                </Button>
+              )}
+            </div>
           </SectionCard>
 
           <div className="flex justify-end gap-2 pt-2">
