@@ -21,7 +21,7 @@ export interface CreatureAttack {
   damage: string;
   rounds: string;
   traits?: string;
-  linkEntryId?: string;
+  traitsLinks?: StatLink[];
 }
 
 export interface CreatureAbility {
@@ -1044,7 +1044,7 @@ export const entries: CodexEntry[] = [
     tags: ['талант', 'акробатика'], meta: 'Талант',
     stats: [
       { label: 'Цена', value: '3 ПО' },
-      { label: 'Требования', value: 'Проворство 4+', links: [{ match: 'Проворство', entryId: 'ability-pr' }] },,
+      { label: 'Требования', value: 'Проворство 4+', links: [{ match: 'Проворство', entryId: 'ability-pr' }] },
     ],
   },
   {

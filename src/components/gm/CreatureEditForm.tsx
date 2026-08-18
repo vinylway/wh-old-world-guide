@@ -58,7 +58,6 @@ const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFo
   const [form, setForm] = useState<CodexEntry>(entry ?? emptyEntry());
   const [saving, setSaving] = useState(false);
   const [equipmentPickerIdx, setEquipmentPickerIdx] = useState<number | null>(null);
-  const [attackPickerIdx, setAttackPickerIdx] = useState<number | null>(null);
   const linkableEntries = allEntries.length ? allEntries : staticEntries;
 
   const existingSubgroups = useMemo(
@@ -277,24 +276,22 @@ const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFo
             {cs.attacks.map((a, idx) => (
               <div key={idx} className="rounded border border-gold/15 p-2 space-y-2">
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="flex gap-2 items-center col-span-2">
-                    <Input placeholder="Название" value={a.name} onChange={(e) => updateAttack(idx, { name: e.target.value })} />
-                    <Button
-                      type="button"
-                      variant={a.linkEntryId ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setAttackPickerIdx(idx)}
-                      className="shrink-0"
-                      title={a.linkEntryId ? 'Ссылка привязана' : 'Привязать ссылку'}
-                    >
-                      <Icon name="Link2" size={14} />
-                    </Button>
-                  </div>
+                  <Input placeholder="Название" className="col-span-2" value={a.name} onChange={(e) => updateAttack(idx, { name: e.target.value })} />
                   <Input placeholder="Дистанция" value={a.range} onChange={(e) => updateAttack(idx, { range: e.target.value })} />
                   <Input placeholder="Пул костей (напр. 3d/3)" value={a.formula} onChange={(e) => updateAttack(idx, { formula: e.target.value })} />
                   <Input placeholder="Урон" value={a.damage} onChange={(e) => updateAttack(idx, { damage: e.target.value })} />
                   <Input placeholder="1Р/2Р" value={a.rounds} onChange={(e) => updateAttack(idx, { rounds: e.target.value })} />
-                  <Input placeholder="Особенности (необязательно)" value={a.traits ?? ''} onChange={(e) => updateAttack(idx, { traits: e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Особенности (необязательно)</Label>
+                  <LinkedTextEditor
+                    rows={2}
+                    placeholder="Особенности атаки"
+                    value={a.traits ?? ''}
+                    links={a.traitsLinks}
+                    entries={linkableEntries}
+                    onChange={(value, traitsLinks) => updateAttack(idx, { traits: value, traitsLinks })}
+                  />
                 </div>
                 <Button type="button" variant="ghost" size="sm" onClick={() => removeAttack(idx)} className="text-destructive">
                   <Icon name="Trash2" size={14} className="mr-1" /> Удалить атаку
@@ -368,18 +365,6 @@ const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFo
           onSelect={(target) => {
             if (equipmentPickerIdx !== null) {
               updateEquipment(equipmentPickerIdx, { linkEntryId: target.id });
-            }
-          }}
-        />
-
-        <EntryLinkPicker
-          open={attackPickerIdx !== null}
-          onOpenChange={(v) => !v && setAttackPickerIdx(null)}
-          entries={linkableEntries}
-          title="Найдите карточку оружия"
-          onSelect={(target) => {
-            if (attackPickerIdx !== null) {
-              updateAttack(attackPickerIdx, { linkEntryId: target.id });
             }
           }}
         />
