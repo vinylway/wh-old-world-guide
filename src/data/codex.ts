@@ -259,6 +259,7 @@ export const sections: Section[] = [
   {
     id: 'magic', title: 'Магия', icon: 'Sparkles',
     description: 'Ветра магии, заклинания и колдовские традиции',
+    sourceIds: ['player'],
     groups: ['player-corner'],
   },
   {
