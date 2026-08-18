@@ -10,7 +10,7 @@ interface EntryActionsProps {
   onAfterReset?: () => void;
 }
 
-export const EDITABLE_SECTIONS: SectionId[] = ['creatures', 'items', 'rules', 'careers'];
+export const EDITABLE_SECTIONS: SectionId[] = ['creatures', 'items', 'rules', 'careers', 'magic', 'faith'];
 
 const isCustomEntry = (entry: CodexEntry) => entry.id.includes('-custom-');
 

@@ -146,6 +146,16 @@ export const subgroups: Subgroup[] = [
   { id: 'magic-school-elementalism', title: 'Школа магии (Элементализм)', sectionId: 'magic', sourceId: 'player' },
   { id: 'magic-school-illusion', title: 'Школа магии (Иллюзия)', sectionId: 'magic', sourceId: 'player' },
   { id: 'magic-school-necromancy', title: 'Школа магии (Некромантия)', sectionId: 'magic', sourceId: 'player' },
+  { id: 'faith-ulric', title: 'Ульрик', sectionId: 'faith', sourceId: 'player' },
+  { id: 'faith-taal', title: 'Таал', sectionId: 'faith', sourceId: 'player' },
+  { id: 'faith-rhya', title: 'Райя', sectionId: 'faith', sourceId: 'player' },
+  { id: 'faith-sigmar', title: 'Сигмар', sectionId: 'faith', sourceId: 'player' },
+  { id: 'faith-manann', title: 'Мананн', sectionId: 'faith', sourceId: 'player' },
+  { id: 'faith-morr', title: 'Морр', sectionId: 'faith', sourceId: 'player' },
+  { id: 'faith-ranald', title: 'Ранальд', sectionId: 'faith', sourceId: 'player' },
+  { id: 'faith-verena', title: 'Верена', sectionId: 'faith', sourceId: 'player' },
+  { id: 'faith-myrmidia', title: 'Мирмидия', sectionId: 'faith', sourceId: 'player' },
+  { id: 'faith-shallya', title: 'Шалия', sectionId: 'faith', sourceId: 'player' },
 ];
 
 export type ItemCategoryId = 'melee' | 'throwing' | 'ranged' | 'armor' | 'tools' | 'magic-items' | 'assets';
@@ -166,7 +176,7 @@ export const itemCategories: ItemCategory[] = [
   { id: 'magic-items', title: 'Магические предметы', icon: 'Sparkles' },
 ];
 
-export type SectionId = 'rules' | 'abilities' | 'origins' | 'careers' | 'creatures' | 'items' | 'magic' | 'contacts';
+export type SectionId = 'rules' | 'abilities' | 'origins' | 'careers' | 'creatures' | 'items' | 'magic' | 'faith' | 'contacts';
 
 export type SectionGroupId = 'player-corner' | 'gm-corner';
 
@@ -235,6 +245,12 @@ export const sections: Section[] = [
   {
     id: 'magic', title: 'Магия', icon: 'Sparkles',
     description: 'Ветра магии, заклинания и колдовские традиции',
+    groups: ['player-corner'],
+  },
+  {
+    id: 'faith', title: 'Вера', icon: 'Church',
+    description: 'Культы Старого Света и молитвы их последователей',
+    sourceIds: ['player'],
     groups: ['player-corner'],
   },
   {
@@ -6608,5 +6624,10 @@ export const entries: CodexEntry[] = [
     id: 'career-charlatan', section: 'careers', source: 'player', title: 'Шарлатан',
     summary: 'Обаятельный мошенник, торгующий поддельными чудо-снадобьями, гаданиями и лживыми обещаниями. Живёт за счёт доверчивости толпы и всегда готов сорваться с места, если обман раскроют.',
     tags: ['карьера', 'шарлатан', 'обман', 'торговля'], meta: 'Карьера',
+  },
+  {
+    id: 'faith-test', section: 'faith', source: 'player', title: 'Тест', subgroup: 'Ульрик',
+    summary: 'Тестовая карточка молитвы для проверки раздела «Вера».',
+    tags: ['тест'], meta: 'Молитва',
   },
 ];
