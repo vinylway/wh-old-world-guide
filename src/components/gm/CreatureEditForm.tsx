@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
-import { CodexEntry, CreatureAttack, CreatureAbility, CreatureEquipmentItem, entries as staticEntries, sources, subgroups, SourceId } from '@/data/codex';
+import { CodexEntry, CreatureAttack, CreatureAbility, CreatureEquipmentItem, Callout, StatLink, entries as staticEntries, sources, subgroups, SourceId } from '@/data/codex';
 import { useCodexOverrides } from '@/hooks/useCodexOverrides';
 import { useToast } from '@/hooks/use-toast';
 import LinkedTextEditor from './LinkedTextEditor';
@@ -22,6 +22,7 @@ interface CreatureEditFormProps {
 }
 
 const CHAR_CODES = ['ББ', 'ДБ', 'С', 'В', 'И', 'Пр', 'Р', 'Х'];
+const WOUND_THRESHOLD_TITLE = 'Пороги ран';
 
 const emptyEntry = (): CodexEntry => ({
   id: `c-custom-${Date.now()}`,
@@ -135,6 +136,46 @@ const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFo
     updateCs({ equipment: (cs.equipment ?? []).filter((_, i) => i !== idx) });
   };
 
+  const callouts = form.callouts ?? [];
+  const woundThresholdIdx = callouts.findIndex((c) => c.title === WOUND_THRESHOLD_TITLE);
+  const hasWoundThreshold = woundThresholdIdx !== -1;
+  const woundThreshold = hasWoundThreshold ? callouts[woundThresholdIdx] : null;
+
+  const updateCallouts = (next: Callout[]) => {
+    setForm((f) => ({ ...f, callouts: next }));
+  };
+
+  const toggleWoundThreshold = (enabled: boolean) => {
+    if (enabled) {
+      updateCallouts([...callouts, { title: WOUND_THRESHOLD_TITLE, items: [''] }]);
+    } else {
+      updateCallouts(callouts.filter((c) => c.title !== WOUND_THRESHOLD_TITLE));
+    }
+  };
+
+  const updateWoundThresholdItem = (itemIdx: number, text: string, links?: StatLink[]) => {
+    if (!woundThreshold) return;
+    const items = [...woundThreshold.items];
+    items[itemIdx] = links && links.length > 0 ? { text, links } : text;
+    const next = [...callouts];
+    next[woundThresholdIdx] = { ...woundThreshold, items };
+    updateCallouts(next);
+  };
+
+  const addWoundThresholdItem = () => {
+    if (!woundThreshold) return;
+    const next = [...callouts];
+    next[woundThresholdIdx] = { ...woundThreshold, items: [...woundThreshold.items, ''] };
+    updateCallouts(next);
+  };
+
+  const removeWoundThresholdItem = (itemIdx: number) => {
+    if (!woundThreshold) return;
+    const next = [...callouts];
+    next[woundThresholdIdx] = { ...woundThreshold, items: woundThreshold.items.filter((_, i) => i !== itemIdx) };
+    updateCallouts(next);
+  };
+
   const handleSave = async () => {
     if (!form.title.trim()) {
       toast({ title: 'Укажите название существа', variant: 'destructive' });
@@ -151,6 +192,13 @@ const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFo
         abilities: cs.abilities.filter((a) => a.name.trim()),
         equipment: (cs.equipment ?? []).filter((e) => e.name.trim()),
       },
+      callouts: callouts
+        .map((c) =>
+          c.title === WOUND_THRESHOLD_TITLE
+            ? { ...c, items: c.items.filter((i) => (typeof i === 'string' ? i.trim() : i.text.trim())) }
+            : c
+        )
+        .filter((c) => c.items.length > 0),
     };
     const ok = await saveEntry(cleanedForm);
     setSaving(false);
@@ -323,6 +371,42 @@ const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFo
             <Button type="button" variant="outline" size="sm" onClick={addAbility}>
               <Icon name="Plus" size={14} className="mr-1" /> Добавить способность
             </Button>
+          </SectionCard>
+
+          <SectionCard title="Порог ран">
+            <label className="flex items-center gap-2 text-sm text-parchment/90 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={hasWoundThreshold}
+                onChange={(e) => toggleWoundThreshold(e.target.checked)}
+                className="h-4 w-4 accent-gold"
+              />
+              Применимо к этому существу
+            </label>
+            {hasWoundThreshold && woundThreshold && (
+              <div className="space-y-2">
+                {woundThreshold.items.map((item, idx) => (
+                  <div key={idx} className="flex gap-2 items-start">
+                    <div className="flex-1">
+                      <LinkedTextEditor
+                        rows={1}
+                        placeholder="Например: 1 рана: получает состояние истощён"
+                        value={typeof item === 'string' ? item : item.text}
+                        links={typeof item === 'string' ? undefined : item.links}
+                        entries={linkableEntries}
+                        onChange={(value, links) => updateWoundThresholdItem(idx, value, links)}
+                      />
+                    </div>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => removeWoundThresholdItem(idx)} className="text-destructive shrink-0">
+                      <Icon name="Trash2" size={14} />
+                    </Button>
+                  </div>
+                ))}
+                <Button type="button" variant="outline" size="sm" onClick={addWoundThresholdItem}>
+                  <Icon name="Plus" size={14} className="mr-1" /> Добавить строку порога
+                </Button>
+              </div>
+            )}
           </SectionCard>
 
           <SectionCard title="Типичное снаряжение">
