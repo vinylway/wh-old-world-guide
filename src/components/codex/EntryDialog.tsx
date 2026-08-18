@@ -79,6 +79,7 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection, entries, 
   const section = entry ? sections.find((s) => s.id === entry.section) : null;
   const cs = entry?.creatureStats;
   const skillEntry = entry?.skillEntryId ? activeEntries.find((e) => e.id === entry.skillEntryId) : null;
+  const knowledgeEntry = entry?.knowledgeEntryId ? activeEntries.find((e) => e.id === entry.knowledgeEntryId) : null;
   const [showSummary, setShowSummary] = useState(false);
   const [showOpinions, setShowOpinions] = useState(false);
 
@@ -173,7 +174,17 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection, entries, 
                 className="story-link mx-auto mt-4 flex items-center gap-2 rounded border border-gold/40 bg-secondary/50 px-4 py-2 font-display text-sm uppercase tracking-wide text-gold hover:bg-secondary transition-colors"
               >
                 <Icon name="Dices" size={15} />
-                Навык: <span className="font-semibold">{skillEntry.title}</span>
+                Рекомендованный навык: <span className="font-semibold">{skillEntry.title}</span>
+              </button>
+            )}
+
+            {knowledgeEntry && (
+              <button
+                onClick={() => handleNavigate(knowledgeEntry.id)}
+                className="story-link mx-auto mt-4 flex items-center gap-2 rounded border border-gold/40 bg-secondary/50 px-4 py-2 font-display text-sm uppercase tracking-wide text-gold hover:bg-secondary transition-colors"
+              >
+                <Icon name="BookOpen" size={15} />
+                Предпочтительные знания: <span className="font-semibold">{knowledgeEntry.title}</span>
               </button>
             )}
 

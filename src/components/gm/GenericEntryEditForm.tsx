@@ -37,8 +37,10 @@ const SECTION_LABELS: Record<string, string> = {
   careers: 'карьеры',
 };
 
-// Разделы, где применим бросок навыка (показывается отдельным блоком вверху карточки)
-const SKILL_APPLICABLE_SECTIONS: SectionId[] = ['ventures', 'faith'];
+// Разделы, где применим рекомендованный навык (показывается отдельным блоком вверху карточки)
+const SKILL_APPLICABLE_SECTIONS: SectionId[] = ['ventures'];
+// Разделы, где применимы предпочтительные знания (показывается отдельным блоком вверху карточки)
+const KNOWLEDGE_APPLICABLE_SECTIONS: SectionId[] = ['faith'];
 
 const emptyEntry = (section: SectionId, source: SourceId): CodexEntry => ({
   id: `${section}-custom-${Date.now()}`,
@@ -71,9 +73,12 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
   );
   const [saving, setSaving] = useState(false);
   const [skillPickerOpen, setSkillPickerOpen] = useState(false);
+  const [knowledgePickerOpen, setKnowledgePickerOpen] = useState(false);
   const linkableEntries = allEntries.length ? allEntries : staticEntries;
   const skillEntries = linkableEntries.filter((e) => e.section === 'abilities' && e.subgroup === 'Навыки');
+  const knowledgeEntries = linkableEntries.filter((e) => e.section === 'abilities' && e.id.startsWith('lore-'));
   const selectedSkill = form.skillEntryId ? linkableEntries.find((e) => e.id === form.skillEntryId) : null;
+  const selectedKnowledge = form.knowledgeEntryId ? linkableEntries.find((e) => e.id === form.knowledgeEntryId) : null;
 
   useEffect(() => {
     if (open) {
@@ -271,7 +276,7 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
           </SectionCard>
 
           {activeSection && SKILL_APPLICABLE_SECTIONS.includes(activeSection) && (
-            <SectionCard title="Навык (если применимо)">
+            <SectionCard title="Рекомендованный навык (если применимо)">
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
@@ -284,6 +289,27 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
                 </Button>
                 {selectedSkill && (
                   <Button type="button" variant="ghost" size="sm" onClick={() => setForm((f) => ({ ...f, skillEntryId: undefined }))} className="text-destructive">
+                    <Icon name="X" size={14} />
+                  </Button>
+                )}
+              </div>
+            </SectionCard>
+          )}
+
+          {activeSection && KNOWLEDGE_APPLICABLE_SECTIONS.includes(activeSection) && (
+            <SectionCard title="Предпочтительные знания (если применимо)">
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant={selectedKnowledge ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setKnowledgePickerOpen(true)}
+                >
+                  <Icon name="BookOpen" size={14} className="mr-1.5" />
+                  {selectedKnowledge ? selectedKnowledge.title : 'Выбрать знание'}
+                </Button>
+                {selectedKnowledge && (
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setForm((f) => ({ ...f, knowledgeEntryId: undefined }))} className="text-destructive">
                     <Icon name="X" size={14} />
                   </Button>
                 )}
@@ -356,6 +382,14 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
         entries={skillEntries}
         title="Найдите навык"
         onSelect={(picked) => setForm((f) => ({ ...f, skillEntryId: picked.id }))}
+      />
+
+      <EntryLinkPicker
+        open={knowledgePickerOpen}
+        onOpenChange={setKnowledgePickerOpen}
+        entries={knowledgeEntries}
+        title="Найдите знание"
+        onSelect={(picked) => setForm((f) => ({ ...f, knowledgeEntryId: picked.id }))}
       />
     </Dialog>
   );
