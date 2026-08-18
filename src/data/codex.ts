@@ -1076,11 +1076,19 @@ export const entries: CodexEntry[] = [
     id: 'talent-breton-furious-charge', section: 'abilities', source: 'player', title: 'Яростная атака', subgroup: 'Таланты',
     summary: 'Стремительный натиск персонажа — будь то конная сшибка или пеший рывок — обрушивается на врага с сокрушительной силой. Даёт льготу к проверкам атаки рукопашного боя, совершённым после стремительного сближения с противником.',
     tags: ['талант', 'яростная атака'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '3 пункта опыта' },
+      { label: 'Требования', value: 'Ближний бой 4+', links: [{ match: 'Ближний бой', entryId: 'ability-bb' }] },
+    ],
   },
   {
     id: 'talent-breton-oath-of-honour', section: 'abilities', source: 'player', title: 'Обет чести', subgroup: 'Таланты',
     summary: 'Персонаж связывает себя торжественной клятвой — служения сюзерену, защиты слабых или свершения подвига во имя высшего идеала. Пока обет не нарушен, персонаж получает льготу к проверкам Силы воли, связанным с его соблюдением; нарушение обета может повлечь тяжкие последствия по решению Мастера Игры.',
     tags: ['талант', 'честь', 'обет'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'отсутствуют' },
+    ],
   },
    {
     id: 'talent-breton-acrobatic', section: 'abilities', source: 'player', title: 'Акробатика', subgroup: 'Таланты',
@@ -1095,6 +1103,10 @@ export const entries: CodexEntry[] = [
     id: 'talent-dwarf-armour-piercing', section: 'abilities', source: 'player', title: 'Бронебойность', subgroup: 'Таланты',
     summary: 'Удары персонажа умеют находить слабые места в доспехах противника — при удачной атаке часть защитного бонуса цели, обеспеченного бронёй, попросту не учитывается.',
     tags: ['талант', 'оружие'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '3 пункта опыта' },
+      { label: 'Требования', value: 'Ближний бой 4+', links: [{ match: 'Ближний бой', entryId: 'ability-bb' }] },
+    ],
   },
   {
     id: 'talent-dwarf-hatred', section: 'abilities', source: 'player', title: 'Ненависть', subgroup: 'Таланты',
@@ -1109,26 +1121,46 @@ export const entries: CodexEntry[] = [
     id: 'talent-dwarf-scrutiny', section: 'abilities', source: 'player', title: 'Пристальное изучение', subgroup: 'Таланты',
     summary: 'Персонаж умеет подмечать мельчайшие детали в предметах, надписях и мастерстве изготовления, что позволяет ему быстро распознавать подделки, скрытые изъяны или потайные механизмы.',
     tags: ['талант', 'наблюдательность'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Наблюдательность 4+', links: [{ match: 'Наблюдательность', entryId: 'skill-observation' }] },
+    ],
   },
   {
     id: 'talent-dwarf-long-beard', section: 'abilities', source: 'player', title: 'Длиннобород', subgroup: 'Таланты',
     summary: 'Почтенный возраст и заслуги персонажа среди своего народа снискали ему немалое уважение — другие гномы прислушиваются к его словам и суждениям с особым почтением.',
     tags: ['талант', 'репутация'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Происхождение гном', links: [{ match: 'Происхождение', sectionId: 'origins' }] },
+    ],
   },
   {
     id: 'talent-dwarf-night-owl', section: 'abilities', source: 'player', title: 'Ночной житель', subgroup: 'Таланты',
     summary: 'Долгая жизнь в подземных твердынях приучила персонажа обходиться без солнечного света — он свободно ориентируется в темноте и не испытывает неудобств от жизни под землёй.',
     tags: ['талант', 'подземелье'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'отсутствуют' },
+    ],
   },
   {
     id: 'talent-quick-reload', section: 'abilities', source: 'player', title: 'Быстрая перезарядка', subgroup: 'Таланты',
     summary: 'Персонаж заряжает арбалет, ружьё или иное медленное оружие значительно быстрее, чем это обычно требуется, — драгоценные мгновения боя не пропадают даром.',
     tags: ['талант', 'оружие'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Стрельба 4+', links: [{ match: 'Стрельба', entryId: 'skill-shooting' }] },
+    ],
   },
   {
     id: 'talent-dwarf-single-minded', section: 'abilities', source: 'player', title: 'Целеустремлённость', subgroup: 'Таланты',
     summary: 'Приняв решение, персонаж с большим трудом отступает от намеченной цели — это помогает ему сохранять хладнокровие и сопротивляться попыткам сбить его с толку.',
     tags: ['талант', 'рассудительность'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Рассудительность 4+', links: [{ match: 'Рассудительность', entryId: 'ability-r' }] },
+    ],
   },
   {
     id: 'talent-dwarf-resistance-to-magic', section: 'abilities', source: 'player', title: 'Устойчивость к магии', subgroup: 'Таланты',
@@ -1143,86 +1175,154 @@ export const entries: CodexEntry[] = [
     id: 'talent-elf-close-order-drill', section: 'abilities', source: 'player', title: 'Глубокий строй', subgroup: 'Таланты',
     summary: 'Персонаж обучен сражаться плечом к плечу с союзниками, извлекая выгоду из тесного строя и слаженных совместных манёвров в бою.',
     tags: ['талант', 'строй'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Происхождение высший эльф', links: [{ match: 'Происхождение', sectionId: 'origins' }] },
+    ],
   },
   {
     id: 'talent-elf-excellent-hearing', section: 'abilities', source: 'player', title: 'Исключительный слух', subgroup: 'Таланты',
     summary: 'Тонкий слух персонажа улавливает звуки, недоступные обычному существу, — шорох шагов, приглушённый шёпот или скрип половицы за стеной.',
     tags: ['талант', 'восприятие'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Наблюдательность 4+', links: [{ match: 'Наблюдательность', entryId: 'skill-observation' }] },
+    ],
   },
   {
     id: 'talent-elf-discerning-eye', section: 'abilities', source: 'player', title: 'Проницательный взгляд', subgroup: 'Таланты',
     summary: 'Персонаж наметанным глазом оценивает истинную ценность и качество вещей, а также способен уловить фальшь в словах и поведении собеседника.',
     tags: ['талант', 'наблюдательность'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Наблюдательность 4+', links: [{ match: 'Наблюдательность', entryId: 'skill-observation' }] },
+    ],
   },
   {
     id: 'talent-elf-savant', section: 'abilities', source: 'player', title: 'Энциклопедист', subgroup: 'Таланты',
     summary: 'Обширные познания персонажа охватывают множество областей — он способен блеснуть эрудицией практически в любой теме, даже не будучи в ней узким специалистом.',
     tags: ['талант', 'знание'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '3 пункта опыта' },
+      { label: 'Требования', value: 'Память 4+', links: [{ match: 'Память', entryId: 'skill-memory' }] },
+    ],
   },
   {
     id: 'talent-elf-wind-touched', section: 'abilities', source: 'player', title: 'Тронутый ветрами', subgroup: 'Таланты',
     summary: 'Персонаж чувствителен к течению магических Ветров — он способен уловить присутствие колдовства поблизости прежде, чем оно проявит себя явно.',
     tags: ['талант', 'магия'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Происхождение высший эльф или лесной эльф', links: [{ match: 'Происхождение', sectionId: 'origins' }] },
+    ],
   },
   {
     id: 'talent-elf-marksman', section: 'abilities', source: 'player', title: 'Неподвижный стрелок', subgroup: 'Таланты',
     summary: 'Заняв позицию для стрельбы и не двигаясь с места, персонаж стреляет с исключительной точностью, спокойно выцеливая противника.',
     tags: ['талант', 'стрельба'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '3 пункта опыта' },
+      { label: 'Требования', value: 'Стрельба 4+', links: [{ match: 'Стрельба', entryId: 'skill-shooting' }] },
+    ],
   },
   {
     id: 'talent-elf-valour-of-ages', section: 'abilities', source: 'player', title: 'Доблесть веков', subgroup: 'Таланты',
     summary: 'Долгие века, прожитые персонажем, закалили его дух перед лицом ужаса и отчаяния — он куда устойчивее к страху, чем более молодые создания.',
     tags: ['талант', 'рассудительность'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Происхождение высший эльф или лесной эльф', links: [{ match: 'Происхождение', sectionId: 'origins' }] },
+    ],
   },
   {
     id: 'talent-lightning-reflexes', section: 'abilities', source: 'player', title: 'Молниеносная реакция', subgroup: 'Таланты',
     summary: 'Реакция персонажа настолько стремительна, что он способен среагировать на опасность раньше, чем большинство существ успеет её осознать.',
     tags: ['талант', 'инициатива'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '3 пункта опыта' },
+      { label: 'Требования', value: 'Инициатива 4+', links: [{ match: 'Инициатива', entryId: 'ability-i' }] },
+    ],
   },
   {
     id: 'talent-careful-aim', section: 'abilities', source: 'player', title: 'Тщательное прицеливание', subgroup: 'Таланты',
     summary: 'Потратив мгновение на прицеливание, персонаж значительно повышает точность своего следующего выстрела.',
     tags: ['талант', 'стрельба'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Стрельба 4+', links: [{ match: 'Стрельба', entryId: 'skill-shooting' }] },
+    ],
   },
   {
     id: 'talent-feigned-flight', section: 'abilities', source: 'player', title: 'Притворное бегство', subgroup: 'Таланты',
     summary: 'Персонаж умеет изобразить паническое отступление, заманивая противника в невыгодную позицию, чтобы затем обратить ситуацию в свою пользу.',
     tags: ['талант', 'тактика'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Сноровка 4+', links: [{ match: 'Сноровка', entryId: 'skill-cunning' }] },
+    ],
   },
   {
     id: 'talent-wood-elf-prankster-sense', section: 'abilities', source: 'player', title: 'Видящий пакостников', subgroup: 'Таланты',
     summary: 'Персонаж чувствует присутствие лесных духов и мелких пакостливых созданий Атель Лорена и умеет ладить с ними, избегая их каверз.',
     tags: ['талант', 'лес'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Происхождение лесной эльф', links: [{ match: 'Происхождение', sectionId: 'origins' }] },
+    ],
   },
   {
     id: 'talent-halfling-fortune', section: 'abilities', source: 'player', title: 'Фортуна', subgroup: 'Таланты',
     summary: 'Удача словно сама находит персонажа — время от времени судьба поворачивается к нему на редкость благосклонной стороной.',
     tags: ['талант', 'судьба'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '3 пункта опыта' },
+      { label: 'Требования', value: 'Происхождение полурослик', links: [{ match: 'Происхождение', sectionId: 'origins' }] },
+    ],
   },
   {
     id: 'talent-wag', section: 'abilities', source: 'player', title: 'Насмешник', subgroup: 'Таланты',
     summary: 'Острый язык персонажа позволяет метким словом выбить противника из равновесия, отвлекая его в разгар спора или даже боя.',
     tags: ['талант', 'харизма'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Обаяние 4+', links: [{ match: 'Обаяние', entryId: 'skill-charm' }] },
+    ],
   },
   {
     id: 'talent-halfling-small', section: 'abilities', source: 'player', title: 'Маленький', subgroup: 'Таланты',
     summary: 'Небольшой рост персонажа позволяет ему легко укрываться от ударов и оставаться незамеченным там, где более крупным существам не спрятаться.',
     tags: ['талант', 'рост'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Происхождение полурослик', links: [{ match: 'Происхождение', sectionId: 'origins' }] },
+    ],
   },
   {
     id: 'talent-imperial-faith', section: 'abilities', source: 'player', title: 'Вера', subgroup: 'Таланты',
     summary: 'Крепкая вера персонажа в своего бога или идеалы даёт ему силы стойко переносить невзгоды и служит источником внутреннего спокойствия перед лицом опасности.',
     tags: ['талант', 'вера'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Сила воли 4+', links: [{ match: 'Сила воли', entryId: 'skill-willpower' }] },
+    ],
   },
   {
     id: 'talent-imperial-camaraderie', section: 'abilities', source: 'player', title: 'Сплочённость', subgroup: 'Таланты',
     summary: 'Персонаж умеет сплачивать вокруг себя товарищей — рядом с ним союзники действуют слаженнее и увереннее, чем поодиночке.',
     tags: ['талант', 'лидерство'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Лидерство 4+', links: [{ match: 'Лидерство', entryId: 'skill-leadership' }] },
+    ],
   },
   {
     id: 'talent-imperial-savvy', section: 'abilities', source: 'player', title: 'Жажда знаний', subgroup: 'Таланты',
     summary: 'Неутолимое любопытство побуждает персонажа изучать мир вокруг — он схватывает новые сведения и навыки быстрее, чем большинство людей.',
     tags: ['талант', 'знание'], meta: 'Талант',
+    stats: [
+      { label: 'Цена', value: '2 пункта опыта' },
+      { label: 'Требования', value: 'Память 4+', links: [{ match: 'Память', entryId: 'skill-memory' }] },
+    ],
   },
   {
     id: 'o1', section: 'origins', source: 'player', title: 'Бретонец',
