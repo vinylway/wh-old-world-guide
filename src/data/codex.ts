@@ -176,7 +176,7 @@ export const itemCategories: ItemCategory[] = [
   { id: 'magic-items', title: 'Магические предметы', icon: 'Sparkles' },
 ];
 
-export type SectionId = 'rules' | 'abilities' | 'origins' | 'careers' | 'creatures' | 'items' | 'magic' | 'faith' | 'contacts';
+export type SectionId = 'rules' | 'abilities' | 'origins' | 'careers' | 'creatures' | 'items' | 'magic' | 'faith' | 'ventures' | 'contacts';
 
 export type SectionGroupId = 'player-corner' | 'gm-corner';
 
@@ -250,6 +250,12 @@ export const sections: Section[] = [
   {
     id: 'faith', title: 'Вера', icon: 'Church',
     description: 'Культы Старого Света и молитвы их последователей',
+    sourceIds: ['player'],
+    groups: ['player-corner'],
+  },
+  {
+    id: 'ventures', title: 'Затеи', icon: 'ListChecks',
+    description: 'Побочные сюжеты, начинания и планы ваших героев',
     sourceIds: ['player'],
     groups: ['player-corner'],
   },
@@ -6629,5 +6635,11 @@ export const entries: CodexEntry[] = [
     id: 'faith-test', section: 'faith', source: 'player', title: 'Тест', subgroup: 'Ульрик',
     summary: 'Тестовая карточка молитвы для проверки раздела «Вера».',
     tags: ['тест'], meta: 'Молитва',
+  },
+  {
+    id: 'venture-test', section: 'ventures', source: 'player', title: 'Тест',
+    summary: 'Тестовая затея для проверки раздела: требует проверки Сноровки, чтобы найти нестандартный выход из положения.',
+    summaryLinks: [{ match: 'Сноровки', entryId: 'skill-cunning' }],
+    tags: ['тест'], meta: 'Затея',
   },
 ];
