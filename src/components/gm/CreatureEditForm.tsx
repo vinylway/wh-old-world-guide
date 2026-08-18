@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
-import { CodexEntry, CreatureAttack, CreatureAbility, CreatureEquipmentItem, entries as staticEntries } from '@/data/codex';
+import { CodexEntry, CreatureAttack, CreatureAbility, CreatureEquipmentItem, entries as staticEntries, sources, subgroups, SourceId } from '@/data/codex';
 import { useCreatureOverrides } from '@/hooks/useCreatureOverrides';
 import { useToast } from '@/hooks/use-toast';
 import LinkedTextEditor from './LinkedTextEditor';
 import EntryLinkPicker from './EntryLinkPicker';
+
+const CREATURE_SOURCES = sources.filter((s) => ['gm', 'trinity', 'talagaad-adventures', 'starter-kit'].includes(s.id));
 
 interface CreatureEditFormProps {
   entry: CodexEntry | null;
@@ -57,6 +60,23 @@ const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFo
   const [equipmentPickerIdx, setEquipmentPickerIdx] = useState<number | null>(null);
   const [attackPickerIdx, setAttackPickerIdx] = useState<number | null>(null);
   const linkableEntries = allEntries.length ? allEntries : staticEntries;
+
+  const existingSubgroups = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          subgroups
+            .filter((g) => g.sectionId === 'creatures' && g.sourceId === form.source)
+            .map((g) => g.title)
+            .concat(
+              linkableEntries
+                .filter((e) => e.section === 'creatures' && e.source === form.source && e.subgroup)
+                .map((e) => e.subgroup as string)
+            )
+        )
+      ),
+    [form.source, linkableEntries]
+  );
 
   useEffect(() => {
     if (open) {
@@ -161,12 +181,35 @@ const CreatureEditForm = ({ entry, open, onOpenChange, onSaved }: CreatureEditFo
                 <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
               </div>
               <div>
-                <Label>Подраздел</Label>
-                <Input value={form.subgroup ?? ''} onChange={(e) => setForm({ ...form, subgroup: e.target.value })} />
+                <Label>Источник (руководство)</Label>
+                <Select value={form.source} onValueChange={(v) => setForm({ ...form, source: v as SourceId })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CREATURE_SOURCES.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label>Угроза</Label>
                 <Input value={form.meta ?? ''} onChange={(e) => setForm({ ...form, meta: e.target.value })} placeholder="Угроза: низкая" />
+              </div>
+              <div className="col-span-2">
+                <Label>Подраздел (регион/глава — существующий или новый)</Label>
+                <Input
+                  list="creature-subgroups"
+                  value={form.subgroup ?? ''}
+                  onChange={(e) => setForm({ ...form, subgroup: e.target.value })}
+                  placeholder="Например: Голодные башни"
+                />
+                <datalist id="creature-subgroups">
+                  {existingSubgroups.map((title) => (
+                    <option key={title} value={title} />
+                  ))}
+                </datalist>
               </div>
               <div className="col-span-2">
                 <Label>Портрет (URL)</Label>

@@ -2,20 +2,19 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
 import { sectionGroups } from '@/data/codex';
-import EditModeToggle from '@/components/gm/EditModeToggle';
 
 const Header = () => {
   const [open, setOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 border-b border-gold/25 bg-background/85 backdrop-blur-md">
-      <div className="container flex h-16 items-center justify-between gap-3">
+      <div className="container flex h-16 items-center justify-between">
         <Link
           to="/"
-          className="flex items-center gap-3 group shrink-0"
+          className="flex items-center gap-3 group"
         >
           <Icon name="BookMarked" size={26} className="text-gold group-hover:text-gold-bright transition-colors" />
-          <span className="hidden sm:block font-display text-lg md:text-xl font-bold tracking-wide text-gradient-gold">
+          <span className="font-display text-lg md:text-xl font-bold tracking-wide text-gradient-gold">
             Кодекс Мира Легенд
           </span>
         </Link>
@@ -46,12 +45,8 @@ const Header = () => {
           </Link>
         </nav>
 
-        <div className="hidden lg:flex items-center shrink-0">
-          <EditModeToggle />
-        </div>
-
         <button
-          className="lg:hidden text-gold shrink-0"
+          className="lg:hidden text-gold"
           onClick={() => setOpen(!open)}
           aria-label="Меню"
         >
@@ -89,9 +84,6 @@ const Header = () => {
               <Icon name="Dices" size={16} />
               Генератор
             </Link>
-          </div>
-          <div className="container pb-4">
-            <EditModeToggle compact />
           </div>
         </nav>
       )}

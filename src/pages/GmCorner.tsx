@@ -7,12 +7,13 @@ import SearchDialog from '@/components/codex/SearchDialog';
 import EntryDialog from '@/components/codex/EntryDialog';
 import OrnateDivider from '@/components/codex/OrnateDivider';
 import Icon from '@/components/ui/icon';
-import { useCreatureOverrides } from '@/hooks/useCreatureOverrides';
-import { useCreatureEditorUI } from '@/hooks/useCreatureEditorUI';
+import { CreatureOverridesProvider, useCreatureOverrides } from '@/hooks/useCreatureOverrides';
+import { CreatureEditorUIProvider, useCreatureEditorUI } from '@/hooks/useCreatureEditorUI';
 import EditModeToggle from '@/components/gm/EditModeToggle';
 import CreatureEntryActions from '@/components/gm/CreatureEntryActions';
+import GmEditGlobalUI from '@/components/gm/GmEditGlobalUI';
 
-const GmCorner = () => {
+const GmCornerContent = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchFilter, setSearchFilter] = useState<SectionId | 'all'>('all');
   const [activeEntry, setActiveEntry] = useState<CodexEntry | null>(null);
@@ -98,8 +99,18 @@ const GmCorner = () => {
         }}
         headerExtra={activeEntry ? <CreatureEntryActions entry={activeEntry} onAfterReset={() => setActiveEntry(null)} /> : undefined}
       />
+
+      <GmEditGlobalUI />
     </div>
   );
 };
+
+const GmCorner = () => (
+  <CreatureOverridesProvider>
+    <CreatureEditorUIProvider>
+      <GmCornerContent />
+    </CreatureEditorUIProvider>
+  </CreatureOverridesProvider>
+);
 
 export default GmCorner;

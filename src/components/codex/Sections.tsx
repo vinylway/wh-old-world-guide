@@ -66,9 +66,15 @@ interface ItemsGridProps {
 const ItemsGrid = ({ items, onSelect, sectionId, sourceId }: ItemsGridProps) => {
   const allGroups = subgroups.filter((g) => g.sectionId === sectionId && g.sourceId === sourceId);
   const groups = allGroups.filter((g) => !g.parentId);
+  const knownTitles = new Set(allGroups.map((g) => g.title));
   const ungrouped = items.filter((e) => !e.subgroup);
+  // Записи с подразделом, который не входит в заранее заданный список (например, созданные вручную) —
+  // группируем по указанному ими названию подраздела, чтобы они не пропадали из списка.
+  const customSubgroupTitles = Array.from(
+    new Set(items.filter((e) => e.subgroup && !knownTitles.has(e.subgroup)).map((e) => e.subgroup as string))
+  );
 
-  if (groups.length === 0 && items.length === 0) {
+  if (groups.length === 0 && customSubgroupTitles.length === 0 && items.length === 0) {
     return (
       <p className="font-body text-muted-foreground text-center py-10">
         В этом разделе пока нет записей
@@ -103,6 +109,14 @@ const ItemsGrid = ({ items, onSelect, sectionId, sourceId }: ItemsGridProps) => 
           </SubgroupBlock>
         );
       })}
+      {customSubgroupTitles.map((title) => (
+        <SubgroupBlock
+          key={title}
+          title={title}
+          items={items.filter((e) => e.subgroup === title)}
+          onSelect={onSelect}
+        />
+      ))}
       {ungrouped.length > 0 && (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 pt-2">
           {ungrouped.map((entry) => (
