@@ -76,12 +76,15 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
   const [knowledgePickerOpen, setKnowledgePickerOpen] = useState(false);
   const linkableEntries = allEntries.length ? allEntries : staticEntries;
   const availableSkillEntries = linkableEntries.filter((e) => e.section === 'abilities' && e.subgroup === 'Навыки');
-  const knowledgeEntries = linkableEntries.filter((e) => e.section === 'abilities' && e.id.startsWith('lore-'));
+  const availableKnowledgeEntries = linkableEntries.filter((e) => e.section === 'abilities' && e.id.startsWith('lore-'));
   const selectedSkillIds = form.skillEntryIds?.length ? form.skillEntryIds : form.skillEntryId ? [form.skillEntryId] : [];
   const selectedSkills = selectedSkillIds
     .map((id) => linkableEntries.find((e) => e.id === id))
     .filter((e): e is CodexEntry => !!e);
-  const selectedKnowledge = form.knowledgeEntryId ? linkableEntries.find((e) => e.id === form.knowledgeEntryId) : null;
+  const selectedKnowledgeIds = form.knowledgeEntryIds?.length ? form.knowledgeEntryIds : form.knowledgeEntryId ? [form.knowledgeEntryId] : [];
+  const selectedKnowledgeEntries = selectedKnowledgeIds
+    .map((id) => linkableEntries.find((e) => e.id === id))
+    .filter((e): e is CodexEntry => !!e);
 
   useEffect(() => {
     if (open) {
@@ -306,21 +309,26 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
 
           {activeSection && KNOWLEDGE_APPLICABLE_SECTIONS.includes(activeSection) && (
             <SectionCard title="Предпочтительные знания (если применимо)">
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant={selectedKnowledge ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setKnowledgePickerOpen(true)}
-                >
-                  <Icon name="BookOpen" size={14} className="mr-1.5" />
-                  {selectedKnowledge ? selectedKnowledge.title : 'Выбрать знание'}
+              <div className="flex flex-wrap items-center gap-2">
+                {selectedKnowledgeEntries.map((k) => (
+                  <span
+                    key={k.id}
+                    className="inline-flex items-center gap-1.5 rounded border border-gold/40 bg-secondary/50 px-2.5 py-1 font-display text-xs uppercase tracking-wide text-gold"
+                  >
+                    {k.title}
+                    <button
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, knowledgeEntryIds: selectedKnowledgeIds.filter((id) => id !== k.id), knowledgeEntryId: undefined }))}
+                      className="text-gold/70 hover:text-destructive"
+                    >
+                      <Icon name="X" size={12} />
+                    </button>
+                  </span>
+                ))}
+                <Button type="button" variant="outline" size="sm" onClick={() => setKnowledgePickerOpen(true)}>
+                  <Icon name="Plus" size={14} className="mr-1.5" />
+                  Добавить знание
                 </Button>
-                {selectedKnowledge && (
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setForm((f) => ({ ...f, knowledgeEntryId: undefined }))} className="text-destructive">
-                    <Icon name="X" size={14} />
-                  </Button>
-                )}
               </div>
             </SectionCard>
           )}
@@ -395,9 +403,9 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
       <EntryLinkPicker
         open={knowledgePickerOpen}
         onOpenChange={setKnowledgePickerOpen}
-        entries={knowledgeEntries}
+        entries={availableKnowledgeEntries.filter((e) => !selectedKnowledgeIds.includes(e.id))}
         title="Найдите знание"
-        onSelect={(picked) => setForm((f) => ({ ...f, knowledgeEntryId: picked.id }))}
+        onSelect={(picked) => setForm((f) => ({ ...f, knowledgeEntryIds: [...selectedKnowledgeIds, picked.id], knowledgeEntryId: undefined }))}
       />
     </Dialog>
   );

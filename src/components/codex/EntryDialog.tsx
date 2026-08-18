@@ -82,7 +82,10 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection, entries, 
   const skillEntries = skillEntryIds
     .map((id) => activeEntries.find((e) => e.id === id))
     .filter((e): e is CodexEntry => !!e);
-  const knowledgeEntry = entry?.knowledgeEntryId ? activeEntries.find((e) => e.id === entry.knowledgeEntryId) : null;
+  const knowledgeEntryIds = entry?.knowledgeEntryIds?.length ? entry.knowledgeEntryIds : entry?.knowledgeEntryId ? [entry.knowledgeEntryId] : [];
+  const knowledgeEntries = knowledgeEntryIds
+    .map((id) => activeEntries.find((e) => e.id === id))
+    .filter((e): e is CodexEntry => !!e);
   const [showSummary, setShowSummary] = useState(false);
   const [showOpinions, setShowOpinions] = useState(false);
 
@@ -189,14 +192,22 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection, entries, 
               </div>
             )}
 
-            {knowledgeEntry && (
-              <button
-                onClick={() => handleNavigate(knowledgeEntry.id)}
-                className="story-link mx-auto mt-4 flex items-center gap-2 rounded border border-gold/40 bg-secondary/50 px-4 py-2 font-display text-sm uppercase tracking-wide text-gold hover:bg-secondary transition-colors"
-              >
-                <Icon name="BookOpen" size={15} />
-                Предпочтительные знания: <span className="font-semibold">{knowledgeEntry.title}</span>
-              </button>
+            {knowledgeEntries.length > 0 && (
+              <div className="mx-auto mt-4 flex flex-wrap justify-center gap-2">
+                <span className="flex items-center gap-1.5 font-display text-sm uppercase tracking-wide text-gold/80 self-center">
+                  <Icon name="BookOpen" size={15} />
+                  Предпочтительные знания:
+                </span>
+                {knowledgeEntries.map((k) => (
+                  <button
+                    key={k.id}
+                    onClick={() => handleNavigate(k.id)}
+                    className="story-link rounded border border-gold/40 bg-secondary/50 px-3 py-1.5 font-display text-sm font-semibold uppercase tracking-wide text-gold hover:bg-secondary transition-colors"
+                  >
+                    {k.title}
+                  </button>
+                ))}
+              </div>
             )}
 
             <OrnateDivider className="my-5" />
