@@ -144,6 +144,8 @@ export const subgroups: Subgroup[] = [
   { id: 'service-food-lodging', title: 'Еда и ночлег', sectionId: 'items', sourceId: 'player' },
   { id: 'service-specialist-help', title: 'Помощь специалиста', sectionId: 'items', sourceId: 'player' },
   { id: 'service-transportation', title: 'Транспортировка', sectionId: 'items', sourceId: 'player' },
+  { id: 'transport-carts', title: 'Повозки', sectionId: 'items', sourceId: 'player' },
+  { id: 'transport-boats', title: 'Суда', sectionId: 'items', sourceId: 'player' },
   { id: 'talabek', title: 'Великое герцогство Талабек', sectionId: 'creatures', sourceId: 'gm' },
   { id: 'nechtostrem', title: 'Нечто подозрительное', sectionId: 'creatures', sourceId: 'talagaad-adventures' },
   { id: 'holodnybashni', title: 'Голодные башни', sectionId: 'creatures', sourceId: 'talagaad-adventures' },
@@ -175,7 +177,7 @@ export const subgroups: Subgroup[] = [
   { id: 'faith-shallya', title: 'Шалия', sectionId: 'faith', sourceId: 'player' },
 ];
 
-export type ItemCategoryId = 'melee' | 'throwing' | 'ranged' | 'armor' | 'tools' | 'assets' | 'services';
+export type ItemCategoryId = 'melee' | 'throwing' | 'ranged' | 'armor' | 'tools' | 'assets' | 'services' | 'transport';
 
 export interface ItemCategory {
   id: ItemCategoryId;
@@ -6478,6 +6480,36 @@ export const entries: CodexEntry[] = [
     id: 'service-boat-passage', section: 'items', source: 'player', title: 'Место на судне', category: 'services', subgroup: 'Транспортировка',
     summary: 'Переправа или речной переход на попутном судне — от тесного места среди грузов до отдельной каюты, в зависимости от щедрости путника.',
     tags: ['услуга', 'транспорт', 'судно'], meta: 'Услуга',
+  },
+  {
+    id: 'transport-cart', section: 'items', source: 'player', title: 'Телега', category: 'transport', subgroup: 'Повозки',
+    summary: 'Простая деревянная повозка на паре колёс, запряжённая одной лошадью или волом — надёжный способ перевезти груз или небольшую компанию по дорогам Старого Света.',
+    tags: ['транспорт', 'повозка', 'телега'], meta: 'Транспорт',
+  },
+  {
+    id: 'transport-wagon', section: 'items', source: 'player', title: 'Крытый фургон', category: 'transport', subgroup: 'Повозки',
+    summary: 'Просторная повозка с тентом или деревянным верхом, укрывающая груз и пассажиров от непогоды — излюбленный выбор торговцев и бродячих трупп.',
+    tags: ['транспорт', 'повозка', 'фургон'], meta: 'Транспорт',
+  },
+  {
+    id: 'transport-carriage', section: 'items', source: 'player', title: 'Карета', category: 'transport', subgroup: 'Повозки',
+    summary: 'Изящная закрытая повозка на рессорах с мягкими сиденьями — знак достатка и способ путешествовать с комфортом, недоступным простому люду.',
+    tags: ['транспорт', 'повозка', 'карета'], meta: 'Транспорт',
+  },
+  {
+    id: 'transport-rowboat', section: 'items', source: 'player', title: 'Гребная лодка', category: 'transport', subgroup: 'Суда',
+    summary: 'Небольшое судёнышко на вёслах для пары человек — переправиться через реку, обойти затор на воде или порыбачить в спокойных водах.',
+    tags: ['транспорт', 'судно', 'лодка'], meta: 'Транспорт',
+  },
+  {
+    id: 'transport-riverboat', section: 'items', source: 'player', title: 'Речная барка', category: 'transport', subgroup: 'Суда',
+    summary: 'Плоскодонное судно для перевозки грузов и пассажиров по судоходным рекам Империи — медленное, но вместительное и надёжное.',
+    tags: ['транспорт', 'судно', 'барка'], meta: 'Транспорт',
+  },
+  {
+    id: 'transport-cog', section: 'items', source: 'player', title: 'Морской когг', category: 'transport', subgroup: 'Суда',
+    summary: 'Крепкое одномачтовое судно для морских перевозок — выдерживает штормы и способно взять на борт солидный груз или отряд путников.',
+    tags: ['транспорт', 'судно', 'когг'], meta: 'Транспорт',
   },
   {
     id: 'contact-commoners', section: 'abilities', source: 'player', title: 'Простолюдины', subgroup: 'Контакты',

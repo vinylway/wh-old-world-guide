@@ -343,6 +343,10 @@ const SectionBlock = ({
                   <Icon name="Handshake" size={14} />
                   Услуги
                 </TabsTrigger>
+                <TabsTrigger value="transport" className="flex items-center gap-1.5 font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground">
+                  <Icon name="Ship" size={14} />
+                  Транспорт
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="equipment" className="mt-0">
@@ -361,7 +365,7 @@ const SectionBlock = ({
                   </TabsList>
 
                   {sectionSources.map((src: Source) => {
-                    const items = sectionEntries.filter((e) => e.source === src.id && e.category !== 'assets' && e.category !== 'services');
+                    const items = sectionEntries.filter((e) => e.source === src.id && e.category !== 'assets' && e.category !== 'services' && e.category !== 'transport');
                     return (
                       <TabsContent key={src.id} value={src.id} className="mt-0">
                         {isEditMode && isEditable && (
@@ -435,21 +439,67 @@ const SectionBlock = ({
               </TabsContent>
 
               <TabsContent value="services" className="mt-0">
-                {(() => {
-                  const servicesSourceId = sectionSources.find((s) => s.id === 'player')?.id ?? sectionSources[0]?.id;
-                  const items = sectionEntries.filter((e) => e.source === servicesSourceId && e.category === 'services');
-                  return (
-                    <>
-                      {isEditMode && isEditable && servicesSourceId && (
-                        <Button variant="ghost" size="sm" className="mb-3 text-gold/80" onClick={() => setSubgroupsManagerSource(servicesSourceId)}>
-                          <Icon name="MapPin" size={13} className="mr-1.5" />
-                          Управлять подразделами «Услуги»
-                        </Button>
-                      )}
-                      <ItemsGrid items={items} onSelect={onSelect} sectionId={section.id} sourceId={servicesSourceId ?? 'player'} subgroups={subgroups} />
-                    </>
-                  );
-                })()}
+                <Tabs defaultValue={sectionSources[0]?.id}>
+                  <TabsList className="mb-6 flex-wrap h-auto gap-1 bg-secondary/40 border border-gold/15">
+                    {sectionSources.map((src) => (
+                      <TabsTrigger
+                        key={src.id}
+                        value={src.id}
+                        className="flex items-center gap-1.5 font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground"
+                      >
+                        <Icon name={src.icon} size={14} fallback="Circle" />
+                        {src.title}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+
+                  {sectionSources.map((src: Source) => {
+                    const items = sectionEntries.filter((e) => e.source === src.id && e.category === 'services');
+                    return (
+                      <TabsContent key={src.id} value={src.id} className="mt-0">
+                        {isEditMode && isEditable && (
+                          <Button variant="ghost" size="sm" className="mb-3 text-gold/80" onClick={() => setSubgroupsManagerSource(src.id)}>
+                            <Icon name="MapPin" size={13} className="mr-1.5" />
+                            Управлять подразделами «{src.title}»
+                          </Button>
+                        )}
+                        <ItemsGrid items={items} onSelect={onSelect} sectionId={section.id} sourceId={src.id} subgroups={subgroups} />
+                      </TabsContent>
+                    );
+                  })}
+                </Tabs>
+              </TabsContent>
+
+              <TabsContent value="transport" className="mt-0">
+                <Tabs defaultValue={sectionSources[0]?.id}>
+                  <TabsList className="mb-6 flex-wrap h-auto gap-1 bg-secondary/40 border border-gold/15">
+                    {sectionSources.map((src) => (
+                      <TabsTrigger
+                        key={src.id}
+                        value={src.id}
+                        className="flex items-center gap-1.5 font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground"
+                      >
+                        <Icon name={src.icon} size={14} fallback="Circle" />
+                        {src.title}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+
+                  {sectionSources.map((src: Source) => {
+                    const items = sectionEntries.filter((e) => e.source === src.id && e.category === 'transport');
+                    return (
+                      <TabsContent key={src.id} value={src.id} className="mt-0">
+                        {isEditMode && isEditable && (
+                          <Button variant="ghost" size="sm" className="mb-3 text-gold/80" onClick={() => setSubgroupsManagerSource(src.id)}>
+                            <Icon name="MapPin" size={13} className="mr-1.5" />
+                            Управлять подразделами «{src.title}»
+                          </Button>
+                        )}
+                        <ItemsGrid items={items} onSelect={onSelect} sectionId={section.id} sourceId={src.id} subgroups={subgroups} />
+                      </TabsContent>
+                    );
+                  })}
+                </Tabs>
               </TabsContent>
             </Tabs>
           ) : (

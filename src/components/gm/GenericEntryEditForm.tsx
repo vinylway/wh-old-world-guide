@@ -248,6 +248,7 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
                       ))}
                       <SelectItem value="assets">Активы</SelectItem>
                       <SelectItem value="services">Услуги</SelectItem>
+                      <SelectItem value="transport">Транспорт</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
