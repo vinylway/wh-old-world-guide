@@ -284,7 +284,9 @@ const EntryDialog = ({ entry, onOpenChange, onNavigate, onOpenSection, entries, 
                         return (
                           <li key={j} className="flex items-start gap-2 font-body text-parchment/90 leading-snug">
                             <Icon name="Dot" size={18} className="text-gold shrink-0 mt-0.5" />
-                            <TextWithLinks text={text} links={links} onNavigate={handleNavigate} onOpenSection={onOpenSection} />
+                            <span>
+                              <TextWithLinks text={text} links={links} onNavigate={handleNavigate} onOpenSection={onOpenSection} />
+                            </span>
                           </li>
                         );
                       })}
