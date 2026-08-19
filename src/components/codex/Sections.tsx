@@ -135,20 +135,29 @@ const ItemsGrid = ({ items, onSelect, sectionId, sourceId, subgroups }: ItemsGri
   const { isEditMode } = useCodexOverrides();
   const { order, setOrder } = useCodexMeta();
   const allGroups = subgroups.filter((g) => g.sectionId === sectionId && g.sourceId === sourceId);
-  const groupKeyFn = useCallback((g: Subgroup) => g.id, []);
   const groupsRaw = allGroups.filter((g) => !g.parentId);
-  const { sorted: groups, moveUp: moveGroupUp, moveDown: moveGroupDown } = useOrderedList(groupsRaw, groupKeyFn, order, setOrder);
   const knownTitles = new Set(allGroups.map((g) => g.title));
   const ungroupedRaw = items.filter((e) => !e.subgroup);
   const entryKeyFn = useCallback((e: CodexEntry) => e.id, []);
   const { sorted: ungrouped, moveUp: moveUngroupedUp, moveDown: moveUngroupedDown } = useOrderedList(ungroupedRaw, entryKeyFn, order, setOrder);
-  // Записи с подразделом, который не входит в заранее заданный список (например, созданные вручную) —
-  // группируем по указанному ими названию подраздела, чтобы они не пропадали из списка.
+  // Записи с подразделом, который не входит в заранее заданный список (например, названный
+  // прямо в карточке, а не через «Управлять подразделами») — группируем по указанному
+  // названию, чтобы они не пропадали из списка, и делаем такие блоки тоже перемещаемыми.
   const customSubgroupTitles = Array.from(
     new Set(items.filter((e) => e.subgroup && !knownTitles.has(e.subgroup)).map((e) => e.subgroup as string))
   );
 
-  if (groups.length === 0 && customSubgroupTitles.length === 0 && items.length === 0) {
+  // Объединяем зарегистрированные подразделы верхнего уровня и «самодельные» (по названию)
+  // в один список, чтобы их можно было переставлять относительно друг друга.
+  interface Block { key: string; title: string; groupId?: string }
+  const blocksRaw: Block[] = [
+    ...groupsRaw.map((g) => ({ key: g.id, title: g.title, groupId: g.id })),
+    ...customSubgroupTitles.map((title) => ({ key: `custom:${title}`, title })),
+  ];
+  const blockKeyFn = useCallback((b: Block) => b.key, []);
+  const { sorted: blocks, moveUp: moveBlockUp, moveDown: moveBlockDown } = useOrderedList(blocksRaw, blockKeyFn, order, setOrder);
+
+  if (blocks.length === 0 && items.length === 0) {
     return (
       <p className="font-body text-muted-foreground text-center py-10">
         В этом разделе пока нет записей
@@ -158,71 +167,84 @@ const ItemsGrid = ({ items, onSelect, sectionId, sourceId, subgroups }: ItemsGri
 
   return (
     <div className="space-y-4">
-      {groups.map((group, idx) => {
-        const childGroups = allGroups.filter((g) => g.parentId === group.id);
-        const groupItems = childGroups.length > 0
-          ? items.filter((e) => childGroups.some((c) => c.title === e.subgroup))
-          : items.filter((e) => e.subgroup === group.title);
+      {blocks.map((block, idx) => {
+        if (block.groupId) {
+          const group = allGroups.find((g) => g.id === block.groupId);
+          if (!group) return null;
+          const childGroups = allGroups.filter((g) => g.parentId === group.id);
+          const groupItems = childGroups.length > 0
+            ? items.filter((e) => childGroups.some((c) => c.title === e.subgroup))
+            : items.filter((e) => e.subgroup === group.title);
 
+          if (groupItems.length === 0) return null;
+
+          return (
+            <SubgroupBlock
+              key={block.key}
+              id={group.id}
+              title={group.title}
+              items={groupItems}
+              onSelect={onSelect}
+              isEditMode={isEditMode}
+              canMoveUp={idx > 0}
+              canMoveDown={idx < blocks.length - 1}
+              onMoveUp={() => moveBlockUp(block.key)}
+              onMoveDown={() => moveBlockDown(block.key)}
+              order={order}
+              onSetOrder={setOrder}
+            >
+              {childGroups.length > 0
+                ? childGroups
+                    .filter((child) => items.some((e) => e.subgroup === child.title))
+                    .map((child, childIdx, arr) => (
+                      <SubgroupBlock
+                        key={child.id}
+                        id={child.id}
+                        title={child.title}
+                        items={items.filter((e) => e.subgroup === child.title)}
+                        onSelect={onSelect}
+                        isEditMode={isEditMode}
+                        canMoveUp={childIdx > 0}
+                        canMoveDown={childIdx < arr.length - 1}
+                        onMoveUp={() => {
+                          const ids = arr.map((c) => c.id);
+                          const next = reorderIds(ids, child.id, 'up');
+                          if (next) setOrder(next);
+                        }}
+                        onMoveDown={() => {
+                          const ids = arr.map((c) => c.id);
+                          const next = reorderIds(ids, child.id, 'down');
+                          if (next) setOrder(next);
+                        }}
+                        order={order}
+                        onSetOrder={setOrder}
+                      />
+                    ))
+                : undefined}
+            </SubgroupBlock>
+          );
+        }
+
+        const groupItems = items.filter((e) => e.subgroup === block.title);
         if (groupItems.length === 0) return null;
 
         return (
           <SubgroupBlock
-            key={group.id}
-            id={group.id}
-            title={group.title}
+            key={block.key}
+            id={block.key}
+            title={block.title}
             items={groupItems}
             onSelect={onSelect}
             isEditMode={isEditMode}
             canMoveUp={idx > 0}
-            canMoveDown={idx < groups.length - 1}
-            onMoveUp={() => moveGroupUp(group.id)}
-            onMoveDown={() => moveGroupDown(group.id)}
+            canMoveDown={idx < blocks.length - 1}
+            onMoveUp={() => moveBlockUp(block.key)}
+            onMoveDown={() => moveBlockDown(block.key)}
             order={order}
             onSetOrder={setOrder}
-          >
-            {childGroups.length > 0
-              ? childGroups
-                  .filter((child) => items.some((e) => e.subgroup === child.title))
-                  .map((child, childIdx, arr) => (
-                    <SubgroupBlock
-                      key={child.id}
-                      id={child.id}
-                      title={child.title}
-                      items={items.filter((e) => e.subgroup === child.title)}
-                      onSelect={onSelect}
-                      isEditMode={isEditMode}
-                      canMoveUp={childIdx > 0}
-                      canMoveDown={childIdx < arr.length - 1}
-                      onMoveUp={() => {
-                        const ids = arr.map((c) => c.id);
-                        const next = reorderIds(ids, child.id, 'up');
-                        if (next) setOrder(next);
-                      }}
-                      onMoveDown={() => {
-                        const ids = arr.map((c) => c.id);
-                        const next = reorderIds(ids, child.id, 'down');
-                        if (next) setOrder(next);
-                      }}
-                      order={order}
-                      onSetOrder={setOrder}
-                    />
-                  ))
-              : undefined}
-          </SubgroupBlock>
+          />
         );
       })}
-      {customSubgroupTitles.map((title) => (
-        <SubgroupBlock
-          key={title}
-          title={title}
-          items={items.filter((e) => e.subgroup === title)}
-          onSelect={onSelect}
-          isEditMode={isEditMode}
-          order={order}
-          onSetOrder={setOrder}
-        />
-      ))}
       {ungrouped.length > 0 && (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 pt-2">
           {ungrouped.map((entry, idx) => (
