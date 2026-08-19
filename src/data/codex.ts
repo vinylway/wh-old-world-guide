@@ -140,6 +140,10 @@ export const subgroups: Subgroup[] = [
   { id: 'asset-animals-vehicles', title: 'Животные и транспортные средства', sectionId: 'items', sourceId: 'player' },
   { id: 'asset-buildings', title: 'Здания и заведения', sectionId: 'items', sourceId: 'player' },
   { id: 'asset-other', title: 'Остальные активы', sectionId: 'items', sourceId: 'player' },
+  { id: 'service-hired-help', title: 'Наёмная помощь', sectionId: 'items', sourceId: 'player' },
+  { id: 'service-food-lodging', title: 'Еда и ночлег', sectionId: 'items', sourceId: 'player' },
+  { id: 'service-specialist-help', title: 'Помощь специалиста', sectionId: 'items', sourceId: 'player' },
+  { id: 'service-transportation', title: 'Транспортировка', sectionId: 'items', sourceId: 'player' },
   { id: 'talabek', title: 'Великое герцогство Талабек', sectionId: 'creatures', sourceId: 'gm' },
   { id: 'nechtostrem', title: 'Нечто подозрительное', sectionId: 'creatures', sourceId: 'talagaad-adventures' },
   { id: 'holodnybashni', title: 'Голодные башни', sectionId: 'creatures', sourceId: 'talagaad-adventures' },
@@ -171,7 +175,7 @@ export const subgroups: Subgroup[] = [
   { id: 'faith-shallya', title: 'Шалия', sectionId: 'faith', sourceId: 'player' },
 ];
 
-export type ItemCategoryId = 'melee' | 'throwing' | 'ranged' | 'armor' | 'tools' | 'assets';
+export type ItemCategoryId = 'melee' | 'throwing' | 'ranged' | 'armor' | 'tools' | 'assets' | 'services';
 
 export interface ItemCategory {
   id: ItemCategoryId;
@@ -6434,6 +6438,46 @@ export const entries: CodexEntry[] = [
     id: 'asset-shop', section: 'items', source: 'player', title: 'Лавка', category: 'assets', subgroup: 'Здания и заведения',
     summary: 'Небольшое торговое помещение на бойком месте, где можно продавать снадобья, товары или услуги напрямую горожанам — надёжный способ закрепиться в городской жизни.',
     tags: ['актив', 'лавка', 'торговля'], meta: 'Актив',
+  },
+  {
+    id: 'service-porter', section: 'items', source: 'player', title: 'Носильщик или проводник', category: 'services', subgroup: 'Наёмная помощь',
+    summary: 'Местный житель, готовый за плату поднести груз, показать дорогу или провести отряд короткими путями через незнакомую местность.',
+    tags: ['услуга', 'наёмная помощь'], meta: 'Услуга',
+  },
+  {
+    id: 'service-bodyguard', section: 'items', source: 'player', title: 'Охранник или сопровождающий', category: 'services', subgroup: 'Наёмная помощь',
+    summary: 'Крепкий наёмник, готовый временно присоединиться к отряду для защиты в пути или во время рискованного дела.',
+    tags: ['услуга', 'наёмная помощь', 'охрана'], meta: 'Услуга',
+  },
+  {
+    id: 'service-inn-room', section: 'items', source: 'player', title: 'Комната в трактире', category: 'services', subgroup: 'Еда и ночлег',
+    summary: 'Ночлег в местной гостинице или на постоялом дворе — от общей комнаты с соломенным тюфяком до отдельных покоев с чистым бельём, в зависимости от платы.',
+    tags: ['услуга', 'ночлег', 'трактир'], meta: 'Услуга',
+  },
+  {
+    id: 'service-meal', section: 'items', source: 'player', title: 'Трапеза в таверне', category: 'services', subgroup: 'Еда и ночлег',
+    summary: 'Горячая еда и выпивка в местной таверне — от скудной похлёбки до сытного пиршества, смотря сколько монет готов выложить путник.',
+    tags: ['услуга', 'еда', 'таверна'], meta: 'Услуга',
+  },
+  {
+    id: 'service-healer', section: 'items', source: 'player', title: 'Помощь лекаря', category: 'services', subgroup: 'Помощь специалиста',
+    summary: 'Осмотр и лечение у городского лекаря или травницы — способ быстро подлечить раны или недуг, не полагаясь на удачу и подручные средства.',
+    tags: ['услуга', 'специалист', 'лечение'], meta: 'Услуга',
+  },
+  {
+    id: 'service-scribe', section: 'items', source: 'player', title: 'Услуги писца или законника', category: 'services', subgroup: 'Помощь специалиста',
+    summary: 'Составление писем, договоров и прошений, перевод старых текстов или консультация по местным законам за умеренную плату.',
+    tags: ['услуга', 'специалист', 'писец'], meta: 'Услуга',
+  },
+  {
+    id: 'service-carriage', section: 'items', source: 'player', title: 'Место в дилижансе', category: 'services', subgroup: 'Транспортировка',
+    summary: 'Проезд между городами в почтовой карете или попутной повозке — быстрее и безопаснее пешего пути, но требует монет и терпения к попутчикам.',
+    tags: ['услуга', 'транспорт', 'дилижанс'], meta: 'Услуга',
+  },
+  {
+    id: 'service-boat-passage', section: 'items', source: 'player', title: 'Место на судне', category: 'services', subgroup: 'Транспортировка',
+    summary: 'Переправа или речной переход на попутном судне — от тесного места среди грузов до отдельной каюты, в зависимости от щедрости путника.',
+    tags: ['услуга', 'транспорт', 'судно'], meta: 'Услуга',
   },
   {
     id: 'contact-commoners', section: 'abilities', source: 'player', title: 'Простолюдины', subgroup: 'Контакты',

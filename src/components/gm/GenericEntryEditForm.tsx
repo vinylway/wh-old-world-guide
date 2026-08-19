@@ -247,6 +247,7 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
                         <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
                       ))}
                       <SelectItem value="assets">Активы</SelectItem>
+                      <SelectItem value="services">Услуги</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

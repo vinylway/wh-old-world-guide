@@ -339,6 +339,10 @@ const SectionBlock = ({
                   <Icon name="Building2" size={14} />
                   Активы
                 </TabsTrigger>
+                <TabsTrigger value="services" className="flex items-center gap-1.5 font-display text-xs uppercase tracking-wide data-[state=active]:bg-gold data-[state=active]:text-primary-foreground">
+                  <Icon name="Handshake" size={14} />
+                  Услуги
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="equipment" className="mt-0">
@@ -357,7 +361,7 @@ const SectionBlock = ({
                   </TabsList>
 
                   {sectionSources.map((src: Source) => {
-                    const items = sectionEntries.filter((e) => e.source === src.id && e.category !== 'assets');
+                    const items = sectionEntries.filter((e) => e.source === src.id && e.category !== 'assets' && e.category !== 'services');
                     return (
                       <TabsContent key={src.id} value={src.id} className="mt-0">
                         {isEditMode && isEditable && (
@@ -428,6 +432,24 @@ const SectionBlock = ({
                     );
                   })}
                 </Tabs>
+              </TabsContent>
+
+              <TabsContent value="services" className="mt-0">
+                {(() => {
+                  const servicesSourceId = sectionSources.find((s) => s.id === 'player')?.id ?? sectionSources[0]?.id;
+                  const items = sectionEntries.filter((e) => e.source === servicesSourceId && e.category === 'services');
+                  return (
+                    <>
+                      {isEditMode && isEditable && servicesSourceId && (
+                        <Button variant="ghost" size="sm" className="mb-3 text-gold/80" onClick={() => setSubgroupsManagerSource(servicesSourceId)}>
+                          <Icon name="MapPin" size={13} className="mr-1.5" />
+                          Управлять подразделами «Услуги»
+                        </Button>
+                      )}
+                      <ItemsGrid items={items} onSelect={onSelect} sectionId={section.id} sourceId={servicesSourceId ?? 'player'} subgroups={subgroups} />
+                    </>
+                  );
+                })()}
               </TabsContent>
             </Tabs>
           ) : (
