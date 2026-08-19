@@ -139,7 +139,6 @@ export const subgroups: Subgroup[] = [
   { id: 'ability-contacts', title: 'Контакты', sectionId: 'abilities', sourceId: 'player' },
   { id: 'asset-animals-vehicles', title: 'Животные и транспортные средства', sectionId: 'items', sourceId: 'player' },
   { id: 'asset-buildings', title: 'Здания и заведения', sectionId: 'items', sourceId: 'player' },
-  { id: 'asset-magic-items', title: 'Магические предметы', sectionId: 'items', sourceId: 'player' },
   { id: 'asset-other', title: 'Остальные активы', sectionId: 'items', sourceId: 'player' },
   { id: 'talabek', title: 'Великое герцогство Талабек', sectionId: 'creatures', sourceId: 'gm' },
   { id: 'nechtostrem', title: 'Нечто подозрительное', sectionId: 'creatures', sourceId: 'talagaad-adventures' },
@@ -172,7 +171,7 @@ export const subgroups: Subgroup[] = [
   { id: 'faith-shallya', title: 'Шалия', sectionId: 'faith', sourceId: 'player' },
 ];
 
-export type ItemCategoryId = 'melee' | 'throwing' | 'ranged' | 'armor' | 'tools' | 'magic-items' | 'assets';
+export type ItemCategoryId = 'melee' | 'throwing' | 'ranged' | 'armor' | 'tools' | 'assets';
 
 export interface ItemCategory {
   id: ItemCategoryId;
@@ -187,7 +186,6 @@ export const itemCategories: ItemCategory[] = [
   { id: 'ranged', title: 'Дальний бой', icon: 'Crosshair' },
   { id: 'armor', title: 'Одежда и броня', icon: 'ShieldHalf' },
   { id: 'tools', title: 'Инструменты и наборы', icon: 'Wrench' },
-  { id: 'magic-items', title: 'Магические предметы', icon: 'Sparkles' },
 ];
 
 export type SectionId = 'rules' | 'abilities' | 'origins' | 'careers' | 'creatures' | 'items' | 'magic' | 'faith' | 'ventures' | 'contacts';
@@ -6290,7 +6288,7 @@ export const entries: CodexEntry[] = [
     ],
   },
   {
-    id: 'i66', section: 'items', source: 'player', title: 'Магические принадлежности', category: 'magic-items',
+    id: 'i66', section: 'items', source: 'player', title: 'Магические принадлежности', category: 'tools',
     summary: 'Останки животных, драгоценные камни, настойки, свитки, рунические камни и кристаллы — компоненты, необходимые для сотворения заклинаний.',
     tags: ['магия', 'набор', 'принадлежности'], meta: 'Снаряжение',
     stats: [
