@@ -146,6 +146,8 @@ export const subgroups: Subgroup[] = [
   { id: 'service-transportation', title: 'Транспортировка', sectionId: 'items', sourceId: 'player' },
   { id: 'transport-carts', title: 'Повозки', sectionId: 'items', sourceId: 'player' },
   { id: 'transport-boats', title: 'Суда', sectionId: 'items', sourceId: 'player' },
+  { id: 'rare-magic-weapons', title: 'Магическое оружие', sectionId: 'items', sourceId: 'gm' },
+  { id: 'rare-magic-armor', title: 'Магическая броня', sectionId: 'items', sourceId: 'gm' },
   { id: 'talabek', title: 'Великое герцогство Талабек', sectionId: 'creatures', sourceId: 'gm' },
   { id: 'nechtostrem', title: 'Нечто подозрительное', sectionId: 'creatures', sourceId: 'talagaad-adventures' },
   { id: 'holodnybashni', title: 'Голодные башни', sectionId: 'creatures', sourceId: 'talagaad-adventures' },
@@ -177,7 +179,7 @@ export const subgroups: Subgroup[] = [
   { id: 'faith-shallya', title: 'Шалия', sectionId: 'faith', sourceId: 'player' },
 ];
 
-export type ItemCategoryId = 'melee' | 'throwing' | 'ranged' | 'armor' | 'tools' | 'assets' | 'services' | 'transport';
+export type ItemCategoryId = 'melee' | 'throwing' | 'ranged' | 'armor' | 'tools' | 'assets' | 'services' | 'transport' | 'rare';
 
 export interface ItemCategory {
   id: ItemCategoryId;
@@ -257,7 +259,7 @@ export const sections: Section[] = [
   {
     id: 'items', title: 'Предметы', icon: 'Sword',
     description: 'Снаряжение ваших героев',
-    sourceIds: ['player', 'trinity', 'talagaad-adventures', 'starter-kit'],
+    sourceIds: ['player', 'trinity', 'talagaad-adventures', 'starter-kit', 'gm'],
     groups: ['player-corner'],
   },
   {
@@ -6510,6 +6512,26 @@ export const entries: CodexEntry[] = [
     id: 'transport-cog', section: 'items', source: 'player', title: 'Морской когг', category: 'transport', subgroup: 'Суда',
     summary: 'Крепкое одномачтовое судно для морских перевозок — выдерживает штормы и способно взять на борт солидный груз или отряд путников.',
     tags: ['транспорт', 'судно', 'когг'], meta: 'Транспорт',
+  },
+  {
+    id: 'rare-runed-sword', section: 'items', source: 'gm', title: 'Рунический меч', category: 'rare', subgroup: 'Магическое оружие',
+    summary: 'Клинок, покрытый древними рунами, светящимися в присутствии скверны. Наносит дополнительный урон нежити и порождениям Хаоса.',
+    tags: ['магия', 'оружие', 'редкое'], meta: 'Редкий предмет',
+  },
+  {
+    id: 'rare-flaming-blade', section: 'items', source: 'gm', title: 'Пылающий клинок', category: 'rare', subgroup: 'Магическое оружие',
+    summary: 'Зачарованное лезвие, способное по слову владельца вспыхнуть яростным пламенем — грозное оружие против тварей, боящихся огня.',
+    tags: ['магия', 'оружие', 'редкое'], meta: 'Редкий предмет',
+  },
+  {
+    id: 'rare-mail-of-warding', section: 'items', source: 'gm', title: 'Кольчуга ограждения', category: 'rare', subgroup: 'Магическая броня',
+    summary: 'Кольчужное плетение, усиленное защитными чарами гномьих рунознатцев — отводит часть ударов, не отягощая владельца лишним весом.',
+    tags: ['магия', 'броня', 'редкое'], meta: 'Редкий предмет',
+  },
+  {
+    id: 'rare-shadow-cloak', section: 'items', source: 'gm', title: 'Плащ теней', category: 'rare', subgroup: 'Магическая броня',
+    summary: 'Тёмная ткань, будто соткана из ночного мрака — помогает владельцу слиться с тенями и оставаться незамеченным там, где обычный плащ бы не спас.',
+    tags: ['магия', 'броня', 'редкое'], meta: 'Редкий предмет',
   },
   {
     id: 'contact-commoners', section: 'abilities', source: 'player', title: 'Простолюдины', subgroup: 'Контакты',
