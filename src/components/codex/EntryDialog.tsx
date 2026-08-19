@@ -57,15 +57,24 @@ const TextWithLinks = ({
     <>
       {parts.map((part, i) =>
         part.link ? (
-          <button
+          <span
             key={i}
+            role="button"
+            tabIndex={0}
             onClick={() =>
               part.link?.entryId ? onNavigate?.(part.link.entryId) : part.link?.sectionId ? onOpenSection?.(part.link.sectionId) : undefined
             }
-            className="story-link text-gold hover:text-gold-bright transition-colors font-semibold"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                if (part.link?.entryId) onNavigate?.(part.link.entryId);
+                else if (part.link?.sectionId) onOpenSection?.(part.link.sectionId);
+              }
+            }}
+            className="story-link cursor-pointer text-gold hover:text-gold-bright transition-colors font-semibold"
           >
             {part.text}
-          </button>
+          </span>
         ) : (
           <Fragment key={i}>{part.text}</Fragment>
         )
