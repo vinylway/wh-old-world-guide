@@ -1,4 +1,4 @@
-import { useState, ReactNode } from 'react';
+import { useState, useCallback, ReactNode } from 'react';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -7,9 +7,12 @@ import EntryCard from './EntryCard';
 import { useCodexOverrides } from '@/hooks/useCodexOverrides';
 import { useCodexEditorUI } from '@/hooks/useCodexEditorUI';
 import { useCodexMeta } from '@/hooks/useCodexMeta';
+import { useOrderedList } from '@/hooks/useOrderedList';
+import { reorderIds } from '@/lib/codexOrder';
 import { EDITABLE_SECTIONS } from '@/components/gm/EntryActions';
 import SourcesManagerDialog from '@/components/gm/SourcesManagerDialog';
 import SubgroupsManagerDialog from '@/components/gm/SubgroupsManagerDialog';
+import ReorderButtons from '@/components/gm/ReorderButtons';
 
 interface SectionsProps {
   onSelect: (entry: CodexEntry) => void;
@@ -18,18 +21,63 @@ interface SectionsProps {
   renderExtra?: (entry: CodexEntry) => ReactNode;
 }
 
+const EntryCardWithReorder = ({
+  entry,
+  onSelect,
+  isEditMode,
+  canMoveUp,
+  canMoveDown,
+  onMoveUp,
+  onMoveDown,
+}: {
+  entry: CodexEntry;
+  onSelect: (e: CodexEntry) => void;
+  isEditMode: boolean;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+}) => (
+  <div className="relative">
+    <EntryCard entry={entry} onSelect={onSelect} />
+    {isEditMode && (
+      <div className="absolute top-2 right-2 rounded bg-card/90 border border-gold/30 p-0.5">
+        <ReorderButtons canMoveUp={canMoveUp} canMoveDown={canMoveDown} onMoveUp={onMoveUp} onMoveDown={onMoveDown} />
+      </div>
+    )}
+  </div>
+);
+
 const SubgroupBlock = ({
+  id,
   title,
   items,
   onSelect,
   children,
+  isEditMode,
+  canMoveUp,
+  canMoveDown,
+  onMoveUp,
+  onMoveDown,
+  order,
+  onSetOrder,
 }: {
+  id?: string;
   title: string;
   items: CodexEntry[];
   onSelect: (e: CodexEntry) => void;
   children?: ReactNode;
+  isEditMode?: boolean;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  order?: Record<string, number>;
+  onSetOrder?: (ids: string[]) => void;
 }) => {
   const [open, setOpen] = useState(false);
+  const keyFn = useCallback((e: CodexEntry) => e.id, []);
+  const { sorted, moveUp, moveDown } = useOrderedList(items, keyFn, order ?? {}, onSetOrder ?? (() => {}));
 
   return (
     <div className="ornate-frame parchment-panel">
@@ -40,6 +88,9 @@ const SubgroupBlock = ({
         <Icon name="MapPin" size={16} className="text-gold shrink-0" />
         <h4 className="flex-1 font-display text-sm uppercase tracking-[0.15em] text-gold/90">{title}</h4>
         <span className="font-display text-xs text-muted-foreground">{items.length}</span>
+        {isEditMode && id && (onMoveUp || onMoveDown) && (
+          <ReorderButtons canMoveUp={canMoveUp} canMoveDown={canMoveDown} onMoveUp={onMoveUp} onMoveDown={onMoveDown} />
+        )}
         <Icon name={open ? 'ChevronUp' : 'ChevronDown'} size={16} className="text-gold shrink-0" />
       </button>
       {open && (
@@ -52,8 +103,17 @@ const SubgroupBlock = ({
             </p>
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {items.map((entry) => (
-                <EntryCard key={entry.id} entry={entry} onSelect={onSelect} />
+              {sorted.map((entry, idx) => (
+                <EntryCardWithReorder
+                  key={entry.id}
+                  entry={entry}
+                  onSelect={onSelect}
+                  isEditMode={!!isEditMode}
+                  canMoveUp={idx > 0}
+                  canMoveDown={idx < sorted.length - 1}
+                  onMoveUp={() => moveUp(entry.id)}
+                  onMoveDown={() => moveDown(entry.id)}
+                />
               ))}
             </div>
           )}
@@ -72,10 +132,16 @@ interface ItemsGridProps {
 }
 
 const ItemsGrid = ({ items, onSelect, sectionId, sourceId, subgroups }: ItemsGridProps) => {
+  const { isEditMode } = useCodexOverrides();
+  const { order, setOrder } = useCodexMeta();
   const allGroups = subgroups.filter((g) => g.sectionId === sectionId && g.sourceId === sourceId);
-  const groups = allGroups.filter((g) => !g.parentId);
+  const groupKeyFn = useCallback((g: Subgroup) => g.id, []);
+  const groupsRaw = allGroups.filter((g) => !g.parentId);
+  const { sorted: groups, moveUp: moveGroupUp, moveDown: moveGroupDown } = useOrderedList(groupsRaw, groupKeyFn, order, setOrder);
   const knownTitles = new Set(allGroups.map((g) => g.title));
-  const ungrouped = items.filter((e) => !e.subgroup);
+  const ungroupedRaw = items.filter((e) => !e.subgroup);
+  const entryKeyFn = useCallback((e: CodexEntry) => e.id, []);
+  const { sorted: ungrouped, moveUp: moveUngroupedUp, moveDown: moveUngroupedDown } = useOrderedList(ungroupedRaw, entryKeyFn, order, setOrder);
   // Записи с подразделом, который не входит в заранее заданный список (например, созданные вручную) —
   // группируем по указанному ими названию подраздела, чтобы они не пропадали из списка.
   const customSubgroupTitles = Array.from(
@@ -92,7 +158,7 @@ const ItemsGrid = ({ items, onSelect, sectionId, sourceId, subgroups }: ItemsGri
 
   return (
     <div className="space-y-4">
-      {groups.map((group) => {
+      {groups.map((group, idx) => {
         const childGroups = allGroups.filter((g) => g.parentId === group.id);
         const groupItems = childGroups.length > 0
           ? items.filter((e) => childGroups.some((c) => c.title === e.subgroup))
@@ -101,16 +167,45 @@ const ItemsGrid = ({ items, onSelect, sectionId, sourceId, subgroups }: ItemsGri
         if (groupItems.length === 0) return null;
 
         return (
-          <SubgroupBlock key={group.id} title={group.title} items={groupItems} onSelect={onSelect}>
+          <SubgroupBlock
+            key={group.id}
+            id={group.id}
+            title={group.title}
+            items={groupItems}
+            onSelect={onSelect}
+            isEditMode={isEditMode}
+            canMoveUp={idx > 0}
+            canMoveDown={idx < groups.length - 1}
+            onMoveUp={() => moveGroupUp(group.id)}
+            onMoveDown={() => moveGroupDown(group.id)}
+            order={order}
+            onSetOrder={setOrder}
+          >
             {childGroups.length > 0
               ? childGroups
                   .filter((child) => items.some((e) => e.subgroup === child.title))
-                  .map((child) => (
+                  .map((child, childIdx, arr) => (
                     <SubgroupBlock
                       key={child.id}
+                      id={child.id}
                       title={child.title}
                       items={items.filter((e) => e.subgroup === child.title)}
                       onSelect={onSelect}
+                      isEditMode={isEditMode}
+                      canMoveUp={childIdx > 0}
+                      canMoveDown={childIdx < arr.length - 1}
+                      onMoveUp={() => {
+                        const ids = arr.map((c) => c.id);
+                        const next = reorderIds(ids, child.id, 'up');
+                        if (next) setOrder(next);
+                      }}
+                      onMoveDown={() => {
+                        const ids = arr.map((c) => c.id);
+                        const next = reorderIds(ids, child.id, 'down');
+                        if (next) setOrder(next);
+                      }}
+                      order={order}
+                      onSetOrder={setOrder}
                     />
                   ))
               : undefined}
@@ -123,12 +218,24 @@ const ItemsGrid = ({ items, onSelect, sectionId, sourceId, subgroups }: ItemsGri
           title={title}
           items={items.filter((e) => e.subgroup === title)}
           onSelect={onSelect}
+          isEditMode={isEditMode}
+          order={order}
+          onSetOrder={setOrder}
         />
       ))}
       {ungrouped.length > 0 && (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 pt-2">
-          {ungrouped.map((entry) => (
-            <EntryCard key={entry.id} entry={entry} onSelect={onSelect} />
+          {ungrouped.map((entry, idx) => (
+            <EntryCardWithReorder
+              key={entry.id}
+              entry={entry}
+              onSelect={onSelect}
+              isEditMode={isEditMode}
+              canMoveUp={idx > 0}
+              canMoveDown={idx < ungrouped.length - 1}
+              onMoveUp={() => moveUngroupedUp(entry.id)}
+              onMoveDown={() => moveUngroupedDown(entry.id)}
+            />
           ))}
         </div>
       )}
@@ -150,17 +257,26 @@ const SectionBlock = ({
   defaultOpen = false,
   entries,
   groupId,
+  isEditMode,
+  canMoveUp,
+  canMoveDown,
+  onMoveUp,
+  onMoveDown,
 }: {
   section: Section;
   onSelect: (e: CodexEntry) => void;
   defaultOpen?: boolean;
   entries: CodexEntry[];
   groupId: SectionGroupId;
+  isEditMode: boolean;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
 }) => {
   const [open, setOpen] = useState(defaultOpen);
   const [sourcesManagerOpen, setSourcesManagerOpen] = useState(false);
   const [subgroupsManagerSource, setSubgroupsManagerSource] = useState<SourceId | null>(null);
-  const { isEditMode } = useCodexOverrides();
   const { openNewForm } = useCodexEditorUI();
   const { sourcesForSection, subgroups } = useCodexMeta();
   const hiddenSourceIds = (section.groups?.length ?? 0) > 1 ? HIDDEN_SOURCES_BY_GROUP[groupId] ?? [] : [];
@@ -182,6 +298,9 @@ const SectionBlock = ({
           <p className="font-body text-base text-muted-foreground">{section.description}</p>
         </div>
         <span className="font-display text-xs text-muted-foreground shrink-0">{sectionEntries.length}</span>
+        {isEditMode && (
+          <ReorderButtons canMoveUp={canMoveUp} canMoveDown={canMoveDown} onMoveUp={onMoveUp} onMoveDown={onMoveDown} />
+        )}
         <Icon name={open ? 'ChevronUp' : 'ChevronDown'} size={20} className="text-gold shrink-0" />
       </button>
 
@@ -359,14 +478,29 @@ const SectionBlock = ({
 };
 
 const Sections = ({ onSelect, groupId, entries }: SectionsProps) => {
-  const groupSections = sections.filter((s) => s.groups?.includes(groupId));
+  const { isEditMode } = useCodexOverrides();
+  const { order, setOrder } = useCodexMeta();
+  const groupSectionsRaw = sections.filter((s) => s.groups?.includes(groupId));
+  const sectionKeyFn = useCallback((s: Section) => `section-order-${groupId}-${s.id}`, [groupId]);
+  const { sorted: groupSections, moveUp, moveDown } = useOrderedList(groupSectionsRaw, sectionKeyFn, order, setOrder);
   const activeEntries = entries ?? staticEntries;
 
   return (
     <div id="sections" className="container py-16 md:py-24">
       <div className="space-y-4">
-        {groupSections.map((section) => (
-          <SectionBlock key={section.id} section={section} onSelect={onSelect} entries={activeEntries} groupId={groupId} />
+        {groupSections.map((section, idx) => (
+          <SectionBlock
+            key={section.id}
+            section={section}
+            onSelect={onSelect}
+            entries={activeEntries}
+            groupId={groupId}
+            isEditMode={isEditMode}
+            canMoveUp={idx > 0}
+            canMoveDown={idx < groupSections.length - 1}
+            onMoveUp={() => moveUp(sectionKeyFn(section))}
+            onMoveDown={() => moveDown(sectionKeyFn(section))}
+          />
         ))}
       </div>
     </div>

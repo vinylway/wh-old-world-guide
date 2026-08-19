@@ -27,11 +27,14 @@ def slugify(text: str, prefix: str) -> str:
 
 
 def handler(event: dict, context) -> dict:
-    '''Управляет вкладками-источниками (руководствами) и подразделами разделов кодекса.
-    GET — вернуть все источники, привязки источников к разделам и подразделы.
+    '''Управляет вкладками-источниками (руководствами), подразделами разделов кодекса и порядком
+    отображения глав/подразделов/карточек.
+    GET — вернуть все источники, привязки источников к разделам, подразделы и порядок сортировки.
     POST action=login — проверить пароль редактирования.
     POST action=save_source / delete_source — создать/переименовать или удалить источник (требует пароль).
-    POST action=save_subgroup / delete_subgroup — создать/переименовать или удалить подраздел (требует пароль).'''
+    POST action=save_subgroup / delete_subgroup — создать/переименовать или удалить подраздел (требует пароль).
+    POST action=set_order — сохранить порядок элементов (scope: section/subgroup/entry, ids: список
+    идентификаторов в новом порядке) (требует пароль).'''
     method = event.get('httpMethod', 'GET')
 
     headers = {
@@ -62,11 +65,14 @@ def handler(event: dict, context) -> dict:
                 {'id': r[0], 'title': r[1], 'sectionId': r[2], 'sourceId': r[3], 'parentId': r[4]}
                 for r in cur.fetchall()
             ]
+
+            cur.execute("SELECT item_id, order_index FROM codex_order_overrides")
+            order = {r[0]: r[1] for r in cur.fetchall()}
             cur.close()
             return {
                 'statusCode': 200,
                 'headers': headers,
-                'body': json.dumps({'sources': sources, 'sectionSources': section_sources, 'subgroups': subgroups}),
+                'body': json.dumps({'sources': sources, 'sectionSources': section_sources, 'subgroups': subgroups, 'order': order}),
             }
         finally:
             conn.close()
@@ -181,6 +187,28 @@ def handler(event: dict, context) -> dict:
             try:
                 cur = conn.cursor()
                 cur.execute("DELETE FROM codex_subgroups WHERE id = %s OR parent_id = %s", (subgroup_id, subgroup_id))
+                conn.commit()
+                cur.close()
+                return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'ok': True})}
+            finally:
+                conn.close()
+
+        if action == 'set_order':
+            ids = body.get('ids') or []
+            if not isinstance(ids, list) or not ids:
+                return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'Не хватает ids'})}
+            conn = get_conn()
+            try:
+                cur = conn.cursor()
+                for index, item_id in enumerate(ids):
+                    cur.execute(
+                        """
+                        INSERT INTO codex_order_overrides (item_id, order_index, updated_at)
+                        VALUES (%s, %s, now())
+                        ON CONFLICT (item_id) DO UPDATE SET order_index = EXCLUDED.order_index, updated_at = now()
+                        """,
+                        (item_id, index),
+                    )
                 conn.commit()
                 cur.close()
                 return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'ok': True})}

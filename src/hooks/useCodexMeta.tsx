@@ -13,18 +13,21 @@ interface MetaResponse {
   sources: Source[];
   sectionSources: SectionSourceLink[];
   subgroups: Subgroup[];
+  order: Record<string, number>;
 }
 
 interface CodexMetaContextValue {
   sources: Source[];
   sectionSources: SectionSourceLink[];
   subgroups: Subgroup[];
+  order: Record<string, number>;
   loading: boolean;
   sourcesForSection: (sectionId: SectionId) => Source[];
   saveSource: (params: { id?: string; title: string; icon: string; sectionIds: SectionId[] }) => Promise<boolean>;
   deleteSource: (id: string) => Promise<boolean>;
   saveSubgroup: (params: { id?: string; title: string; sectionId: SectionId; sourceId: string; parentId?: string | null }) => Promise<boolean>;
   deleteSubgroup: (id: string) => Promise<boolean>;
+  setOrder: (ids: string[]) => Promise<boolean>;
   refresh: () => Promise<void>;
 }
 
@@ -35,6 +38,7 @@ export const CodexMetaProvider = ({ children }: { children: ReactNode }) => {
   const [customSources, setCustomSources] = useState<Source[]>([]);
   const [sectionSources, setSectionSources] = useState<SectionSourceLink[]>([]);
   const [customSubgroups, setCustomSubgroups] = useState<Subgroup[]>([]);
+  const [order, setOrderState] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
@@ -45,10 +49,12 @@ export const CodexMetaProvider = ({ children }: { children: ReactNode }) => {
       setCustomSources(data.sources || []);
       setSectionSources(data.sectionSources || []);
       setCustomSubgroups(data.subgroups || []);
+      setOrderState(data.order || {});
     } catch {
       setCustomSources([]);
       setSectionSources([]);
       setCustomSubgroups([]);
+      setOrderState({});
     } finally {
       setLoading(false);
     }
@@ -186,16 +192,50 @@ export const CodexMetaProvider = ({ children }: { children: ReactNode }) => {
     [password, lock, refresh]
   );
 
+  const setOrder = useCallback(
+    async (ids: string[]) => {
+      if (!password) return false;
+      const prevOrder = order;
+      const nextOrder = { ...order };
+      ids.forEach((id, index) => { nextOrder[id] = index; });
+      setOrderState(nextOrder);
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Edit-Password': password },
+          body: JSON.stringify({ action: 'set_order', ids }),
+        });
+        if (res.status === 401) {
+          lock();
+          setOrderState(prevOrder);
+          return false;
+        }
+        const data = await res.json();
+        if (data.ok) {
+          return true;
+        }
+        setOrderState(prevOrder);
+        return false;
+      } catch {
+        setOrderState(prevOrder);
+        return false;
+      }
+    },
+    [password, lock, order]
+  );
+
   const value: CodexMetaContextValue = {
     sources: mergedSources,
     sectionSources,
     subgroups: mergedSubgroups,
+    order,
     loading,
     sourcesForSection,
     saveSource,
     deleteSource,
     saveSubgroup,
     deleteSubgroup,
+    setOrder,
     refresh,
   };
 
