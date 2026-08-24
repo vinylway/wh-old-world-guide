@@ -1,6 +1,7 @@
 import Icon from '@/components/ui/icon';
 import { CodexEntry } from '@/data/codex';
-import { OriginAbilityConfig } from '@/data/generator';
+import { OriginAbilityConfig, isLoreVariantCategory } from '@/data/generator';
+import LoreVariantPicker from '@/components/generator/LoreVariantPicker';
 
 interface OriginAbilitiesStepProps {
   config: OriginAbilityConfig;
@@ -23,6 +24,8 @@ interface OriginAbilitiesStepProps {
   baseLoreEntries: CodexEntry[];
   loreSelections: Record<string, string>;
   setLoreSelection: (groupId: string, loreId: string) => void;
+  originLoreVariants: Record<string, string>;
+  setOriginLoreVariant: (key: string, variant: string) => void;
 }
 
 const OriginAbilitiesStep = ({
@@ -44,6 +47,8 @@ const OriginAbilitiesStep = ({
   baseLoreEntries,
   loreSelections,
   setLoreSelection,
+  originLoreVariants,
+  setOriginLoreVariant,
 }: OriginAbilitiesStepProps) => {
   const hasTalentStep = config.rollsCount > 0;
   const hasSkillsStep = mandatorySkillEntries.length > 0 || config.extraSkillsCount > 0;
@@ -230,15 +235,29 @@ const OriginAbilitiesStep = ({
           </div>
 
           {baseLoreEntries.length > 0 && (
-            <div className="mb-4 flex flex-wrap items-center gap-2 rounded border border-gold/20 bg-secondary/20 px-3 py-2">
-              <Icon name="Check" size={14} className="text-gold shrink-0" />
-              <p className="font-body text-sm text-parchment/80">
-                Уже известно:{' '}
-                <span className="text-gold-bright font-semibold">
-                  {baseLoreEntries.map((l) => l.title).join(', ')}
-                </span>{' '}
-                (базовые знания {originTitle.toLowerCase()}а)
-              </p>
+            <div className="mb-4 rounded border border-gold/20 bg-secondary/20 px-3 py-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Icon name="Check" size={14} className="text-gold shrink-0" />
+                <p className="font-body text-sm text-parchment/80">
+                  Уже известно:{' '}
+                  <span className="text-gold-bright font-semibold">
+                    {baseLoreEntries.map((l) => l.title).join(', ')}
+                  </span>{' '}
+                  (базовые знания {originTitle.toLowerCase()}а)
+                </p>
+              </div>
+              {baseLoreEntries
+                .filter((l) => isLoreVariantCategory(l.id))
+                .map((l) => (
+                  <div key={l.id} className="mt-2">
+                    <p className="font-body text-xs text-muted-foreground mb-1">Уточните «{l.title}»:</p>
+                    <LoreVariantPicker
+                      loreId={l.id}
+                      value={originLoreVariants[l.id]}
+                      onChange={(v) => setOriginLoreVariant(l.id, v)}
+                    />
+                  </div>
+                ))}
             </div>
           )}
 
@@ -247,6 +266,7 @@ const OriginAbilitiesStep = ({
               .map((id) => entries.find((e) => e.id === id))
               .filter((e): e is CodexEntry => !!e);
             const selectedId = loreSelections[group.id];
+            const variantMode = selectedId ? isLoreVariantCategory(selectedId) : false;
             return (
               <div key={group.id} className="mb-4 last:mb-0">
                 <p className="font-body text-sm text-muted-foreground mb-2">{group.label}:</p>
@@ -265,6 +285,13 @@ const OriginAbilitiesStep = ({
                     </button>
                   ))}
                 </div>
+                {selectedId && variantMode && (
+                  <LoreVariantPicker
+                    loreId={selectedId}
+                    value={originLoreVariants[group.id]}
+                    onChange={(v) => setOriginLoreVariant(group.id, v)}
+                  />
+                )}
               </div>
             );
           })}

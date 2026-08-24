@@ -82,6 +82,9 @@ const CharacterGeneratorContent = () => {
 
   // Выбор знаний от происхождения (по группам)
   const [loreSelections, setLoreSelections] = useState<Record<string, string>>({});
+  // Уточнённые варианты для знаний-категорий (город/провинция/культ и т.п.) от происхождения —
+  // ключ: id базового знания (для baseLoreIds) или id группы выбора (для loreChoiceGroups)
+  const [originLoreVariants, setOriginLoreVariants] = useState<Record<string, string>>({});
 
   // Карьера
   const [careerRolling, setCareerRolling] = useState(false);
@@ -143,7 +146,21 @@ const CharacterGeneratorContent = () => {
       (!abilityConfig.oathMandatory || oathReplaceIdx !== null)
     : true;
   const skillsDone = abilityConfig ? selectedExtraSkills.length === abilityConfig.extraSkillsCount : true;
-  const loreDone = abilityConfig ? abilityConfig.loreChoiceGroups.every((g) => !!loreSelections[g.id]) : true;
+  // Знания-категории (город/провинция/культ и т.п.) среди базовых знаний происхождения —
+  // для них нужно уточнить конкретный вариант, прежде чем считать шаг завершённым.
+  const baseLoreVariantIds = abilityConfig
+    ? abilityConfig.baseLoreIds.filter((id) => isLoreVariantCategory(id))
+    : [];
+  const loreDone = abilityConfig
+    ? abilityConfig.loreChoiceGroups.every((g) => {
+        const selectedId = loreSelections[g.id];
+        if (!selectedId) return false;
+        if (isLoreVariantCategory(selectedId)) {
+          return !!originLoreVariants[g.id]?.trim();
+        }
+        return true;
+      }) && baseLoreVariantIds.every((id) => !!originLoreVariants[id]?.trim())
+    : true;
   const abilitiesDone = talentsDone && skillsDone && loreDone;
 
   const finalTalentIds: string[] = abilityConfig
@@ -164,6 +181,24 @@ const CharacterGeneratorContent = () => {
 
   const finalLoreIds: string[] = abilityConfig
     ? [...abilityConfig.baseLoreIds, ...Object.values(loreSelections)]
+    : [];
+
+  // Знания происхождения с уточнёнными вариантами (для знаний-категорий вроде «Дом» у имперца)
+  const finalOriginLoreGrants: CareerLoreGrant[] = abilityConfig
+    ? [
+        ...abilityConfig.baseLoreIds.map((loreId) => ({
+          loreId,
+          variant: isLoreVariantCategory(loreId) ? originLoreVariants[loreId] : undefined,
+        })),
+        ...abilityConfig.loreChoiceGroups
+          .map((g): CareerLoreGrant | null => {
+            const selectedId = loreSelections[g.id];
+            if (!selectedId) return null;
+            const variant = isLoreVariantCategory(selectedId) ? originLoreVariants[g.id] : undefined;
+            return { loreId: selectedId, variant };
+          })
+          .filter((g): g is CareerLoreGrant => g !== null),
+      ]
     : [];
 
   // Знания, уже известные персонажу (от происхождения), плюс уже выбранные/фиксированные
@@ -234,6 +269,15 @@ const CharacterGeneratorContent = () => {
 
   const setLoreSelection = (groupId: string, loreId: string) => {
     setLoreSelections((prev) => ({ ...prev, [groupId]: loreId }));
+    setOriginLoreVariants((prev) => {
+      const next = { ...prev };
+      delete next[groupId];
+      return next;
+    });
+  };
+
+  const setOriginLoreVariant = (key: string, variant: string) => {
+    setOriginLoreVariants((prev) => ({ ...prev, [key]: variant }));
   };
 
   const resetCareer = () => {
@@ -276,6 +320,7 @@ const CharacterGeneratorContent = () => {
     setOathReplaceIdx(null);
     setSelectedExtraSkills([]);
     setLoreSelections({});
+    setOriginLoreVariants({});
   };
 
   const rollOrigin = () => {
@@ -489,6 +534,7 @@ const CharacterGeneratorContent = () => {
       talentIds: finalTalentIds,
       boostedSkillIds,
       loreIds: finalLoreIds,
+      originLoreGrants: finalOriginLoreGrants,
       careerSkillAdvances: selectedCareerSkills,
       careerLoreGrants: finalCareerLoreGrants,
       careerLoreNotes: careerLoreConfig?.notes,
@@ -578,6 +624,8 @@ const CharacterGeneratorContent = () => {
               baseLoreEntries={baseLoreEntries}
               loreSelections={loreSelections}
               setLoreSelection={setLoreSelection}
+              originLoreVariants={originLoreVariants}
+              setOriginLoreVariant={setOriginLoreVariant}
             />
           )}
 
@@ -648,7 +696,7 @@ const CharacterGeneratorContent = () => {
             careerLoreGrants={finalCareerLoreGrants}
             careerLoreNotes={careerLoreConfig?.notes}
             finalTalentIds={finalTalentIds}
-            finalLoreIds={finalLoreIds}
+            originLoreGrants={finalOriginLoreGrants}
             xp={xp}
             saved={saved}
             name={name}

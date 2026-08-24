@@ -36,7 +36,7 @@ interface CharacterSummaryProps {
   careerLoreGrants: CareerLoreGrant[];
   careerLoreNotes?: string[];
   finalTalentIds: string[];
-  finalLoreIds: string[];
+  originLoreGrants: CareerLoreGrant[];
   xp: number;
   saved: boolean;
   name: string;
@@ -69,7 +69,7 @@ const CharacterSummary = ({
   careerLoreGrants,
   careerLoreNotes,
   finalTalentIds,
-  finalLoreIds,
+  originLoreGrants,
   xp,
   saved,
   name,
@@ -265,22 +265,22 @@ const CharacterSummary = ({
               </div>
             </div>
           )}
-          {finalLoreIds.length > 0 && (
+          {originLoreGrants.length > 0 && (
             <div className="rounded border border-gold/20 p-3">
               <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
                 Знания
               </p>
               <div className="flex flex-wrap gap-2">
-                {finalLoreIds.map((id) => {
-                  const lore = entries.find((e) => e.id === id);
+                {originLoreGrants.map((grant) => {
+                  const lore = entries.find((e) => e.id === grant.loreId);
                   if (!lore) return null;
                   return (
                     <button
-                      key={id}
-                      onClick={() => openEntry(id)}
+                      key={grant.loreId + (grant.variant ?? '')}
+                      onClick={() => openEntry(grant.loreId)}
                       className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
                     >
-                      {lore.title}
+                      {lore.title}{grant.variant ? ` (${grant.variant})` : ''}
                     </button>
                   );
                 })}

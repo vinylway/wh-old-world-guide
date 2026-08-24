@@ -29,17 +29,22 @@ export interface GeneratedCharacter {
   // Навыки, получившие +1 благодаря карьере (выбираются из пула «Бонусы к навыкам»)
   careerSkillAdvances?: string[];
   // Знания, полученные от карьеры (с уточнением варианта — конкретный город, культ и т.п.)
-  careerLoreGrants?: CareerLoreGrant[];
+  careerLoreGrants?: LoreGrant[];
   // Информационные заметки о знаниях карьеры, не сводящиеся к конкретной карточке
   // (например «предпочтительное знание вашего бога» у жреца)
   careerLoreNotes?: string[];
+  // Знания, полученные от происхождения (с уточнением варианта — конкретный город, культ и т.п.)
+  originLoreGrants?: LoreGrant[];
 }
 
-export interface CareerLoreGrant {
+export interface LoreGrant {
   loreId: string;
   // Уточнение варианта для знаний-категорий (город/провинция/культ/убийца чудовищ/школа магии)
   variant?: string;
 }
+
+// Сохранено для обратной совместимости именования — тип идентичен LoreGrant
+export type CareerLoreGrant = LoreGrant;
 
 export interface CareerSkillBonus {
   // Сколько навыков нужно выбрать
