@@ -65,6 +65,17 @@ export const getCareerSkillBonus = (career: CodexEntry | null | undefined): Care
   return { pickCount, skillIds };
 };
 
+// Извлекает из карьеры id характеристик (карточки раздела «Способности», подраздел
+// «Характеристики»), отмеченных как предпочтительные для этой карьеры — на основе
+// ссылок, проставленных в строке «Предпочтительные характеристики».
+export const getCareerPreferredAbilityIds = (career: CodexEntry | null | undefined): string[] => {
+  const row = career?.stats?.find((s) => s.label === 'Предпочтительные характеристики');
+  if (!row?.value) return [];
+  return (row.links ?? [])
+    .filter((l) => !!l.entryId && l.entryId.startsWith('ability-'))
+    .map((l) => l.entryId as string);
+};
+
 // Итоговое значение навыка: база 2, плюс бонусы происхождения и карьеры — они суммируются,
 // поэтому навык, повышенный и происхождением, и карьерой, может дойти до 4.
 export const getSkillLevel = (

@@ -8,6 +8,7 @@ import {
   careerStatusLabels,
   careerStatusIcons,
   disgracedStatus,
+  getCareerPreferredAbilityIds,
 } from '@/data/generator';
 
 const statusColorClasses: Record<CareerStatus, string> = {
@@ -38,6 +39,8 @@ const CharacterSheetDialog = ({
   const cCharacteristics = c?.stats.filter((s) => s.label !== 'Судьба') ?? [];
   const displayedStatus = c?.careerStatus && c.inDisgrace ? disgracedStatus(c.careerStatus) : c?.careerStatus;
   const loreIds = c?.loreIds ?? (c?.loreId ? [c.loreId] : []);
+  const career = c?.careerId ? entries.find((e) => e.id === c.careerId) : null;
+  const careerPreferredAbilityIds = getCareerPreferredAbilityIds(career);
 
   return (
     <Dialog open={!!character} onOpenChange={onOpenChange}>
@@ -95,13 +98,20 @@ const CharacterSheetDialog = ({
               {cCharacteristics.map((s) => {
                 const abilityId = characteristicAbilityEntryId[s.label];
                 const relatedSkills = abilityId ? getRelatedSkills(abilityId) : [];
+                const preferred = !!abilityId && careerPreferredAbilityIds.includes(abilityId);
                 return (
-                  <div key={s.label} className="rounded border border-gold/25 bg-secondary/20 p-3">
+                  <div
+                    key={s.label}
+                    className={`rounded border p-3 ${preferred ? 'border-gold bg-secondary/40 glow-gold' : 'border-gold/25 bg-secondary/20'}`}
+                  >
                     <button
                       onClick={() => abilityId && openEntry(abilityId)}
                       className="w-full text-left hover:opacity-80 transition-opacity"
                     >
-                      <p className="font-display text-xs uppercase tracking-wide text-gold/80 mb-1">{s.label}</p>
+                      <p className="flex items-center gap-1 font-display text-xs uppercase tracking-wide text-gold/80 mb-1">
+                        {preferred && <Icon name="Star" size={11} className="text-gold-bright shrink-0" />}
+                        {s.label}
+                      </p>
                       <p className="font-display text-xl font-bold text-parchment">{s.final}</p>
                     </button>
                     {relatedSkills.length > 0 && (

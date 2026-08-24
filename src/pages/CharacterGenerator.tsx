@@ -31,6 +31,7 @@ import {
   originAbilityConfigs,
   getRandomNameForOrigin,
   getCareerSkillBonus,
+  getCareerPreferredAbilityIds,
 } from '@/data/generator';
 
 const ALL_LABELS = ['ББ', 'ДБ', 'С', 'В', 'И', 'Пр', 'Р', 'Х', 'Судьба'];
@@ -108,6 +109,7 @@ const CharacterGeneratorContent = () => {
     ? (careerSkillBonus.skillIds.map((id) => entries.find((e) => e.id === id)).filter(Boolean) as CodexEntry[])
     : [];
   const careerSkillsDone = careerSkillBonus ? selectedCareerSkills.length === careerSkillBonus.pickCount : true;
+  const careerPreferredAbilityIds = getCareerPreferredAbilityIds(career);
 
   const mandatorySkillEntries = abilityConfig
     ? (abilityConfig.mandatorySkillIds.map((id) => entries.find((e) => e.id === id)).filter(Boolean) as CodexEntry[])
@@ -557,6 +559,7 @@ const CharacterGeneratorContent = () => {
             hasAbilities={!!abilityConfig}
             boostedSkillIds={boostedSkillIds}
             careerSkillAdvances={selectedCareerSkills}
+            careerPreferredAbilityIds={careerPreferredAbilityIds}
             finalTalentIds={finalTalentIds}
             finalLoreIds={finalLoreIds}
             xp={xp}

@@ -30,6 +30,7 @@ interface CharacterSummaryProps {
   hasAbilities: boolean;
   boostedSkillIds: string[];
   careerSkillAdvances: string[];
+  careerPreferredAbilityIds: string[];
   finalTalentIds: string[];
   finalLoreIds: string[];
   xp: number;
@@ -59,6 +60,7 @@ const CharacterSummary = ({
   hasAbilities,
   boostedSkillIds,
   careerSkillAdvances,
+  careerPreferredAbilityIds,
   finalTalentIds,
   finalLoreIds,
   xp,
@@ -124,17 +126,30 @@ const CharacterSummary = ({
         </div>
       )}
 
+      {careerPreferredAbilityIds.length > 0 && (
+        <p className="flex items-center gap-1.5 font-body text-xs text-gold/70 mb-2">
+          <Icon name="Star" size={12} className="text-gold" />
+          Отмечены характеристики, предпочтительные для карьеры «{career?.title}»
+        </p>
+      )}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         {characteristicStats.map((s) => {
           const abilityId = characteristicAbilityEntryId[s.label];
           const relatedSkills = abilityId ? getRelatedSkills(abilityId) : [];
+          const preferred = !!abilityId && careerPreferredAbilityIds.includes(abilityId);
           return (
-            <div key={s.label} className="rounded border border-gold/25 bg-secondary/20 p-3">
+            <div
+              key={s.label}
+              className={`rounded border p-3 ${preferred ? 'border-gold bg-secondary/40 glow-gold' : 'border-gold/25 bg-secondary/20'}`}
+            >
               <button
                 onClick={() => abilityId && openEntry(abilityId)}
                 className="w-full text-left hover:opacity-80 transition-opacity"
               >
-                <p className="font-display text-xs uppercase tracking-wide text-gold/80 mb-1">{s.label}</p>
+                <p className="flex items-center gap-1 font-display text-xs uppercase tracking-wide text-gold/80 mb-1">
+                  {preferred && <Icon name="Star" size={11} className="text-gold-bright shrink-0" />}
+                  {s.label}
+                </p>
                 <p className="font-display text-xl font-bold text-parchment">
                   {s.final}
                   {s.boosted && <span className="ml-1.5 text-gold-bright text-xs">({s.base} +1)</span>}
