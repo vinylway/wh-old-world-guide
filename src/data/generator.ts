@@ -316,9 +316,9 @@ export const careerLoreConfigs: Record<string, CareerLoreConfig> = {
   'career-slayer': {
     groups: [
       { id: 'g1', options: ['lore-monster-slayer'] },
-      { id: 'g2', options: ['lore-mining'] },
+      { id: 'g2', options: ['lore-mining', 'lore-forestry', 'lore-seafaring', 'lore-underground', 'lore-navigable-rivers'] },
     ],
-    notes: ['Первое знание — обязательно «Убийца троллей», либо любой другой вариант убийцы чудовищ на выбор', 'Второе — либо горное дело, либо иное знание окружающей среды на выбор'],
+    notes: ['Первое знание — обязательно «Убийца троллей», либо любой другой вариант убийцы чудовищ на выбор'],
   },
 };
 
