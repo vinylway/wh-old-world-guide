@@ -107,7 +107,9 @@ const CharacterSheetDialog = ({
                     {relatedSkills.length > 0 && (
                       <div className="mt-2 pt-2 border-t border-gold/15 space-y-1">
                         {relatedSkills.map((skill) => {
-                          const boosted = !!c.boostedSkillIds?.includes(skill.id);
+                          const originBoost = !!c.boostedSkillIds?.includes(skill.id);
+                          const careerBoost = !!c.careerSkillAdvances?.includes(skill.id);
+                          const level = 2 + (originBoost ? 1 : 0) + (careerBoost ? 1 : 0);
                           return (
                             <button
                               key={skill.id}
@@ -115,11 +117,9 @@ const CharacterSheetDialog = ({
                               className="block w-full text-left font-body text-xs text-parchment/75 leading-snug hover:text-gold-bright transition-colors"
                             >
                               {skill.title}
-                              {c.boostedSkillIds && (
-                                <span className={boosted ? 'text-gold-bright font-semibold' : 'text-parchment/50'}>
-                                  {' '}{boosted ? 3 : 2}
-                                </span>
-                              )}
+                              <span className={level > 2 ? 'text-gold-bright font-semibold' : 'text-parchment/50'}>
+                                {' '}{level}
+                              </span>
                             </button>
                           );
                         })}
@@ -146,6 +146,29 @@ const CharacterSheetDialog = ({
                         className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
                       >
                         {talent.title}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {c.careerSkillAdvances && c.careerSkillAdvances.length > 0 && (
+              <div className="mb-3 rounded border border-gold/20 p-3">
+                <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
+                  Навыки карьеры
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {c.careerSkillAdvances.map((id) => {
+                    const skill = entries.find((e) => e.id === id);
+                    if (!skill) return null;
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => openEntry(id)}
+                        className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
+                      >
+                        {skill.title}
                       </button>
                     );
                   })}

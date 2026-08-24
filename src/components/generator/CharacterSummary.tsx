@@ -21,6 +21,7 @@ interface CharacterSummaryProps {
   finalStats: StatRow[] | null;
   abilitiesDone: boolean;
   careerId: string | null;
+  careerSkillsDone: boolean;
   career: CodexEntry | null | undefined;
   careerStatus: CareerStatus | null;
   inDisgrace: boolean;
@@ -28,6 +29,7 @@ interface CharacterSummaryProps {
   characteristicStats: StatRow[];
   hasAbilities: boolean;
   boostedSkillIds: string[];
+  careerSkillAdvances: string[];
   finalTalentIds: string[];
   finalLoreIds: string[];
   xp: number;
@@ -48,6 +50,7 @@ const CharacterSummary = ({
   finalStats,
   abilitiesDone,
   careerId,
+  careerSkillsDone,
   career,
   careerStatus,
   inDisgrace,
@@ -55,6 +58,7 @@ const CharacterSummary = ({
   characteristicStats,
   hasAbilities,
   boostedSkillIds,
+  careerSkillAdvances,
   finalTalentIds,
   finalLoreIds,
   xp,
@@ -69,7 +73,7 @@ const CharacterSummary = ({
   characteristicAbilityEntryId,
   entries,
 }: CharacterSummaryProps) => {
-  if (!(allRoundsDone && finalStats && abilitiesDone && careerId)) return null;
+  if (!(allRoundsDone && finalStats && abilitiesDone && careerId && careerSkillsDone)) return null;
 
   const displayedStatus = careerStatus && inDisgrace ? disgracedStatus(careerStatus) : careerStatus;
 
@@ -139,7 +143,9 @@ const CharacterSummary = ({
               {relatedSkills.length > 0 && (
                 <div className="mt-2 pt-2 border-t border-gold/15 space-y-1">
                   {relatedSkills.map((skill) => {
-                    const boosted = hasAbilities && boostedSkillIds.includes(skill.id);
+                    const originBoost = hasAbilities && boostedSkillIds.includes(skill.id);
+                    const careerBoost = careerSkillAdvances.includes(skill.id);
+                    const level = 2 + (originBoost ? 1 : 0) + (careerBoost ? 1 : 0);
                     return (
                       <button
                         key={skill.id}
@@ -147,11 +153,9 @@ const CharacterSummary = ({
                         className="block w-full text-left font-body text-xs text-parchment/75 leading-snug hover:text-gold-bright transition-colors"
                       >
                         {skill.title}
-                        {hasAbilities && (
-                          <span className={boosted ? 'text-gold-bright font-semibold' : 'text-parchment/50'}>
-                            {' '}{boosted ? 3 : 2}
-                          </span>
-                        )}
+                        <span className={level > 2 ? 'text-gold-bright font-semibold' : 'text-parchment/50'}>
+                          {' '}{level}
+                        </span>
                       </button>
                     );
                   })}
@@ -161,6 +165,29 @@ const CharacterSummary = ({
           );
         })}
       </div>
+
+      {careerSkillAdvances.length > 0 && (
+        <div className="mb-5 rounded border border-gold/20 p-3">
+          <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
+            Навыки карьеры
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {careerSkillAdvances.map((id) => {
+              const skill = entries.find((e) => e.id === id);
+              if (!skill) return null;
+              return (
+                <button
+                  key={id}
+                  onClick={() => openEntry(id)}
+                  className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
+                >
+                  {skill.title}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {hasAbilities && (
         <div className="mb-5 space-y-3">

@@ -11,7 +11,9 @@ import CharacteristicsStep from '@/components/generator/CharacteristicsStep';
 import OriginAbilitiesStep from '@/components/generator/OriginAbilitiesStep';
 import CharacterSummary, { SavedCharactersList } from '@/components/generator/CharacterSummary';
 import CharacterSheetDialog from '@/components/generator/CharacterSheetDialog';
-import { entries, CodexEntry } from '@/data/codex';
+import { CodexEntry } from '@/data/codex';
+import { CodexOverridesProvider, useCodexOverrides } from '@/hooks/useCodexOverrides';
+import CareerSkillsStep from '@/components/generator/CareerSkillsStep';
 import {
   rollD10,
   rollD100,
@@ -28,6 +30,7 @@ import {
   getCareerStatus,
   originAbilityConfigs,
   getRandomNameForOrigin,
+  getCareerSkillBonus,
 } from '@/data/generator';
 
 const ALL_LABELS = ['ББ', 'ДБ', 'С', 'В', 'И', 'Пр', 'Р', 'Х', 'Судьба'];
@@ -42,7 +45,8 @@ interface RoundState {
 
 const emptyRound = (): RoundState => ({ log: [], status: 'idle', manual: false });
 
-const CharacterGenerator = () => {
+const CharacterGeneratorContent = () => {
+  const { entries } = useCodexOverrides();
   const [originRolling, setOriginRolling] = useState(false);
   const [originRoll, setOriginRoll] = useState<number | null>(null);
   const [originId, setOriginId] = useState<string | null>(null);
@@ -82,6 +86,9 @@ const CharacterGenerator = () => {
   const [careerPickerOpen, setCareerPickerOpen] = useState(false);
   const [inDisgrace, setInDisgrace] = useState(false);
 
+  // Выбор навыков, повышаемых карьерным бонусом («+1 к N из следующих навыков»)
+  const [selectedCareerSkills, setSelectedCareerSkills] = useState<string[]>([]);
+
   useEffect(() => {
     setSavedList(getSavedCharacters());
   }, []);
@@ -96,6 +103,11 @@ const CharacterGenerator = () => {
     ? (careerTable.map((r) => entries.find((e) => e.id === r.careerId)).filter(Boolean) as CodexEntry[])
     : [];
   const careerStatus = careerId ? getCareerStatus(careerId) : null;
+  const careerSkillBonus = getCareerSkillBonus(career);
+  const careerSkillEntries = careerSkillBonus
+    ? (careerSkillBonus.skillIds.map((id) => entries.find((e) => e.id === id)).filter(Boolean) as CodexEntry[])
+    : [];
+  const careerSkillsDone = careerSkillBonus ? selectedCareerSkills.length === careerSkillBonus.pickCount : true;
 
   const mandatorySkillEntries = abilityConfig
     ? (abilityConfig.mandatorySkillIds.map((id) => entries.find((e) => e.id === id)).filter(Boolean) as CodexEntry[])
@@ -183,6 +195,16 @@ const CharacterGenerator = () => {
     setCareerPickerOpen(false);
     setCareerRolling(false);
     setInDisgrace(false);
+    setSelectedCareerSkills([]);
+  };
+
+  const toggleCareerSkill = (skillId: string) => {
+    if (!careerSkillBonus) return;
+    setSelectedCareerSkills((prev) => {
+      if (prev.includes(skillId)) return prev.filter((s) => s !== skillId);
+      if (prev.length >= careerSkillBonus.pickCount) return prev;
+      return [...prev, skillId];
+    });
   };
 
   const resetAbilities = () => {
@@ -241,6 +263,7 @@ const CharacterGenerator = () => {
       setCareerManual(false);
       setCareerRolling(false);
       setInDisgrace(false);
+      setSelectedCareerSkills([]);
     }, 600);
   };
 
@@ -255,6 +278,7 @@ const CharacterGenerator = () => {
       setCareerManual(true);
       setCareerRolling(false);
       setInDisgrace(false);
+      setSelectedCareerSkills([]);
     }, 600);
   };
 
@@ -264,6 +288,7 @@ const CharacterGenerator = () => {
     setCareerManual(true);
     setCareerPickerOpen(false);
     setInDisgrace(false);
+    setSelectedCareerSkills([]);
   };
 
   const toggleDisgrace = () => {
@@ -395,6 +420,7 @@ const CharacterGenerator = () => {
       talentIds: finalTalentIds,
       boostedSkillIds,
       loreIds: finalLoreIds,
+      careerSkillAdvances: selectedCareerSkills,
     };
     saveCharacter(character);
     setSavedList(getSavedCharacters());
@@ -504,12 +530,25 @@ const CharacterGenerator = () => {
             />
           )}
 
+          {/* Шаг 5: навыки карьеры («+1 к N из следующих навыков») */}
+          {allRoundsDone && abilitiesDone && careerId && !careerRolling && careerSkillBonus && (
+            <CareerSkillsStep
+              careerTitle={career?.title ?? ''}
+              bonus={careerSkillBonus}
+              skillEntries={careerSkillEntries}
+              selectedSkills={selectedCareerSkills}
+              toggleSkill={toggleCareerSkill}
+              boostedSkillIds={boostedSkillIds}
+            />
+          )}
+
           {/* Итог */}
           <CharacterSummary
             allRoundsDone={allRoundsDone}
             finalStats={finalStats}
             abilitiesDone={abilitiesDone}
             careerId={careerId}
+            careerSkillsDone={careerSkillsDone}
             career={career}
             careerStatus={careerStatus}
             inDisgrace={inDisgrace}
@@ -517,6 +556,7 @@ const CharacterGenerator = () => {
             characteristicStats={characteristicStats}
             hasAbilities={!!abilityConfig}
             boostedSkillIds={boostedSkillIds}
+            careerSkillAdvances={selectedCareerSkills}
             finalTalentIds={finalTalentIds}
             finalLoreIds={finalLoreIds}
             xp={xp}
@@ -567,5 +607,11 @@ const CharacterGenerator = () => {
     </div>
   );
 };
+
+const CharacterGenerator = () => (
+  <CodexOverridesProvider>
+    <CharacterGeneratorContent />
+  </CodexOverridesProvider>
+);
 
 export default CharacterGenerator;

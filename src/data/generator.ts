@@ -1,3 +1,5 @@
+import { CodexEntry } from '@/data/codex';
+
 export interface StatRow {
   label: string;
   base: number;
@@ -24,7 +26,53 @@ export interface GeneratedCharacter {
   careerTitle?: string;
   careerStatus?: CareerStatus;
   inDisgrace?: boolean;
+  // Навыки, получившие +1 благодаря карьере (выбираются из пула «Бонусы к навыкам»)
+  careerSkillAdvances?: string[];
 }
+
+export interface CareerSkillBonus {
+  // Сколько навыков нужно выбрать
+  pickCount: number;
+  // Пул навыков, из которых можно выбирать (id карточек в разделе «Способности»)
+  skillIds: string[];
+}
+
+// Русские числительные (дательный и именительный падеж), которые встречаются в тексте
+// карьер вида «+1 к четырём из следующих навыков» — нужно для определения, сколько
+// навыков разрешено выбрать.
+const skillCountWords: Record<string, number> = {
+  'одному': 1, 'одного': 1, 'один': 1,
+  'двум': 2, 'двух': 2, 'два': 2,
+  'трём': 3, 'трем': 3, 'трёх': 3, 'трех': 3, 'три': 3,
+  'четырём': 4, 'четырем': 4, 'четырёх': 4, 'четырех': 4, 'четыре': 4,
+  'пяти': 5, 'пять': 5,
+  'шести': 6, 'шесть': 6,
+};
+
+// Извлекает из карьеры структурированный бонус к навыкам (строка «Бонусы к навыкам»):
+// сколько навыков выбрать игроку и из какого пула — на основе ссылок на карточки
+// навыков, проставленных в этой строке характеристик карьеры.
+export const getCareerSkillBonus = (career: CodexEntry | null | undefined): CareerSkillBonus | null => {
+  const row = career?.stats?.find((s) => s.label === 'Бонусы к навыкам');
+  if (!row?.value) return null;
+  const skillIds = (row.links ?? [])
+    .filter((l) => !!l.entryId && l.entryId.startsWith('skill-'))
+    .map((l) => l.entryId as string);
+  if (skillIds.length === 0) return null;
+  const match = row.value.toLowerCase().match(/к\s+([а-яё]+)\s+из/);
+  const word = match?.[1];
+  const pickCount = Math.min(word && skillCountWords[word] ? skillCountWords[word] : 4, skillIds.length);
+  return { pickCount, skillIds };
+};
+
+// Итоговое значение навыка: база 2, плюс бонусы происхождения и карьеры — они суммируются,
+// поэтому навык, повышенный и происхождением, и карьерой, может дойти до 4.
+export const getSkillLevel = (
+  skillId: string,
+  boostedSkillIds: string[],
+  careerSkillAdvances: string[] = []
+): number =>
+  2 + (boostedSkillIds.includes(skillId) ? 1 : 0) + (careerSkillAdvances.includes(skillId) ? 1 : 0);
 
 interface OriginRollRange {
   min: number;
