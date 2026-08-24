@@ -450,6 +450,10 @@ export interface OriginAbilityConfig {
   extraSkillsCount: number;
   // Знания, которыми персонаж владеет от рождения (без выбора)
   baseLoreIds: string[];
+  // Фиксированные варианты для базовых знаний-категорий (город/провинция/культ и т.п.),
+  // которые предопределены происхождением и не требуют выбора игрока —
+  // например, у полуросликов провинция всегда «Мутланд».
+  baseLoreVariants?: Record<string, string>;
   // Группы знаний на выбор — из каждой группы нужно выбрать один вариант
   loreChoiceGroups: LoreChoiceGroup[];
   namesList: string[];
@@ -601,6 +605,7 @@ export const originAbilityConfigs: Record<string, OriginAbilityConfig> = {
     mandatorySkillIds: ['skill-shooting', 'skill-stealth', 'skill-cunning', 'skill-charm'],
     extraSkillsCount: 0,
     baseLoreIds: ['lore-province', 'lore-cooking'],
+    baseLoreVariants: { 'lore-province': 'Мутланд' },
     loreChoiceGroups: [],
     namesList: halflingNames,
   },

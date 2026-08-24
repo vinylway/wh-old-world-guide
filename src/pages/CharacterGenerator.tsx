@@ -147,9 +147,13 @@ const CharacterGeneratorContent = () => {
     : true;
   const skillsDone = abilityConfig ? selectedExtraSkills.length === abilityConfig.extraSkillsCount : true;
   // Знания-категории (город/провинция/культ и т.п.) среди базовых знаний происхождения —
-  // для них нужно уточнить конкретный вариант, прежде чем считать шаг завершённым.
+  // для них нужно уточнить конкретный вариант, прежде чем считать шаг завершённым. Если
+  // происхождение уже предопределяет вариант (например, у полурослика провинция — Мутланд),
+  // выбор игрока не требуется.
+  const getBaseLoreVariant = (loreId: string): string | undefined =>
+    abilityConfig?.baseLoreVariants?.[loreId] ?? originLoreVariants[loreId];
   const baseLoreVariantIds = abilityConfig
-    ? abilityConfig.baseLoreIds.filter((id) => isLoreVariantCategory(id))
+    ? abilityConfig.baseLoreIds.filter((id) => isLoreVariantCategory(id) && !abilityConfig.baseLoreVariants?.[id])
     : [];
   const loreDone = abilityConfig
     ? abilityConfig.loreChoiceGroups.every((g) => {
@@ -188,7 +192,7 @@ const CharacterGeneratorContent = () => {
     ? [
         ...abilityConfig.baseLoreIds.map((loreId) => ({
           loreId,
-          variant: isLoreVariantCategory(loreId) ? originLoreVariants[loreId] : undefined,
+          variant: isLoreVariantCategory(loreId) ? getBaseLoreVariant(loreId) : undefined,
         })),
         ...abilityConfig.loreChoiceGroups
           .map((g): CareerLoreGrant | null => {

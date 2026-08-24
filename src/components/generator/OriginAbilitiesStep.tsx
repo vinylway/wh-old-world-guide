@@ -248,16 +248,26 @@ const OriginAbilitiesStep = ({
               </div>
               {baseLoreEntries
                 .filter((l) => isLoreVariantCategory(l.id))
-                .map((l) => (
-                  <div key={l.id} className="mt-2">
-                    <p className="font-body text-xs text-muted-foreground mb-1">Уточните «{l.title}»:</p>
-                    <LoreVariantPicker
-                      loreId={l.id}
-                      value={originLoreVariants[l.id]}
-                      onChange={(v) => setOriginLoreVariant(l.id, v)}
-                    />
-                  </div>
-                ))}
+                .map((l) => {
+                  const fixedVariant = config.baseLoreVariants?.[l.id];
+                  if (fixedVariant) {
+                    return (
+                      <p key={l.id} className="mt-2 font-body text-sm text-parchment/80">
+                        «{l.title}»: <span className="text-gold-bright font-semibold">{fixedVariant}</span>
+                      </p>
+                    );
+                  }
+                  return (
+                    <div key={l.id} className="mt-2">
+                      <p className="font-body text-xs text-muted-foreground mb-1">Уточните «{l.title}»:</p>
+                      <LoreVariantPicker
+                        loreId={l.id}
+                        value={originLoreVariants[l.id]}
+                        onChange={(v) => setOriginLoreVariant(l.id, v)}
+                      />
+                    </div>
+                  );
+                })}
             </div>
           )}
 
