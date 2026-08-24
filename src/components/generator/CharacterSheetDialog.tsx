@@ -186,6 +186,36 @@ const CharacterSheetDialog = ({
               </div>
             )}
 
+            {c.careerLoreGrants && c.careerLoreGrants.length > 0 && (
+              <div className="mb-3 rounded border border-gold/20 p-3">
+                <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
+                  Знания карьеры
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {c.careerLoreGrants.map((grant) => {
+                    const lore = entries.find((e) => e.id === grant.loreId);
+                    if (!lore) return null;
+                    return (
+                      <button
+                        key={grant.loreId + (grant.variant ?? '')}
+                        onClick={() => openEntry(grant.loreId)}
+                        className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
+                      >
+                        {lore.title}{grant.variant ? ` (${grant.variant})` : ''}
+                      </button>
+                    );
+                  })}
+                </div>
+                {c.careerLoreNotes && c.careerLoreNotes.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {c.careerLoreNotes.map((note, i) => (
+                      <p key={i} className="font-body text-xs text-parchment/60 leading-snug">{note}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {loreIds.length > 0 && (
               <div className="mb-3 rounded border border-gold/20 p-3">
                 <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">

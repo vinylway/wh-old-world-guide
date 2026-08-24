@@ -28,6 +28,17 @@ export interface GeneratedCharacter {
   inDisgrace?: boolean;
   // Навыки, получившие +1 благодаря карьере (выбираются из пула «Бонусы к навыкам»)
   careerSkillAdvances?: string[];
+  // Знания, полученные от карьеры (с уточнением варианта — конкретный город, культ и т.п.)
+  careerLoreGrants?: CareerLoreGrant[];
+  // Информационные заметки о знаниях карьеры, не сводящиеся к конкретной карточке
+  // (например «предпочтительное знание вашего бога» у жреца)
+  careerLoreNotes?: string[];
+}
+
+export interface CareerLoreGrant {
+  loreId: string;
+  // Уточнение варианта для знаний-категорий (город/провинция/культ/убийца чудовищ/школа магии)
+  variant?: string;
 }
 
 export interface CareerSkillBonus {
@@ -64,6 +75,251 @@ export const getCareerSkillBonus = (career: CodexEntry | null | undefined): Care
   const pickCount = Math.min(word && skillCountWords[word] ? skillCountWords[word] : 4, skillIds.length);
   return { pickCount, skillIds };
 };
+
+// ---------------------------------------------------------------------------
+// Знания карьеры («Знание»): часть знаний-«категорий» (Город, Провинция, Культ,
+// Убийца чудовищ, Школа магии) требуют дополнительно уточнить конкретный вариант —
+// у персонажа не может быть, например, двух разных «Городов», поэтому при выборе
+// такого знания игрок указывает конкретное значение (или вписывает своё).
+// ---------------------------------------------------------------------------
+
+// Знания-категории, требующие уточнения варианта, и предустановленные варианты для них
+export const loreVariantOptions: Record<string, string[]> = {
+  'lore-city': [
+    'Талагаад', 'Талабхайм', 'Хергиг', 'Равенштайн', 'Кюзель', 'Аленхоф',
+    'Нульн', 'Альтдорф', 'Мидденхайм', 'Мариенбург',
+  ],
+  'lore-province': [
+    'Талабекланд', 'Мутланд', 'Хохланд', 'Мидденланд', 'Остланд', 'Штирланд',
+    'Рейкланд', 'Вестерланд',
+  ],
+  'lore-cult': [
+    'Таал', 'Райя', 'Ульрик', 'Сигмар', 'Мананн', 'Морр', 'Шалия', 'Верена',
+    'Ранальд', 'Мирмидия', 'Гримнир', 'Грунгни', 'Валайя', 'Асуриан', 'Иша',
+    'Курноус', 'Лилеат',
+  ],
+  'lore-monster-slayer': [
+    'Убийца ведьм', 'Убийца вампиров', 'Убийца пакостников', 'Убийца троллей',
+    'Убийца великанов', 'Убийца драконов', 'Убийца демонов',
+  ],
+  'lore-magic-school-general': [
+    'Боевая магия', 'Элементализм', 'Иллюзионизм', 'Некромантия',
+  ],
+};
+
+export const isLoreVariantCategory = (loreId: string): boolean => loreId in loreVariantOptions;
+
+// Одна группа знания карьеры: либо конкретное гарантированное знание («лоре-warfare»),
+// либо выбор из нескольких вариантов знаний (options.length > 1).
+export interface CareerLoreGroup {
+  id: string;
+  // Варианты знаний (id карточек «lore-*») — если один элемент, знание гарантировано
+  options: string[];
+}
+
+export interface CareerLoreConfig {
+  groups: CareerLoreGroup[];
+  // Свободные заметки, которые нельзя свести к конкретной карточке знания
+  // (например «предпочтительное знание вашего бога» у жреца)
+  notes?: string[];
+}
+
+// Разметка знаний по каждой карьере — вручную, на основе текста поля «Знание».
+// Учитывает, где запятая разделяет обязательные знания, а где является частью
+// перечисления вариантов на выбор.
+export const careerLoreConfigs: Record<string, CareerLoreConfig> = {
+  'career-apothecary': {
+    groups: [
+      { id: 'g1', options: ['lore-alchemy'] },
+      { id: 'g2', options: ['lore-anatomy', 'lore-zoology'] },
+    ],
+  },
+  'career-thief': {
+    groups: [
+      { id: 'g1', options: ['lore-criminal-underworld'] },
+      { id: 'g2', options: ['lore-city'] },
+    ],
+  },
+  'career-ratcatcher': {
+    groups: [
+      { id: 'g1', options: ['lore-city'] },
+      { id: 'g2', options: ['lore-underground'] },
+    ],
+  },
+  'career-lothern-sea-guard': {
+    groups: [
+      { id: 'g1', options: ['lore-warfare'] },
+      { id: 'g2', options: ['lore-seafaring'] },
+    ],
+  },
+  'career-knight-errant': {
+    groups: [
+      { id: 'g1', options: ['lore-literacy'] },
+      { id: 'g2', options: ['lore-warfare', 'lore-criminal-underworld'] },
+    ],
+  },
+  'career-scholar': {
+    groups: [
+      { id: 'g1', options: ['lore-literacy'] },
+      { id: 'g2', options: ['lore-high-society', 'lore-anatomy', 'lore-law', 'lore-zoology', 'lore-history', 'lore-accounting'] },
+    ],
+    notes: ['Знание врагов (на выбор)'],
+  },
+  'career-charlatan': {
+    groups: [
+      { id: 'g1', options: ['lore-criminal-underworld'] },
+      { id: 'g2', options: ['lore-high-society', 'lore-cult'] },
+    ],
+  },
+  'career-artisan': {
+    groups: [
+      { id: 'g1', options: ['lore-blacksmithing', 'lore-art', 'lore-textiles'] },
+    ],
+    notes: ['Или своё ремесло'],
+  },
+  'career-engineer': {
+    groups: [
+      { id: 'g1', options: ['lore-engineering'] },
+      { id: 'g2', options: ['lore-blacksmithing'] },
+      { id: 'g3', options: ['lore-gunpowder'] },
+      { id: 'g4', options: ['lore-literacy'] },
+    ],
+  },
+  'career-shadow-warrior': {
+    groups: [
+      { id: 'g1', options: ['lore-warfare'] },
+      { id: 'g2', options: ['lore-history'] },
+    ],
+  },
+  'career-labourer': {
+    groups: [
+      { id: 'g1', options: ['lore-city', 'lore-province'] },
+      { id: 'g2', options: ['lore-farming', 'lore-cooking', 'lore-navigable-rivers'] },
+    ],
+  },
+  'career-courtier': {
+    groups: [
+      { id: 'g1', options: ['lore-high-society'] },
+      { id: 'g2', options: ['lore-literacy'] },
+      { id: 'g3', options: ['lore-anatomy', 'lore-law', 'lore-zoology', 'lore-history', 'lore-accounting'] },
+    ],
+  },
+  'career-forest-ranger': {
+    groups: [
+      { id: 'g1', options: ['lore-warfare'] },
+      { id: 'g2', options: ['lore-monster-slayer'] },
+    ],
+  },
+  'career-noble': {
+    groups: [
+      { id: 'g1', options: ['lore-high-society'] },
+      { id: 'g2', options: ['lore-literacy'] },
+    ],
+  },
+  'career-soldier': {
+    groups: [
+      { id: 'g1', options: ['lore-warfare'] },
+      { id: 'g2', options: ['lore-textiles'] },
+      { id: 'g3', options: ['lore-music', 'lore-literacy', 'lore-gunpowder'] },
+    ],
+  },
+  'career-outlaw': {
+    groups: [
+      { id: 'g1', options: ['lore-province'] },
+      { id: 'g2', options: ['lore-criminal-underworld', 'lore-gunpowder'] },
+    ],
+  },
+  'career-priest': {
+    groups: [
+      { id: 'g1', options: ['lore-cult'] },
+      { id: 'g2', options: ['lore-literacy'] },
+    ],
+    notes: ['Предпочтительное знание вашего бога'],
+  },
+  'career-artist': {
+    groups: [
+      { id: 'g1', options: ['lore-city', 'lore-province'] },
+      { id: 'g2', options: ['lore-music', 'lore-literacy'] },
+    ],
+  },
+  'career-road-warden': {
+    groups: [
+      { id: 'g1', options: ['lore-warfare'] },
+    ],
+  },
+  'career-watchman': {
+    groups: [
+      { id: 'g1', options: ['lore-city', 'lore-province'] },
+    ],
+  },
+  'career-highway-patrolman': {
+    groups: [
+      { id: 'g1', options: ['lore-province'] },
+      { id: 'g2', options: ['lore-warfare', 'lore-gunpowder', 'lore-forestry'] },
+    ],
+  },
+  'career-sailor': {
+    groups: [
+      { id: 'g1', options: ['lore-seafaring', 'lore-navigable-rivers'] },
+      { id: 'g2', options: ['lore-music', 'lore-gunpowder'] },
+    ],
+  },
+  'career-arcanist': {
+    groups: [
+      { id: 'g1', options: ['lore-magic-school-general'] },
+      { id: 'g2', options: ['lore-literacy'] },
+      { id: 'g3', options: ['lore-high-society', 'lore-cult'] },
+    ],
+  },
+  'career-bounty-hunter': {
+    groups: [
+      { id: 'g1', options: ['lore-province', 'lore-cult'] },
+      { id: 'g2', options: ['lore-criminal-underworld', 'lore-monster-slayer'] },
+    ],
+  },
+  'career-ale-warden': {
+    groups: [
+      { id: 'g1', options: ['lore-province'] },
+      { id: 'g2', options: ['lore-cooking', 'lore-accounting'] },
+    ],
+  },
+  'career-witch-doctor': {
+    groups: [
+      { id: 'g1', options: ['lore-alchemy'] },
+      { id: 'g2', options: ['lore-magic-school-general'] },
+    ],
+  },
+  'career-knight': {
+    groups: [
+      { id: 'g1', options: ['lore-high-society'] },
+      { id: 'g2', options: ['lore-warfare'] },
+      { id: 'g3', options: ['lore-literacy'] },
+    ],
+  },
+  'career-merchant': {
+    groups: [
+      { id: 'g1', options: ['lore-city', 'lore-province'] },
+      { id: 'g2', options: ['lore-literacy', 'lore-accounting'] },
+    ],
+  },
+  'career-sniper': {
+    groups: [
+      { id: 'g1', options: ['lore-warfare'] },
+      { id: 'g2', options: ['lore-forestry', 'lore-gunpowder', 'lore-music'] },
+    ],
+  },
+  'career-slayer': {
+    groups: [
+      { id: 'g1', options: ['lore-monster-slayer'] },
+      { id: 'g2', options: ['lore-mining'] },
+    ],
+    notes: ['Первое знание — обязательно «Убийца троллей», либо любой другой вариант убийцы чудовищ на выбор', 'Второе — либо горное дело, либо иное знание окружающей среды на выбор'],
+  },
+};
+
+// Возвращает разметку знаний для карьеры (группы гарантированных/выборных знаний и заметки)
+export const getCareerLoreConfig = (careerId: string | null | undefined): CareerLoreConfig | null =>
+  careerId ? careerLoreConfigs[careerId] ?? null : null;
 
 // Извлекает из карьеры id характеристик (карточки раздела «Способности», подраздел
 // «Характеристики»), отмеченных как предпочтительные для этой карьеры — на основе

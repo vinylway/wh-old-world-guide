@@ -14,6 +14,7 @@ import CharacterSheetDialog from '@/components/generator/CharacterSheetDialog';
 import { CodexEntry } from '@/data/codex';
 import { CodexOverridesProvider, useCodexOverrides } from '@/hooks/useCodexOverrides';
 import CareerSkillsStep from '@/components/generator/CareerSkillsStep';
+import CareerLoreStep from '@/components/generator/CareerLoreStep';
 import {
   rollD10,
   rollD100,
@@ -32,6 +33,9 @@ import {
   getRandomNameForOrigin,
   getCareerSkillBonus,
   getCareerPreferredAbilityIds,
+  getCareerLoreConfig,
+  isLoreVariantCategory,
+  CareerLoreGrant,
 } from '@/data/generator';
 
 const ALL_LABELS = ['ББ', 'ДБ', 'С', 'В', 'И', 'Пр', 'Р', 'Х', 'Судьба'];
@@ -90,6 +94,11 @@ const CharacterGeneratorContent = () => {
   // Выбор навыков, повышаемых карьерным бонусом («+1 к N из следующих навыков»)
   const [selectedCareerSkills, setSelectedCareerSkills] = useState<string[]>([]);
 
+  // Выбор знаний карьеры: для групп с выбором — id выбранного знания; для знаний-категорий
+  // (город/провинция/культ/убийца чудовищ/школа магии) — уточнённый вариант
+  const [careerLoreSelections, setCareerLoreSelections] = useState<Record<string, string>>({});
+  const [careerLoreVariants, setCareerLoreVariants] = useState<Record<string, string>>({});
+
   useEffect(() => {
     setSavedList(getSavedCharacters());
   }, []);
@@ -110,6 +119,7 @@ const CharacterGeneratorContent = () => {
     : [];
   const careerSkillsDone = careerSkillBonus ? selectedCareerSkills.length === careerSkillBonus.pickCount : true;
   const careerPreferredAbilityIds = getCareerPreferredAbilityIds(career);
+  const careerLoreConfig = getCareerLoreConfig(careerId);
 
   const mandatorySkillEntries = abilityConfig
     ? (abilityConfig.mandatorySkillIds.map((id) => entries.find((e) => e.id === id)).filter(Boolean) as CodexEntry[])
@@ -156,6 +166,42 @@ const CharacterGeneratorContent = () => {
     ? [...abilityConfig.baseLoreIds, ...Object.values(loreSelections)]
     : [];
 
+  // Знания, уже известные персонажу (от происхождения), плюс уже выбранные/фиксированные
+  // знания карьеры — используются, чтобы не дать выбрать один и тот же навык знания дважды.
+  // Знания-категории (город/провинция/культ/убийца чудовищ/школа магии) исключение — по ним
+  // дубли допустимы, поэтому в проверку они не попадают.
+  const careerFixedNonVariantLoreIds = careerLoreConfig
+    ? careerLoreConfig.groups
+        .filter((g) => g.options.length === 1 && !isLoreVariantCategory(g.options[0]))
+        .map((g) => g.options[0])
+    : [];
+  const knownLoreIdsForCareer = [...finalLoreIds, ...careerFixedNonVariantLoreIds];
+
+  const careerLoreDone = careerLoreConfig
+    ? careerLoreConfig.groups.every((g) => {
+        const isFixed = g.options.length === 1;
+        const selectedId = isFixed ? g.options[0] : careerLoreSelections[g.id];
+        if (!selectedId) return false;
+        if (isLoreVariantCategory(selectedId)) {
+          return !!careerLoreVariants[g.id]?.trim();
+        }
+        return true;
+      })
+    : true;
+
+  const finalCareerLoreGrants: CareerLoreGrant[] = careerLoreConfig
+    ? careerLoreConfig.groups
+        .map((g): CareerLoreGrant | null => {
+          const isFixed = g.options.length === 1;
+          const selectedId = isFixed ? g.options[0] : careerLoreSelections[g.id];
+          if (!selectedId) return null;
+          if (!isLoreVariantCategory(selectedId) && finalLoreIds.includes(selectedId)) return null;
+          const variant = isLoreVariantCategory(selectedId) ? careerLoreVariants[g.id] : undefined;
+          return { loreId: selectedId, variant };
+        })
+        .filter((g): g is CareerLoreGrant => g !== null)
+    : [];
+
   const rollTalentSlot = (idx: number, markManual: boolean) => {
     if (!abilityConfig) return;
     setTalentRolling((prev) => prev.map((v, i) => (i === idx ? true : v)));
@@ -198,6 +244,21 @@ const CharacterGeneratorContent = () => {
     setCareerRolling(false);
     setInDisgrace(false);
     setSelectedCareerSkills([]);
+    setCareerLoreSelections({});
+    setCareerLoreVariants({});
+  };
+
+  const selectCareerLoreOption = (groupId: string, loreId: string) => {
+    setCareerLoreSelections((prev) => ({ ...prev, [groupId]: loreId }));
+    setCareerLoreVariants((prev) => {
+      const next = { ...prev };
+      delete next[groupId];
+      return next;
+    });
+  };
+
+  const setCareerLoreVariant = (groupId: string, variant: string) => {
+    setCareerLoreVariants((prev) => ({ ...prev, [groupId]: variant }));
   };
 
   const toggleCareerSkill = (skillId: string) => {
@@ -266,6 +327,8 @@ const CharacterGeneratorContent = () => {
       setCareerRolling(false);
       setInDisgrace(false);
       setSelectedCareerSkills([]);
+      setCareerLoreSelections({});
+      setCareerLoreVariants({});
     }, 600);
   };
 
@@ -281,6 +344,8 @@ const CharacterGeneratorContent = () => {
       setCareerRolling(false);
       setInDisgrace(false);
       setSelectedCareerSkills([]);
+      setCareerLoreSelections({});
+      setCareerLoreVariants({});
     }, 600);
   };
 
@@ -291,6 +356,8 @@ const CharacterGeneratorContent = () => {
     setCareerPickerOpen(false);
     setInDisgrace(false);
     setSelectedCareerSkills([]);
+    setCareerLoreSelections({});
+    setCareerLoreVariants({});
   };
 
   const toggleDisgrace = () => {
@@ -423,6 +490,8 @@ const CharacterGeneratorContent = () => {
       boostedSkillIds,
       loreIds: finalLoreIds,
       careerSkillAdvances: selectedCareerSkills,
+      careerLoreGrants: finalCareerLoreGrants,
+      careerLoreNotes: careerLoreConfig?.notes,
     };
     saveCharacter(character);
     setSavedList(getSavedCharacters());
@@ -544,6 +613,21 @@ const CharacterGeneratorContent = () => {
             />
           )}
 
+          {/* Шаг 6: знания карьеры */}
+          {allRoundsDone && abilitiesDone && careerId && !careerRolling && careerSkillsDone && careerLoreConfig && (
+            <CareerLoreStep
+              careerTitle={career?.title ?? ''}
+              groups={careerLoreConfig.groups}
+              notes={careerLoreConfig.notes}
+              entries={entries}
+              selections={careerLoreSelections}
+              variants={careerLoreVariants}
+              onSelectOption={selectCareerLoreOption}
+              onSetVariant={setCareerLoreVariant}
+              knownLoreIds={knownLoreIdsForCareer}
+            />
+          )}
+
           {/* Итог */}
           <CharacterSummary
             allRoundsDone={allRoundsDone}
@@ -551,6 +635,7 @@ const CharacterGeneratorContent = () => {
             abilitiesDone={abilitiesDone}
             careerId={careerId}
             careerSkillsDone={careerSkillsDone}
+            careerLoreDone={careerLoreDone}
             career={career}
             careerStatus={careerStatus}
             inDisgrace={inDisgrace}
@@ -560,6 +645,8 @@ const CharacterGeneratorContent = () => {
             boostedSkillIds={boostedSkillIds}
             careerSkillAdvances={selectedCareerSkills}
             careerPreferredAbilityIds={careerPreferredAbilityIds}
+            careerLoreGrants={finalCareerLoreGrants}
+            careerLoreNotes={careerLoreConfig?.notes}
             finalTalentIds={finalTalentIds}
             finalLoreIds={finalLoreIds}
             xp={xp}

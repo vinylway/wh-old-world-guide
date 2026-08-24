@@ -8,6 +8,7 @@ import {
   careerStatusLabels,
   careerStatusIcons,
   disgracedStatus,
+  CareerLoreGrant,
 } from '@/data/generator';
 
 const statusColorClasses: Record<CareerStatus, string> = {
@@ -22,6 +23,7 @@ interface CharacterSummaryProps {
   abilitiesDone: boolean;
   careerId: string | null;
   careerSkillsDone: boolean;
+  careerLoreDone: boolean;
   career: CodexEntry | null | undefined;
   careerStatus: CareerStatus | null;
   inDisgrace: boolean;
@@ -31,6 +33,8 @@ interface CharacterSummaryProps {
   boostedSkillIds: string[];
   careerSkillAdvances: string[];
   careerPreferredAbilityIds: string[];
+  careerLoreGrants: CareerLoreGrant[];
+  careerLoreNotes?: string[];
   finalTalentIds: string[];
   finalLoreIds: string[];
   xp: number;
@@ -52,6 +56,7 @@ const CharacterSummary = ({
   abilitiesDone,
   careerId,
   careerSkillsDone,
+  careerLoreDone,
   career,
   careerStatus,
   inDisgrace,
@@ -61,6 +66,8 @@ const CharacterSummary = ({
   boostedSkillIds,
   careerSkillAdvances,
   careerPreferredAbilityIds,
+  careerLoreGrants,
+  careerLoreNotes,
   finalTalentIds,
   finalLoreIds,
   xp,
@@ -75,7 +82,7 @@ const CharacterSummary = ({
   characteristicAbilityEntryId,
   entries,
 }: CharacterSummaryProps) => {
-  if (!(allRoundsDone && finalStats && abilitiesDone && careerId && careerSkillsDone)) return null;
+  if (!(allRoundsDone && finalStats && abilitiesDone && careerId && careerSkillsDone && careerLoreDone)) return null;
 
   const displayedStatus = careerStatus && inDisgrace ? disgracedStatus(careerStatus) : careerStatus;
 
@@ -201,6 +208,36 @@ const CharacterSummary = ({
               );
             })}
           </div>
+        </div>
+      )}
+
+      {(careerLoreGrants.length > 0 || (careerLoreNotes && careerLoreNotes.length > 0)) && (
+        <div className="mb-5 rounded border border-gold/20 p-3">
+          <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
+            Знания карьеры
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {careerLoreGrants.map((grant) => {
+              const lore = entries.find((e) => e.id === grant.loreId);
+              if (!lore) return null;
+              return (
+                <button
+                  key={grant.loreId + (grant.variant ?? '')}
+                  onClick={() => openEntry(grant.loreId)}
+                  className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
+                >
+                  {lore.title}{grant.variant ? ` (${grant.variant})` : ''}
+                </button>
+              );
+            })}
+          </div>
+          {careerLoreNotes && careerLoreNotes.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {careerLoreNotes.map((note, i) => (
+                <p key={i} className="font-body text-xs text-parchment/60 leading-snug">{note}</p>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
