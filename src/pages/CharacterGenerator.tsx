@@ -35,6 +35,7 @@ import {
   getCareerPreferredAbilityIds,
   getCareerLoreConfig,
   isLoreVariantCategory,
+  resolveCareerLoreGroupOptions,
   CareerLoreGrant,
 } from '@/data/generator';
 
@@ -211,15 +212,16 @@ const CharacterGeneratorContent = () => {
   // дубли допустимы, поэтому в проверку они не попадают.
   const careerFixedNonVariantLoreIds = careerLoreConfig
     ? careerLoreConfig.groups
-        .filter((g) => g.options.length === 1 && !isLoreVariantCategory(g.options[0]))
+        .filter((g) => !g.dynamicFromGroupId && g.options.length === 1 && !isLoreVariantCategory(g.options[0]))
         .map((g) => g.options[0])
     : [];
   const knownLoreIdsForCareer = [...finalLoreIds, ...careerFixedNonVariantLoreIds];
 
   const careerLoreDone = careerLoreConfig
     ? careerLoreConfig.groups.every((g) => {
-        const isFixed = g.options.length === 1;
-        const selectedId = isFixed ? g.options[0] : careerLoreSelections[g.id];
+        const resolvedOptions = resolveCareerLoreGroupOptions(entries, careerLoreConfig.groups, g, careerLoreSelections, careerLoreVariants);
+        const isFixed = resolvedOptions.length === 1;
+        const selectedId = isFixed ? resolvedOptions[0] : careerLoreSelections[g.id];
         if (!selectedId) return false;
         if (isLoreVariantCategory(selectedId)) {
           return !!careerLoreVariants[g.id]?.trim();
@@ -231,8 +233,9 @@ const CharacterGeneratorContent = () => {
   const finalCareerLoreGrants: CareerLoreGrant[] = careerLoreConfig
     ? careerLoreConfig.groups
         .map((g): CareerLoreGrant | null => {
-          const isFixed = g.options.length === 1;
-          const selectedId = isFixed ? g.options[0] : careerLoreSelections[g.id];
+          const resolvedOptions = resolveCareerLoreGroupOptions(entries, careerLoreConfig.groups, g, careerLoreSelections, careerLoreVariants);
+          const isFixed = resolvedOptions.length === 1;
+          const selectedId = isFixed ? resolvedOptions[0] : careerLoreSelections[g.id];
           if (!selectedId) return null;
           if (!isLoreVariantCategory(selectedId) && finalLoreIds.includes(selectedId)) return null;
           const variant = isLoreVariantCategory(selectedId) ? careerLoreVariants[g.id] : undefined;
@@ -307,6 +310,18 @@ const CharacterGeneratorContent = () => {
 
   const setCareerLoreVariant = (groupId: string, variant: string) => {
     setCareerLoreVariants((prev) => ({ ...prev, [groupId]: variant }));
+    // Если от этой группы зависит динамическая группа (например, «предпочтительное
+    // знание бога» зависит от выбранного культа), сбрасываем её выбор — пул знаний изменился
+    const dependentGroupIds = (careerLoreConfig?.groups ?? [])
+      .filter((g) => g.dynamicFromGroupId === groupId)
+      .map((g) => g.id);
+    if (dependentGroupIds.length > 0) {
+      setCareerLoreSelections((prev) => {
+        const next = { ...prev };
+        dependentGroupIds.forEach((id) => delete next[id]);
+        return next;
+      });
+    }
   };
 
   const toggleCareerSkill = (skillId: string) => {

@@ -5,10 +5,13 @@ interface LoreVariantPickerProps {
   value?: string;
   onChange: (variant: string) => void;
   excludeVariants?: string[];
+  // Ограничивает список вариантов (например, только имперские боги для культа Жреца).
+  // Если задан — свободный ввод своего варианта отключается, доступны только эти значения.
+  whitelist?: string[];
 }
 
-const LoreVariantPicker = ({ loreId, value, onChange, excludeVariants = [] }: LoreVariantPickerProps) => {
-  const allPresets = loreVariantOptions[loreId] ?? [];
+const LoreVariantPicker = ({ loreId, value, onChange, excludeVariants = [], whitelist }: LoreVariantPickerProps) => {
+  const allPresets = (loreVariantOptions[loreId] ?? []).filter((v) => !whitelist || whitelist.includes(v));
   const presets = allPresets.filter((v) => v === value || !excludeVariants.includes(v));
   const isCustom = !!value && !allPresets.includes(value);
 
@@ -31,13 +34,15 @@ const LoreVariantPicker = ({ loreId, value, onChange, excludeVariants = [] }: Lo
           ))}
         </div>
       )}
-      <input
-        type="text"
-        value={isCustom ? value ?? '' : ''}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Свой вариант…"
-        className="w-full max-w-xs rounded border border-gold/30 bg-secondary/20 px-3 py-1.5 font-body text-sm text-parchment placeholder:text-parchment/40 focus:border-gold focus:outline-none"
-      />
+      {!whitelist && (
+        <input
+          type="text"
+          value={isCustom ? value ?? '' : ''}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Свой вариант…"
+          className="w-full max-w-xs rounded border border-gold/30 bg-secondary/20 px-3 py-1.5 font-body text-sm text-parchment placeholder:text-parchment/40 focus:border-gold focus:outline-none"
+        />
+      )}
     </div>
   );
 };

@@ -114,20 +114,69 @@ export const loreVariantOptions: Record<string, string[]> = {
 
 export const isLoreVariantCategory = (loreId: string): boolean => loreId in loreVariantOptions;
 
+// Боги имперского пантеона — единственные варианты, доступные для знания «Культ» у карьеры Жрец
+export const imperialCultGodNames = [
+  'Таал', 'Райя', 'Ульрик', 'Сигмар', 'Мананн', 'Морр', 'Шалия', 'Верена', 'Ранальд', 'Мирмидия',
+];
+
 // Одна группа знания карьеры: либо конкретное гарантированное знание («лоре-warfare»),
 // либо выбор из нескольких вариантов знаний (options.length > 1).
 export interface CareerLoreGroup {
   id: string;
-  // Варианты знаний (id карточек «lore-*») — если один элемент, знание гарантировано
+  // Варианты знаний (id карточек «lore-*») — если один элемент, знание гарантировано.
+  // Для динамических групп (dynamicFromGroupId) не используется — варианты вычисляются
+  // во время генерации на основе выбора в группе-источнике.
   options: string[];
+  // Ограничивает список вариантов знания-категории (например, только имперские боги
+  // для «Культа» у Жреца) — без этого поля доступны все варианты из loreVariantOptions
+  variantWhitelist?: string[];
+  // Если задано — варианты этой группы вычисляются динамически на основе выбранного
+  // варианта в группе с этим id (например, «предпочтительное знание вашего бога»
+  // зависит от того, какой культ выбран в группе g1)
+  dynamicFromGroupId?: string;
 }
 
 export interface CareerLoreConfig {
   groups: CareerLoreGroup[];
   // Свободные заметки, которые нельзя свести к конкретной карточке знания
-  // (например «предпочтительное знание вашего бога» у жреца)
   notes?: string[];
 }
+
+// Возвращает id знаний, которые предпочитает выбранный бог — читает строку
+// «Предпочтительные знания» с карточки веры (раздел «faith», подраздел = имя бога).
+export const getFaithPreferredLoreIds = (entries: CodexEntry[], godName: string): string[] => {
+  const faithEntry = entries.find((e) => e.section === 'faith' && e.subgroup === godName);
+  if (!faithEntry) return [];
+  if (faithEntry.knowledgeEntryIds && faithEntry.knowledgeEntryIds.length > 0) {
+    return faithEntry.knowledgeEntryIds;
+  }
+  const row = faithEntry.stats?.find((s) => s.label === 'Предпочтительные знания');
+  if (!row?.links) return [];
+  return row.links
+    .filter((l) => !!l.entryId && l.entryId.startsWith('lore-'))
+    .map((l) => l.entryId as string);
+};
+
+// Вычисляет фактический список вариантов знания для группы: для обычных групп —
+// это просто group.options, для динамических — пул знаний, которые предпочитает
+// бог, выбранный в группе-источнике (dynamicFromGroupId).
+export const resolveCareerLoreGroupOptions = (
+  entries: CodexEntry[],
+  allGroups: CareerLoreGroup[],
+  group: CareerLoreGroup,
+  selections: Record<string, string>,
+  variants: Record<string, string>
+): string[] => {
+  if (!group.dynamicFromGroupId) return group.options;
+  const sourceGroup = allGroups.find((g) => g.id === group.dynamicFromGroupId);
+  if (!sourceGroup) return [];
+  const isFixed = sourceGroup.options.length === 1;
+  const selectedId = isFixed ? sourceGroup.options[0] : selections[sourceGroup.id];
+  if (!selectedId) return [];
+  const godName = isLoreVariantCategory(selectedId) ? variants[sourceGroup.id] : undefined;
+  if (!godName) return [];
+  return getFaithPreferredLoreIds(entries, godName);
+};
 
 // Разметка знаний по каждой карьере — вручную, на основе текста поля «Знание».
 // Учитывает, где запятая разделяет обязательные знания, а где является частью
@@ -241,10 +290,10 @@ export const careerLoreConfigs: Record<string, CareerLoreConfig> = {
   },
   'career-priest': {
     groups: [
-      { id: 'g1', options: ['lore-cult'] },
+      { id: 'g1', options: ['lore-cult'], variantWhitelist: imperialCultGodNames },
       { id: 'g2', options: ['lore-literacy'] },
+      { id: 'g3', options: [], dynamicFromGroupId: 'g1' },
     ],
-    notes: ['Предпочтительное знание вашего бога'],
   },
   'career-artist': {
     groups: [

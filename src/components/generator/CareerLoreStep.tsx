@@ -1,6 +1,6 @@
 import Icon from '@/components/ui/icon';
 import { CodexEntry } from '@/data/codex';
-import { CareerLoreGroup, isLoreVariantCategory } from '@/data/generator';
+import { CareerLoreGroup, isLoreVariantCategory, resolveCareerLoreGroupOptions } from '@/data/generator';
 import LoreVariantPicker from '@/components/generator/LoreVariantPicker';
 
 interface CareerLoreStepProps {
@@ -40,8 +40,21 @@ const CareerLoreStep = ({
 
       <div className="space-y-4">
         {groups.map((group) => {
-          const isFixed = group.options.length === 1;
-          const selectedId = isFixed ? group.options[0] : selections[group.id];
+          const resolvedOptions = resolveCareerLoreGroupOptions(entries, groups, group, selections, variants);
+          const isDynamic = !!group.dynamicFromGroupId;
+
+          if (isDynamic && resolvedOptions.length === 0) {
+            return (
+              <div key={group.id} className="rounded border border-gold/20 p-4">
+                <p className="font-body text-sm text-parchment/50">
+                  Сначала выберите бога выше — здесь появится его предпочтительное знание.
+                </p>
+              </div>
+            );
+          }
+
+          const isFixed = resolvedOptions.length === 1;
+          const selectedId = isFixed ? resolvedOptions[0] : selections[group.id];
           const selectedEntry = selectedId ? entries.find((e) => e.id === selectedId) : null;
           const variantMode = selectedId ? isLoreVariantCategory(selectedId) : false;
           const alreadyKnownFixed = isFixed && selectedId && !variantMode && knownLoreIds.includes(selectedId);
@@ -62,7 +75,7 @@ const CareerLoreStep = ({
                 <>
                   <p className="font-body text-sm text-muted-foreground mb-2">Выберите знание:</p>
                   <div className="flex flex-wrap gap-2">
-                    {group.options.map((optionId) => {
+                    {resolvedOptions.map((optionId) => {
                       const entry = entries.find((e) => e.id === optionId);
                       if (!entry) return null;
                       const optionIsVariant = isLoreVariantCategory(optionId);
@@ -93,6 +106,7 @@ const CareerLoreStep = ({
                   loreId={selectedId}
                   value={variants[group.id]}
                   onChange={(v) => onSetVariant(group.id, v)}
+                  whitelist={group.variantWhitelist}
                 />
               )}
             </div>
