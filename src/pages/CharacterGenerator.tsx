@@ -15,6 +15,7 @@ import { CodexEntry } from '@/data/codex';
 import { CodexOverridesProvider, useCodexOverrides } from '@/hooks/useCodexOverrides';
 import CareerSkillsStep from '@/components/generator/CareerSkillsStep';
 import CareerLoreStep from '@/components/generator/CareerLoreStep';
+import CareerItemsStep from '@/components/generator/CareerItemsStep';
 import {
   rollD10,
   rollD100,
@@ -36,6 +37,7 @@ import {
   getCareerLoreConfig,
   isLoreVariantCategory,
   resolveCareerLoreGroupOptions,
+  getCareerItemConfig,
   CareerLoreGrant,
 } from '@/data/generator';
 
@@ -103,6 +105,9 @@ const CharacterGeneratorContent = () => {
   const [careerLoreSelections, setCareerLoreSelections] = useState<Record<string, string>>({});
   const [careerLoreVariants, setCareerLoreVariants] = useState<Record<string, string>>({});
 
+  // Выбор имущества карьеры: для групп с выбором — id выбранного предмета
+  const [careerItemSelections, setCareerItemSelections] = useState<Record<string, string>>({});
+
   useEffect(() => {
     setSavedList(getSavedCharacters());
   }, []);
@@ -124,6 +129,7 @@ const CharacterGeneratorContent = () => {
   const careerSkillsDone = careerSkillBonus ? selectedCareerSkills.length === careerSkillBonus.pickCount : true;
   const careerPreferredAbilityIds = getCareerPreferredAbilityIds(career);
   const careerLoreConfig = getCareerLoreConfig(careerId);
+  const careerItemConfig = getCareerItemConfig(careerId);
 
   const mandatorySkillEntries = abilityConfig
     ? (abilityConfig.mandatorySkillIds.map((id) => entries.find((e) => e.id === id)).filter(Boolean) as CodexEntry[])
@@ -244,6 +250,28 @@ const CharacterGeneratorContent = () => {
         .filter((g): g is CareerLoreGrant => g !== null)
     : [];
 
+  // Имущество карьеры: пустые группы (например, «оружие с ценой в серебро» у жреца/солдата,
+  // где выбор идёт из отдельного раздела кодекса) считаются готовыми автоматически — по ним
+  // нет структурированного выбора, только текстовая заметка.
+  const careerItemsDone = careerItemConfig
+    ? careerItemConfig.groups.every((g) => {
+        if (g.options.length === 0) return true;
+        const isFixed = g.options.length === 1;
+        const selectedId = isFixed ? g.options[0] : careerItemSelections[g.id];
+        return !!selectedId;
+      })
+    : true;
+
+  const finalCareerItemIds: string[] = careerItemConfig
+    ? careerItemConfig.groups
+        .map((g) => {
+          if (g.options.length === 0) return null;
+          const isFixed = g.options.length === 1;
+          return isFixed ? g.options[0] : careerItemSelections[g.id];
+        })
+        .filter((id): id is string => !!id)
+    : [];
+
   const rollTalentSlot = (idx: number, markManual: boolean) => {
     if (!abilityConfig) return;
     setTalentRolling((prev) => prev.map((v, i) => (i === idx ? true : v)));
@@ -297,6 +325,11 @@ const CharacterGeneratorContent = () => {
     setSelectedCareerSkills([]);
     setCareerLoreSelections({});
     setCareerLoreVariants({});
+    setCareerItemSelections({});
+  };
+
+  const selectCareerItemOption = (groupId: string, itemId: string) => {
+    setCareerItemSelections((prev) => ({ ...prev, [groupId]: itemId }));
   };
 
   const selectCareerLoreOption = (groupId: string, loreId: string) => {
@@ -393,6 +426,7 @@ const CharacterGeneratorContent = () => {
       setSelectedCareerSkills([]);
       setCareerLoreSelections({});
       setCareerLoreVariants({});
+      setCareerItemSelections({});
     }, 600);
   };
 
@@ -410,6 +444,7 @@ const CharacterGeneratorContent = () => {
       setSelectedCareerSkills([]);
       setCareerLoreSelections({});
       setCareerLoreVariants({});
+      setCareerItemSelections({});
     }, 600);
   };
 
@@ -422,6 +457,7 @@ const CharacterGeneratorContent = () => {
     setSelectedCareerSkills([]);
     setCareerLoreSelections({});
     setCareerLoreVariants({});
+    setCareerItemSelections({});
   };
 
   const toggleDisgrace = () => {
@@ -557,6 +593,8 @@ const CharacterGeneratorContent = () => {
       careerSkillAdvances: selectedCareerSkills,
       careerLoreGrants: finalCareerLoreGrants,
       careerLoreNotes: careerLoreConfig?.notes,
+      careerItemIds: finalCareerItemIds,
+      careerItemNotes: careerItemConfig?.notes,
     };
     saveCharacter(character);
     setSavedList(getSavedCharacters());
@@ -695,6 +733,18 @@ const CharacterGeneratorContent = () => {
             />
           )}
 
+          {/* Шаг 7: имущество карьеры */}
+          {allRoundsDone && abilitiesDone && careerId && !careerRolling && careerSkillsDone && careerLoreDone && careerItemConfig && (
+            <CareerItemsStep
+              careerTitle={career?.title ?? ''}
+              groups={careerItemConfig.groups}
+              notes={careerItemConfig.notes}
+              entries={entries}
+              selections={careerItemSelections}
+              onSelectOption={selectCareerItemOption}
+            />
+          )}
+
           {/* Итог */}
           <CharacterSummary
             allRoundsDone={allRoundsDone}
@@ -703,6 +753,7 @@ const CharacterGeneratorContent = () => {
             careerId={careerId}
             careerSkillsDone={careerSkillsDone}
             careerLoreDone={careerLoreDone}
+            careerItemsDone={careerItemsDone}
             career={career}
             careerStatus={careerStatus}
             inDisgrace={inDisgrace}
@@ -714,6 +765,8 @@ const CharacterGeneratorContent = () => {
             careerPreferredAbilityIds={careerPreferredAbilityIds}
             careerLoreGrants={finalCareerLoreGrants}
             careerLoreNotes={careerLoreConfig?.notes}
+            careerItemIds={finalCareerItemIds}
+            careerItemNotes={careerItemConfig?.notes}
             finalTalentIds={finalTalentIds}
             originLoreGrants={finalOriginLoreGrants}
             xp={xp}

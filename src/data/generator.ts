@@ -35,6 +35,11 @@ export interface GeneratedCharacter {
   careerLoreNotes?: string[];
   // Знания, полученные от происхождения (с уточнением варианта — конкретный город, культ и т.п.)
   originLoreGrants?: LoreGrant[];
+  // Имущество, полученное от карьеры (id карточек предметов, могут повторяться)
+  careerItemIds?: string[];
+  // Заметки об имуществе карьеры, не сводящиеся к конкретной карточке
+  // (например «оружие с ценой в серебро на выбор» у жреца/солдата)
+  careerItemNotes?: string[];
 }
 
 export interface LoreGrant {
@@ -379,6 +384,305 @@ export const careerLoreConfigs: Record<string, CareerLoreConfig> = {
 // Возвращает разметку знаний для карьеры (группы гарантированных/выборных знаний и заметки)
 export const getCareerLoreConfig = (careerId: string | null | undefined): CareerLoreConfig | null =>
   careerId ? careerLoreConfigs[careerId] ?? null : null;
+
+// ---------------------------------------------------------------------------
+// Имущество карьеры («Имущество»): по аналогии со знаниями, каждая карьера
+// размечена вручную группами предметов — гарантированные (options.length === 1)
+// и на выбор. В отличие от знаний, предметы МОГУТ повторяться (например, у
+// Истребителя «второй топор»), поэтому дедупликации между группами нет.
+// ---------------------------------------------------------------------------
+
+export interface CareerItemGroup {
+  id: string;
+  // Варианты предметов (id карточек «i*») — если один элемент, предмет гарантирован.
+  // Порядковый номер повторяющегося id (например, топор дважды) — это два элемента
+  // с одинаковым itemId, но разными ключами через дублирование id в массиве допустимо,
+  // де-факто рендерится как один и тот же выбор, поэтому для «второй такой же предмет»
+  // используется отдельная гарантированная группа с тем же itemId.
+  options: string[];
+}
+
+export interface CareerItemConfig {
+  groups: CareerItemGroup[];
+  // Свободные заметки, которые нельзя свести к конкретной карточке предмета
+  // (например «оружие с ценой в серебро на выбор» у жреца/солдата)
+  notes?: string[];
+}
+
+// Разметка имущества по каждой карьере — вручную, на основе текста поля «Имущество».
+export const careerItemConfigs: Record<string, CareerItemConfig> = {
+  'career-apothecary': {
+    groups: [
+      { id: 'g1', options: ['i10', 'i11'] },
+      { id: 'g2', options: ['i6'] },
+      { id: 'g3', options: ['i12'] },
+      { id: 'g4', options: ['i9'] },
+      { id: 'g5', options: ['i13'] },
+    ],
+  },
+  'career-ale-warden': {
+    groups: [
+      { id: 'g1', options: ['i23', 'i26'] },
+      { id: 'g2', options: ['i38'] },
+      { id: 'g3', options: ['i1'] },
+      { id: 'g4', options: ['i69', 'i58'] },
+    ],
+  },
+  'career-arcanist': {
+    groups: [
+      { id: 'g1', options: ['i20'] },
+      { id: 'g2', options: ['i6'] },
+      { id: 'g3', options: ['i7'] },
+      { id: 'g4', options: ['i66'] },
+      { id: 'g5', options: ['i72'] },
+    ],
+  },
+  'career-artisan': {
+    groups: [
+      { id: 'g1', options: ['i26', 'i25'] },
+      { id: 'g2', options: ['i7'] },
+      { id: 'g3', options: ['i9'] },
+    ],
+    notes: ['Ремесленные инструменты для вашего знания ремесла'],
+  },
+  'career-artist': {
+    groups: [
+      { id: 'g1', options: ['i6'] },
+      { id: 'g2', options: ['i48'] },
+      { id: 'g3', options: ['i54'] },
+      { id: 'g4', options: ['i73'] },
+      { id: 'g5', options: ['i63', 'i72'] },
+    ],
+  },
+  'career-bounty-hunter': {
+    groups: [
+      { id: 'g1', options: ['i36', 'i38'] },
+      { id: 'g2', options: ['i23', 'i25'] },
+      { id: 'g3', options: ['i47'] },
+      { id: 'g4', options: ['i1'] },
+      { id: 'g5', options: ['i68', 'i76'] },
+    ],
+  },
+  'career-charlatan': {
+    groups: [
+      { id: 'g1', options: ['i6'] },
+      { id: 'g2', options: ['i51'] },
+      { id: 'g3', options: ['i7'] },
+      { id: 'g4', options: ['i52'] },
+      { id: 'g5', options: ['i53'] },
+      { id: 'g6', options: ['i65', 'i73', 'i71'] },
+    ],
+  },
+  'career-courtier': {
+    groups: [
+      { id: 'g1', options: ['i25', 'i23'] },
+      { id: 'g2', options: ['i1', 'i52'] },
+      { id: 'g3', options: ['i73'] },
+      { id: 'g4', options: ['i72'] },
+    ],
+  },
+  'career-engineer': {
+    groups: [
+      { id: 'g1', options: ['i25', 'i26'] },
+      { id: 'g2', options: ['i39', 'i40'] },
+      { id: 'g3', options: ['i7'] },
+      { id: 'g4', options: ['i9'] },
+      { id: 'g5', options: ['i64'] },
+      { id: 'g6', options: ['i62'] },
+      { id: 'g7', options: ['i72'] },
+    ],
+  },
+  'career-forest-ranger': {
+    groups: [
+      { id: 'g1', options: ['i31'] },
+      { id: 'g2', options: ['i6'] },
+      { id: 'g3', options: ['i1'] },
+      { id: 'g4', options: ['i14'] },
+      { id: 'g5', options: ['i68', 'i55', 'i76'] },
+    ],
+  },
+  'career-highway-patrolman': {
+    groups: [
+      { id: 'g1', options: ['i37', 'i38', 'i39'] },
+      { id: 'g2', options: ['i22', 'i56'] },
+      { id: 'g3', options: ['i25'] },
+      { id: 'g4', options: ['i12'] },
+      { id: 'g5', options: ['i69', 'i68', 'i62'] },
+    ],
+  },
+  'career-knight': {
+    groups: [
+      { id: 'g1', options: ['i35', 'i34', 'i32', 'i33'] },
+      { id: 'g2', options: ['i25'] },
+      { id: 'g3', options: ['i55'] },
+      { id: 'g4', options: ['i56'] },
+    ],
+  },
+  'career-knight-errant': {
+    groups: [
+      { id: 'g1', options: ['i35', 'i34', 'i32', 'i33'] },
+      { id: 'g2', options: ['i25'] },
+      { id: 'g3', options: ['i55'] },
+      { id: 'g4', options: ['i56'] },
+    ],
+  },
+  'career-labourer': {
+    groups: [
+      { id: 'g1', options: ['i23', 'i6'] },
+      { id: 'g2', options: ['i51'] },
+      { id: 'g3', options: ['i9', 'i12'] },
+      { id: 'g4', options: ['i68'] },
+    ],
+    notes: ['Либо ремесленные инструменты для вашего знания ремесла вместо охотничьего набора'],
+  },
+  'career-lothern-sea-guard': {
+    groups: [
+      { id: 'g1', options: ['i21'] },
+      { id: 'g2', options: ['i36'] },
+      { id: 'g3', options: ['i55'] },
+      { id: 'g4', options: ['i1'] },
+      { id: 'g5', options: ['i14'] },
+    ],
+  },
+  'career-merchant': {
+    groups: [
+      { id: 'g1', options: ['i6'] },
+      { id: 'g2', options: ['i1', 'i7'] },
+      { id: 'g3', options: ['i72', 'i73'] },
+    ],
+  },
+  'career-noble': {
+    groups: [
+      { id: 'g1', options: ['i25', 'i23'] },
+      { id: 'g2', options: ['i37', 'i38'] },
+      { id: 'g3', options: ['i1'] },
+      { id: 'g4', options: ['i52'] },
+      { id: 'g5', options: ['i73'] },
+    ],
+  },
+  'career-outlaw': {
+    groups: [
+      { id: 'g1', options: ['i23', 'i25'] },
+      { id: 'g2', options: ['i23', 'i55'] },
+      { id: 'g3', options: ['i38', 'i39', 'i41'] },
+      { id: 'g4', options: ['i1'] },
+      { id: 'g5', options: ['i65', 'i69', 'i62'] },
+    ],
+  },
+  'career-priest': {
+    groups: [
+      { id: 'g1', options: [] },
+      { id: 'g2', options: ['i6'] },
+      { id: 'g3', options: ['i12', 'i1'] },
+      { id: 'g4', options: ['i69', 'i72'] },
+    ],
+    notes: ['Оружие с ценой в серебро — на выбор игрока из подходящих оружейных карточек'],
+  },
+  'career-ratcatcher': {
+    groups: [
+      { id: 'g1', options: ['i21', 'i10'] },
+      { id: 'g2', options: ['i6'] },
+      { id: 'g3', options: ['i51'] },
+      { id: 'g4', options: ['i67'] },
+      { id: 'g5', options: ['i68'] },
+    ],
+  },
+  'career-road-warden': {
+    groups: [
+      { id: 'g1', options: ['i37'] },
+      { id: 'g2', options: ['i25'] },
+      { id: 'g3', options: ['i12'] },
+      { id: 'g4', options: ['i69'] },
+      { id: 'g5', options: ['i68'] },
+    ],
+  },
+  'career-sailor': {
+    groups: [
+      { id: 'g1', options: ['i23', 'i25'] },
+      { id: 'g2', options: ['i36', 'i39'] },
+      { id: 'g3', options: ['i12'] },
+      { id: 'g4', options: ['i1', 'i68', 'i62'] },
+    ],
+  },
+  'career-scholar': {
+    groups: [
+      { id: 'g1', options: ['i6'] },
+      { id: 'g2', options: ['i72'] },
+      { id: 'g3', options: ['i7'] },
+      { id: 'g4', options: ['i1', 'i74'] },
+    ],
+  },
+  'career-shadow-warrior': {
+    groups: [
+      { id: 'g1', options: ['i37'] },
+      { id: 'g2', options: ['i25'] },
+      { id: 'g3', options: ['i14'] },
+      { id: 'g4', options: ['i1'] },
+      { id: 'g5', options: ['i69'] },
+    ],
+  },
+  'career-slayer': {
+    groups: [
+      { id: 'g1', options: ['i23'] },
+      { id: 'g2', options: ['i32', 'i23'] },
+    ],
+    notes: ['Второй вариант — либо двуручный топор, либо ещё один обычный топор'],
+  },
+  'career-sniper': {
+    groups: [
+      { id: 'g1', options: ['i37', 'i38', 'i40'] },
+      { id: 'g2', options: ['i6'] },
+      { id: 'g3', options: ['i12'] },
+      { id: 'g4', options: ['i69'] },
+      { id: 'g5', options: ['i68', 'i62'] },
+    ],
+  },
+  'career-soldier': {
+    groups: [
+      { id: 'g1', options: [] },
+      { id: 'g2', options: ['i6'] },
+      { id: 'g3', options: ['i55'] },
+      { id: 'g4', options: ['i1'] },
+      { id: 'g5', options: ['i14'] },
+      { id: 'g6', options: ['i59'] },
+      { id: 'g7', options: ['i65', 'i63', 'i62'] },
+    ],
+    notes: ['Оружие ближнего боя с ценой в серебро — на выбор игрока из подходящих оружейных карточек'],
+  },
+  'career-thief': {
+    groups: [
+      { id: 'g1', options: ['i6'] },
+      { id: 'g2', options: ['i48'] },
+      { id: 'g3', options: ['i51'] },
+      { id: 'g4', options: ['i53'] },
+      { id: 'g5', options: ['i71'] },
+    ],
+  },
+  'career-watchman': {
+    groups: [
+      { id: 'g1', options: [] },
+      { id: 'g2', options: ['i6'] },
+      { id: 'g3', options: ['i1'] },
+      { id: 'g4', options: ['i14'] },
+      { id: 'g5', options: ['i67'] },
+    ],
+    notes: ['Оружие ближнего боя с ценой в медь или серебро — на выбор игрока из подходящих оружейных карточек'],
+  },
+  'career-witch-doctor': {
+    groups: [
+      { id: 'g1', options: ['i20'] },
+      { id: 'g2', options: ['i6'] },
+      { id: 'g3', options: ['i51'] },
+      { id: 'g4', options: ['i53'] },
+      { id: 'g5', options: ['i66'] },
+      { id: 'g6', options: ['i13'] },
+    ],
+  },
+};
+
+// Возвращает разметку имущества для карьеры (группы гарантированных/выборных предметов)
+export const getCareerItemConfig = (careerId: string | null | undefined): CareerItemConfig | null =>
+  careerId ? careerItemConfigs[careerId] ?? null : null;
 
 // Извлекает из карьеры id характеристик (карточки раздела «Способности», подраздел
 // «Характеристики»), отмеченных как предпочтительные для этой карьеры — на основе

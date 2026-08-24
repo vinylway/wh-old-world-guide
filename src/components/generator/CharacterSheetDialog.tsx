@@ -218,6 +218,36 @@ const CharacterSheetDialog = ({
               </div>
             )}
 
+            {c.careerItemIds && c.careerItemIds.length > 0 && (
+              <div className="mb-3 rounded border border-gold/20 p-3">
+                <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
+                  Имущество карьеры
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {c.careerItemIds.map((id, idx) => {
+                    const item = entries.find((e) => e.id === id);
+                    if (!item) return null;
+                    return (
+                      <button
+                        key={id + idx}
+                        onClick={() => openEntry(id)}
+                        className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
+                      >
+                        {item.title}
+                      </button>
+                    );
+                  })}
+                </div>
+                {c.careerItemNotes && c.careerItemNotes.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {c.careerItemNotes.map((note, i) => (
+                      <p key={i} className="font-body text-xs text-parchment/60 leading-snug">{note}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {originLoreGrants.length > 0 && (
               <div className="mb-3 rounded border border-gold/20 p-3">
                 <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">

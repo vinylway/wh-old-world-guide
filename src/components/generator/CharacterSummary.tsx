@@ -24,6 +24,7 @@ interface CharacterSummaryProps {
   careerId: string | null;
   careerSkillsDone: boolean;
   careerLoreDone: boolean;
+  careerItemsDone: boolean;
   career: CodexEntry | null | undefined;
   careerStatus: CareerStatus | null;
   inDisgrace: boolean;
@@ -35,6 +36,8 @@ interface CharacterSummaryProps {
   careerPreferredAbilityIds: string[];
   careerLoreGrants: CareerLoreGrant[];
   careerLoreNotes?: string[];
+  careerItemIds: string[];
+  careerItemNotes?: string[];
   finalTalentIds: string[];
   originLoreGrants: CareerLoreGrant[];
   xp: number;
@@ -57,6 +60,7 @@ const CharacterSummary = ({
   careerId,
   careerSkillsDone,
   careerLoreDone,
+  careerItemsDone,
   career,
   careerStatus,
   inDisgrace,
@@ -68,6 +72,8 @@ const CharacterSummary = ({
   careerPreferredAbilityIds,
   careerLoreGrants,
   careerLoreNotes,
+  careerItemIds,
+  careerItemNotes,
   finalTalentIds,
   originLoreGrants,
   xp,
@@ -82,7 +88,7 @@ const CharacterSummary = ({
   characteristicAbilityEntryId,
   entries,
 }: CharacterSummaryProps) => {
-  if (!(allRoundsDone && finalStats && abilitiesDone && careerId && careerSkillsDone && careerLoreDone)) return null;
+  if (!(allRoundsDone && finalStats && abilitiesDone && careerId && careerSkillsDone && careerLoreDone && careerItemsDone)) return null;
 
   const displayedStatus = careerStatus && inDisgrace ? disgracedStatus(careerStatus) : careerStatus;
 
@@ -234,6 +240,36 @@ const CharacterSummary = ({
           {careerLoreNotes && careerLoreNotes.length > 0 && (
             <div className="mt-2 space-y-1">
               {careerLoreNotes.map((note, i) => (
+                <p key={i} className="font-body text-xs text-parchment/60 leading-snug">{note}</p>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {(careerItemIds.length > 0 || (careerItemNotes && careerItemNotes.length > 0)) && (
+        <div className="mb-5 rounded border border-gold/20 p-3">
+          <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
+            Имущество карьеры
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {careerItemIds.map((id, idx) => {
+              const item = entries.find((e) => e.id === id);
+              if (!item) return null;
+              return (
+                <button
+                  key={id + idx}
+                  onClick={() => openEntry(id)}
+                  className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
+                >
+                  {item.title}
+                </button>
+              );
+            })}
+          </div>
+          {careerItemNotes && careerItemNotes.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {careerItemNotes.map((note, i) => (
                 <p key={i} className="font-body text-xs text-parchment/60 leading-snug">{note}</p>
               ))}
             </div>
