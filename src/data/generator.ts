@@ -166,9 +166,14 @@ export const careerLoreConfigs: Record<string, CareerLoreConfig> = {
   'career-scholar': {
     groups: [
       { id: 'g1', options: ['lore-literacy'] },
-      { id: 'g2', options: ['lore-high-society', 'lore-anatomy', 'lore-law', 'lore-zoology', 'lore-history', 'lore-accounting'] },
+      {
+        id: 'g2',
+        options: [
+          'lore-high-society', 'lore-anatomy', 'lore-law', 'lore-zoology', 'lore-history', 'lore-accounting',
+          'lore-chaos-warriors', 'lore-orc-goblin-tribes', 'lore-risingdead', 'lore-beastmen-herds', 'lore-monster-slayer',
+        ],
+      },
     ],
-    notes: ['Знание врагов (на выбор)'],
   },
   'career-charlatan': {
     groups: [
