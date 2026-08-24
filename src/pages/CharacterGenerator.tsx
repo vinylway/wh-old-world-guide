@@ -16,6 +16,7 @@ import { CodexOverridesProvider, useCodexOverrides } from '@/hooks/useCodexOverr
 import CareerSkillsStep from '@/components/generator/CareerSkillsStep';
 import CareerLoreStep from '@/components/generator/CareerLoreStep';
 import CareerItemsStep from '@/components/generator/CareerItemsStep';
+import CareerAssetStep from '@/components/generator/CareerAssetStep';
 import {
   rollD10,
   rollD100,
@@ -38,6 +39,7 @@ import {
   isLoreVariantCategory,
   resolveCareerLoreGroupOptions,
   getCareerItemConfig,
+  getCareerAssetConfig,
   CareerLoreGrant,
 } from '@/data/generator';
 
@@ -108,6 +110,9 @@ const CharacterGeneratorContent = () => {
   // Выбор имущества карьеры: для групп с выбором — id выбранного предмета
   const [careerItemSelections, setCareerItemSelections] = useState<Record<string, string>>({});
 
+  // Выбор актива карьеры (лаборатория/лавка/ферма и т.п.) — id выбранной карточки
+  const [careerAssetId, setCareerAssetId] = useState<string | null>(null);
+
   useEffect(() => {
     setSavedList(getSavedCharacters());
   }, []);
@@ -130,6 +135,8 @@ const CharacterGeneratorContent = () => {
   const careerPreferredAbilityIds = getCareerPreferredAbilityIds(career);
   const careerLoreConfig = getCareerLoreConfig(careerId);
   const careerItemConfig = getCareerItemConfig(careerId);
+  const careerAssetConfig = getCareerAssetConfig(careerId);
+  const careerAssetDone = careerAssetConfig ? !!careerAssetId : true;
 
   const mandatorySkillEntries = abilityConfig
     ? (abilityConfig.mandatorySkillIds.map((id) => entries.find((e) => e.id === id)).filter(Boolean) as CodexEntry[])
@@ -326,6 +333,7 @@ const CharacterGeneratorContent = () => {
     setCareerLoreSelections({});
     setCareerLoreVariants({});
     setCareerItemSelections({});
+    setCareerAssetId(null);
   };
 
   const selectCareerItemOption = (groupId: string, itemId: string) => {
@@ -427,6 +435,7 @@ const CharacterGeneratorContent = () => {
       setCareerLoreSelections({});
       setCareerLoreVariants({});
       setCareerItemSelections({});
+      setCareerAssetId(null);
     }, 600);
   };
 
@@ -445,6 +454,7 @@ const CharacterGeneratorContent = () => {
       setCareerLoreSelections({});
       setCareerLoreVariants({});
       setCareerItemSelections({});
+      setCareerAssetId(null);
     }, 600);
   };
 
@@ -458,6 +468,7 @@ const CharacterGeneratorContent = () => {
     setCareerLoreSelections({});
     setCareerLoreVariants({});
     setCareerItemSelections({});
+    setCareerAssetId(null);
   };
 
   const toggleDisgrace = () => {
@@ -595,6 +606,7 @@ const CharacterGeneratorContent = () => {
       careerLoreNotes: careerLoreConfig?.notes,
       careerItemIds: finalCareerItemIds,
       careerItemNotes: careerItemConfig?.notes,
+      careerAssetId: careerAssetId ?? undefined,
     };
     saveCharacter(character);
     setSavedList(getSavedCharacters());
@@ -745,6 +757,18 @@ const CharacterGeneratorContent = () => {
             />
           )}
 
+          {/* Шаг 8: актив карьеры */}
+          {allRoundsDone && abilitiesDone && careerId && !careerRolling && careerSkillsDone && careerLoreDone && careerItemsDone && careerAssetConfig && (
+            <CareerAssetStep
+              careerTitle={career?.title ?? ''}
+              options={careerAssetConfig.options}
+              notes={careerAssetConfig.notes}
+              entries={entries}
+              selectedId={careerAssetId}
+              onSelect={setCareerAssetId}
+            />
+          )}
+
           {/* Итог */}
           <CharacterSummary
             allRoundsDone={allRoundsDone}
@@ -754,6 +778,7 @@ const CharacterGeneratorContent = () => {
             careerSkillsDone={careerSkillsDone}
             careerLoreDone={careerLoreDone}
             careerItemsDone={careerItemsDone}
+            careerAssetDone={careerAssetDone}
             career={career}
             careerStatus={careerStatus}
             inDisgrace={inDisgrace}
@@ -767,6 +792,7 @@ const CharacterGeneratorContent = () => {
             careerLoreNotes={careerLoreConfig?.notes}
             careerItemIds={finalCareerItemIds}
             careerItemNotes={careerItemConfig?.notes}
+            careerAssetId={careerAssetId}
             finalTalentIds={finalTalentIds}
             originLoreGrants={finalOriginLoreGrants}
             xp={xp}

@@ -25,6 +25,7 @@ interface CharacterSummaryProps {
   careerSkillsDone: boolean;
   careerLoreDone: boolean;
   careerItemsDone: boolean;
+  careerAssetDone: boolean;
   career: CodexEntry | null | undefined;
   careerStatus: CareerStatus | null;
   inDisgrace: boolean;
@@ -38,6 +39,7 @@ interface CharacterSummaryProps {
   careerLoreNotes?: string[];
   careerItemIds: string[];
   careerItemNotes?: string[];
+  careerAssetId?: string | null;
   finalTalentIds: string[];
   originLoreGrants: CareerLoreGrant[];
   xp: number;
@@ -61,6 +63,7 @@ const CharacterSummary = ({
   careerSkillsDone,
   careerLoreDone,
   careerItemsDone,
+  careerAssetDone,
   career,
   careerStatus,
   inDisgrace,
@@ -74,6 +77,7 @@ const CharacterSummary = ({
   careerLoreNotes,
   careerItemIds,
   careerItemNotes,
+  careerAssetId,
   finalTalentIds,
   originLoreGrants,
   xp,
@@ -88,7 +92,7 @@ const CharacterSummary = ({
   characteristicAbilityEntryId,
   entries,
 }: CharacterSummaryProps) => {
-  if (!(allRoundsDone && finalStats && abilitiesDone && careerId && careerSkillsDone && careerLoreDone && careerItemsDone)) return null;
+  if (!(allRoundsDone && finalStats && abilitiesDone && careerId && careerSkillsDone && careerLoreDone && careerItemsDone && careerAssetDone)) return null;
 
   const displayedStatus = careerStatus && inDisgrace ? disgracedStatus(careerStatus) : careerStatus;
 
@@ -274,6 +278,26 @@ const CharacterSummary = ({
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {careerAssetId && (
+        <div className="mb-5 rounded border border-gold/20 p-3">
+          <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
+            Актив карьеры
+          </p>
+          {(() => {
+            const asset = entries.find((e) => e.id === careerAssetId);
+            if (!asset) return null;
+            return (
+              <button
+                onClick={() => openEntry(careerAssetId)}
+                className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
+              >
+                {asset.title}
+              </button>
+            );
+          })()}
         </div>
       )}
 

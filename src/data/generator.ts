@@ -40,6 +40,8 @@ export interface GeneratedCharacter {
   // Заметки об имуществе карьеры, не сводящиеся к конкретной карточке
   // (например «оружие с ценой в серебро на выбор» у жреца/солдата)
   careerItemNotes?: string[];
+  // Актив карьеры — id выбранной карточки (лаборатория/лавка/ферма и т.п.)
+  careerAssetId?: string;
 }
 
 export interface LoreGrant {
@@ -683,6 +685,56 @@ export const careerItemConfigs: Record<string, CareerItemConfig> = {
 // Возвращает разметку имущества для карьеры (группы гарантированных/выборных предметов)
 export const getCareerItemConfig = (careerId: string | null | undefined): CareerItemConfig | null =>
   careerId ? careerItemConfigs[careerId] ?? null : null;
+
+// ---------------------------------------------------------------------------
+// Активы карьеры («Активы»): по аналогии с имуществом, но всегда одна группа —
+// выбор одного варианта из нескольких (лаборатория/пивоварня/лавка и т.п.).
+// ---------------------------------------------------------------------------
+
+export interface CareerAssetConfig {
+  // Варианты активов (id карточек предметов) — игрок выбирает один
+  options: string[];
+  // Свободная заметка, если часть текста не сводится к конкретной карточке
+  notes?: string[];
+}
+
+// Разметка активов по каждой карьере — вручную, на основе текста поля «Активы».
+export const careerAssetConfigs: Record<string, CareerAssetConfig> = {
+  'career-ale-warden': { options: ['items-custom-1787341310872', 'asset-brewery', 'items-custom-1787342798303'] },
+  'career-apothecary': { options: ['asset-laboratory', 'asset-brewery', 'asset-shop'] },
+  'career-arcanist': { options: ['items-custom-1787341982929', 'items-custom-1787343024083', 'items-custom-1787343128055'] },
+  'career-artisan': { options: ['items-custom-1787340910895', 'items-custom-1787340750830', 'asset-shop'] },
+  'career-artist': { options: ['items-custom-1787341702275', 'items-custom-1787338113767', 'items-custom-1787342706990'] },
+  'career-bounty-hunter': { options: ['items-custom-1787339776208', 'items-custom-1787341901971', 'items-custom-1787341743346'] },
+  'career-charlatan': { options: ['items-custom-1787341743346', 'items-custom-1787342706990', 'items-custom-1787342897086'] },
+  'career-courtier': { options: ['items-custom-1787342020895', 'items-custom-1787342897086', 'items-custom-1787339776208'] },
+  'career-engineer': { options: ['items-custom-1787340910895', 'items-custom-1787340750830', 'items-custom-1787339776208'] },
+  'career-forest-ranger': { options: ['items-custom-1787341743346', 'items-custom-1787342864715', 'items-custom-1787342971942'] },
+  'career-highway-patrolman': { options: ['items-custom-1787339776208', 'items-custom-1787340011347', 'items-custom-1787342897086'] },
+  'career-knight': { options: ['items-custom-1787339776208', 'items-custom-1787342058968', 'items-custom-1787343099234'] },
+  'career-knight-errant': { options: ['items-custom-1787339776208', 'items-custom-1787338511885', 'items-custom-1787342864715'] },
+  'career-labourer': { options: ['items-custom-1787340302424', 'items-custom-1787340542857', 'items-custom-1787337802721'] },
+  'career-lothern-sea-guard': { options: ['items-custom-1787338511885', 'items-custom-1787340750830', 'items-custom-1787342864715'] },
+  'career-merchant': { options: ['asset-shop', 'items-custom-1787343072945', 'items-custom-1787337913632'] },
+  'career-noble': { options: ['items-custom-1787342122734', 'items-custom-1787340011347', 'items-custom-1787343128055'] },
+  'career-outlaw': { options: ['items-custom-1787341743346', 'items-custom-1787339776208', 'items-custom-1787342864715'] },
+  'career-priest': { options: ['items-custom-1787341818149', 'items-custom-1787341901971', 'items-custom-1787342897086'] },
+  'career-ratcatcher': { options: ['items-custom-1787335232911', 'items-custom-1787340542857', 'items-custom-1787342798303'] },
+  'career-road-warden': { options: ['items-custom-1787341743346', 'items-custom-1787342936324', 'items-custom-1787342971942'] },
+  'career-sailor': { options: ['items-custom-1787338240721', 'items-custom-1787338375725', 'items-custom-1787338511885'] },
+  'career-scholar': { options: ['items-custom-1787341982929', 'items-custom-1787343046984', 'items-custom-1787343024083'] },
+  'career-shadow-warrior': { options: ['items-custom-1787341743346', 'items-custom-1787338511885', 'items-custom-1787342864715'] },
+  'career-slayer': { options: ['items-custom-1787341818149', 'items-custom-1787342798303', 'items-custom-1787343128055'] },
+  'career-sniper': { options: ['items-custom-1787340750830', 'items-custom-1787341743346', 'items-custom-1787342864715'] },
+  'career-soldier': { options: ['items-custom-1787341943308', 'items-custom-1787340750830', 'items-custom-1787342864715'] },
+  'career-thief': { options: ['items-custom-1787341743346', 'items-custom-1787342706990', 'items-custom-1787342798303'] },
+  'career-watchman': { options: ['items-custom-1787340750830', 'items-custom-1787342897086', 'items-custom-1787342864715'] },
+  'career-witch-doctor': { options: ['items-custom-1787341743346', 'items-custom-1787342706990', 'items-custom-1787341818149'] },
+};
+
+// Возвращает разметку актива для карьеры (варианты на выбор)
+export const getCareerAssetConfig = (careerId: string | null | undefined): CareerAssetConfig | null =>
+  careerId ? careerAssetConfigs[careerId] ?? null : null;
 
 // Извлекает из карьеры id характеристик (карточки раздела «Способности», подраздел
 // «Характеристики»), отмеченных как предпочтительные для этой карьеры — на основе

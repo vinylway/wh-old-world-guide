@@ -248,6 +248,26 @@ const CharacterSheetDialog = ({
               </div>
             )}
 
+            {c.careerAssetId && (
+              <div className="mb-3 rounded border border-gold/20 p-3">
+                <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
+                  Актив карьеры
+                </p>
+                {(() => {
+                  const asset = entries.find((e) => e.id === c.careerAssetId);
+                  if (!asset) return null;
+                  return (
+                    <button
+                      onClick={() => openEntry(c.careerAssetId as string)}
+                      className="rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
+                    >
+                      {asset.title}
+                    </button>
+                  );
+                })()}
+              </div>
+            )}
+
             {originLoreGrants.length > 0 && (
               <div className="mb-3 rounded border border-gold/20 p-3">
                 <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
