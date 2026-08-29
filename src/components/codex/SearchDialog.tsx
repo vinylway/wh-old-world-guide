@@ -59,7 +59,7 @@ const SearchDialog = ({ open, onOpenChange, onSelect, initialFilter, entries }: 
           >
             Все
           </button>
-          {sections.filter((s) => s.id !== 'contacts').map((s) => (
+          {sections.map((s) => (
             <button
               key={s.id}
               onClick={() => setFilter(s.id)}

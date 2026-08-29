@@ -234,6 +234,12 @@ export const defaultSourceIds: SourceId[] = ['gm', 'player'];
 
 export const sections: Section[] = [
   {
+    id: 'contacts', title: 'Контакты', icon: 'Feather',
+    description: 'NPC-контакты, которых ведущий выдаёт игрокам по механике «Контакты»',
+    sourceIds: ['gm'],
+    groups: ['gm-corner'],
+  },
+  {
     id: 'rules', title: 'Правила', icon: 'ScrollText',
     description: 'Механики, характеристики, броски и боевая система',
     groups: ['player-corner', 'gm-corner'],
@@ -286,7 +292,6 @@ export const sections: Section[] = [
     sourceIds: ['gm', 'trinity', 'talagaad-adventures', 'starter-kit'],
     groups: ['gm-corner'],
   },
-  { id: 'contacts', title: 'Контакты', icon: 'Feather', description: 'Гильдия мастеров и связь с летописцами' },
 ];
 
 export const entries: CodexEntry[] = [

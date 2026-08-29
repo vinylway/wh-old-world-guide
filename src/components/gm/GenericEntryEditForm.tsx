@@ -36,6 +36,7 @@ const SECTION_LABELS: Record<string, string> = {
   items: 'предмета',
   rules: 'правила',
   careers: 'карьеры',
+  contacts: 'контакта',
 };
 
 // Разделы, где применим рекомендованный навык (показывается отдельным блоком вверху карточки)
@@ -275,7 +276,7 @@ const GenericEntryEditForm = ({ entry, section, open, onOpenChange, onSaved }: G
                 </datalist>
               </div>
 
-              {(activeSection === 'careers' || activeSection === 'origins') && (
+              {(activeSection === 'careers' || activeSection === 'origins' || activeSection === 'contacts') && (
                 <div className="col-span-2">
                   <Label>Портрет (URL, необязательно)</Label>
                   <Input value={form.portrait ?? ''} onChange={(e) => setForm({ ...form, portrait: e.target.value })} />
