@@ -291,6 +291,33 @@ const CharacterSheetDialog = ({
               </div>
             )}
 
+            {c.contacts && c.contacts.length > 0 && (
+              <div className="mb-3 rounded border border-gold/20 p-3">
+                <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
+                  Контакты
+                </p>
+                <div className="space-y-2">
+                  {c.contacts.map((grant, idx) => {
+                    const contact = entries.find((e) => e.id === grant.contactEntryId);
+                    if (!contact) return null;
+                    return (
+                      <div key={grant.contactEntryId + idx} className="flex flex-col gap-1">
+                        <button
+                          onClick={() => openEntry(grant.contactEntryId)}
+                          className="self-start rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
+                        >
+                          {contact.title}
+                        </button>
+                        {grant.relation && (
+                          <p className="font-body text-xs text-parchment/60 leading-snug pl-1">{grant.relation}</p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between rounded border border-gold/20 px-4 py-2">
               <span className="font-display text-xs uppercase tracking-wide text-gold/80">Опыт за генерацию</span>
               <span className="font-display text-lg font-bold text-gold-bright">{c.experience} XP</span>

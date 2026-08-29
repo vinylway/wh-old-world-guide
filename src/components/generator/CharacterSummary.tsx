@@ -9,6 +9,7 @@ import {
   careerStatusIcons,
   disgracedStatus,
   CareerLoreGrant,
+  ContactGrant,
 } from '@/data/generator';
 
 const statusColorClasses: Record<CareerStatus, string> = {
@@ -26,6 +27,7 @@ interface CharacterSummaryProps {
   careerLoreDone: boolean;
   careerItemsDone: boolean;
   careerAssetDone: boolean;
+  contactsDone: boolean;
   career: CodexEntry | null | undefined;
   careerStatus: CareerStatus | null;
   inDisgrace: boolean;
@@ -40,6 +42,7 @@ interface CharacterSummaryProps {
   careerItemIds: string[];
   careerItemNotes?: string[];
   careerAssetId?: string | null;
+  contacts: ContactGrant[];
   finalTalentIds: string[];
   originLoreGrants: CareerLoreGrant[];
   xp: number;
@@ -64,6 +67,7 @@ const CharacterSummary = ({
   careerLoreDone,
   careerItemsDone,
   careerAssetDone,
+  contactsDone,
   career,
   careerStatus,
   inDisgrace,
@@ -78,6 +82,7 @@ const CharacterSummary = ({
   careerItemIds,
   careerItemNotes,
   careerAssetId,
+  contacts,
   finalTalentIds,
   originLoreGrants,
   xp,
@@ -92,7 +97,7 @@ const CharacterSummary = ({
   characteristicAbilityEntryId,
   entries,
 }: CharacterSummaryProps) => {
-  if (!(allRoundsDone && finalStats && abilitiesDone && careerId && careerSkillsDone && careerLoreDone && careerItemsDone && careerAssetDone)) return null;
+  if (!(allRoundsDone && finalStats && abilitiesDone && careerId && careerSkillsDone && careerLoreDone && careerItemsDone && careerAssetDone && contactsDone)) return null;
 
   const displayedStatus = careerStatus && inDisgrace ? disgracedStatus(careerStatus) : careerStatus;
 
@@ -298,6 +303,33 @@ const CharacterSummary = ({
               </button>
             );
           })()}
+        </div>
+      )}
+
+      {contacts.length > 0 && (
+        <div className="mb-5 rounded border border-gold/20 p-3">
+          <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
+            Контакты
+          </p>
+          <div className="space-y-2">
+            {contacts.map((grant, idx) => {
+              const contact = entries.find((e) => e.id === grant.contactEntryId);
+              if (!contact) return null;
+              return (
+                <div key={grant.contactEntryId + idx} className="flex flex-col gap-1">
+                  <button
+                    onClick={() => openEntry(grant.contactEntryId)}
+                    className="self-start rounded-full border border-gold/30 px-3 py-1 font-body text-sm text-parchment/90 hover:bg-secondary hover:text-gold-bright transition-colors"
+                  >
+                    {contact.title}
+                  </button>
+                  {grant.relation && (
+                    <p className="font-body text-xs text-parchment/60 leading-snug pl-1">{grant.relation}</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

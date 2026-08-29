@@ -17,6 +17,7 @@ import CareerSkillsStep from '@/components/generator/CareerSkillsStep';
 import CareerLoreStep from '@/components/generator/CareerLoreStep';
 import CareerItemsStep from '@/components/generator/CareerItemsStep';
 import CareerAssetStep from '@/components/generator/CareerAssetStep';
+import CareerContactsStep from '@/components/generator/CareerContactsStep';
 import {
   rollD10,
   rollD100,
@@ -41,6 +42,12 @@ import {
   getCareerItemConfig,
   getCareerAssetConfig,
   CareerLoreGrant,
+  getCareerContactTableIds,
+  commonersContactTableId,
+  saltOfTheEarthContactTableId,
+  getContactEntryIdByRoll,
+  getContactRelationByRoll,
+  ContactGrant,
 } from '@/data/generator';
 
 const ALL_LABELS = ['ББ', 'ДБ', 'С', 'В', 'И', 'Пр', 'Р', 'Х', 'Судьба'];
@@ -113,6 +120,14 @@ const CharacterGeneratorContent = () => {
   // Выбор актива карьеры (лаборатория/лавка/ферма и т.п.) — id выбранной карточки
   const [careerAssetId, setCareerAssetId] = useState<string | null>(null);
 
+  // Контакты: два броска d100 по таблицам, доступным карьере (можно оба раза по одной и той же)
+  const [contactSlots, setContactSlots] = useState<
+    { tableId: string | null; roll: number | null; rolling: boolean; manual: boolean }[]
+  >([
+    { tableId: null, roll: null, rolling: false, manual: false },
+    { tableId: null, roll: null, rolling: false, manual: false },
+  ]);
+
   useEffect(() => {
     setSavedList(getSavedCharacters());
   }, []);
@@ -137,6 +152,17 @@ const CharacterGeneratorContent = () => {
   const careerItemConfig = getCareerItemConfig(careerId);
   const careerAssetConfig = getCareerAssetConfig(careerId);
   const careerAssetDone = careerAssetConfig ? !!careerAssetId : true;
+
+  // Таблицы контактов, доступные карьере — если среди них есть «Простолюдины», добавляем
+  // ещё и «Соль земли» как разрешённую замену (по правилам этой генерации)
+  const careerContactTableIds = getCareerContactTableIds(career);
+  const contactTableIdsWithSalt = careerContactTableIds.includes(commonersContactTableId)
+    ? Array.from(new Set([...careerContactTableIds, saltOfTheEarthContactTableId]))
+    : careerContactTableIds;
+  const contactTableOptions = contactTableIdsWithSalt
+    .map((id) => entries.find((e) => e.id === id))
+    .filter((e): e is CodexEntry => !!e);
+  const contactsDone = contactTableOptions.length === 0 || contactSlots.every((s) => s.roll !== null);
 
   const mandatorySkillEntries = abilityConfig
     ? (abilityConfig.mandatorySkillIds.map((id) => entries.find((e) => e.id === id)).filter(Boolean) as CodexEntry[])
@@ -279,6 +305,16 @@ const CharacterGeneratorContent = () => {
         .filter((id): id is string => !!id)
     : [];
 
+  const finalContacts: ContactGrant[] = contactSlots
+    .filter((s): s is typeof s & { tableId: string; roll: number } => !!s.tableId && s.roll !== null)
+    .map((s) => ({
+      tableId: s.tableId,
+      roll: s.roll,
+      contactEntryId: getContactEntryIdByRoll(s.tableId, s.roll) ?? '',
+      relation: getContactRelationByRoll(s.tableId, s.roll) ?? undefined,
+    }))
+    .filter((g) => !!g.contactEntryId);
+
   const rollTalentSlot = (idx: number, markManual: boolean) => {
     if (!abilityConfig) return;
     setTalentRolling((prev) => prev.map((v, i) => (i === idx ? true : v)));
@@ -334,6 +370,30 @@ const CharacterGeneratorContent = () => {
     setCareerLoreVariants({});
     setCareerItemSelections({});
     setCareerAssetId(null);
+    setContactSlots([
+      { tableId: null, roll: null, rolling: false, manual: false },
+      { tableId: null, roll: null, rolling: false, manual: false },
+    ]);
+  };
+
+  const rollContactSlot = (idx: number, tableId: string, markManual: boolean) => {
+    setContactSlots((prev) => prev.map((s, i) => (i === idx ? { tableId, roll: null, rolling: true, manual: markManual } : s)));
+    setTimeout(() => {
+      const roll = rollD100();
+      setContactSlots((prev) => prev.map((s, i) => (i === idx ? { ...s, roll, rolling: false } : s)));
+    }, 600);
+  };
+
+  const rerollContactSlot = (idx: number) => {
+    setContactSlots((prev) => {
+      const tableId = prev[idx].tableId;
+      if (!tableId) return prev;
+      return prev.map((s, i) => (i === idx ? { ...s, roll: null, rolling: true, manual: true } : s));
+    });
+    setTimeout(() => {
+      const roll = rollD100();
+      setContactSlots((prev) => prev.map((s, i) => (i === idx ? { ...s, roll, rolling: false } : s)));
+    }, 600);
   };
 
   const selectCareerItemOption = (groupId: string, itemId: string) => {
@@ -607,6 +667,7 @@ const CharacterGeneratorContent = () => {
       careerItemIds: finalCareerItemIds,
       careerItemNotes: careerItemConfig?.notes,
       careerAssetId: careerAssetId ?? undefined,
+      contacts: finalContacts,
     };
     saveCharacter(character);
     setSavedList(getSavedCharacters());
@@ -769,6 +830,23 @@ const CharacterGeneratorContent = () => {
             />
           )}
 
+          {/* Шаг 9: контакты */}
+          {allRoundsDone && abilitiesDone && careerId && !careerRolling && careerSkillsDone && careerLoreDone && careerItemsDone && careerAssetDone && contactTableOptions.length > 0 && (
+            <CareerContactsStep
+              careerTitle={career?.title ?? ''}
+              tableOptions={contactTableOptions}
+              slots={contactSlots}
+              getContactEntry={(tableId, roll) => {
+                const id = getContactEntryIdByRoll(tableId, roll);
+                return id ? entries.find((e) => e.id === id) : null;
+              }}
+              getRelation={(tableId, roll) => getContactRelationByRoll(tableId, roll)}
+              rollSlot={(idx, tableId) => rollContactSlot(idx, tableId, false)}
+              rerollSlot={rerollContactSlot}
+              openEntry={openEntry}
+            />
+          )}
+
           {/* Итог */}
           <CharacterSummary
             allRoundsDone={allRoundsDone}
@@ -779,6 +857,7 @@ const CharacterGeneratorContent = () => {
             careerLoreDone={careerLoreDone}
             careerItemsDone={careerItemsDone}
             careerAssetDone={careerAssetDone}
+            contactsDone={contactsDone}
             career={career}
             careerStatus={careerStatus}
             inDisgrace={inDisgrace}
@@ -793,6 +872,7 @@ const CharacterGeneratorContent = () => {
             careerItemIds={finalCareerItemIds}
             careerItemNotes={careerItemConfig?.notes}
             careerAssetId={careerAssetId}
+            contacts={finalContacts}
             finalTalentIds={finalTalentIds}
             originLoreGrants={finalOriginLoreGrants}
             xp={xp}
