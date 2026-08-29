@@ -47,6 +47,7 @@ import {
   saltOfTheEarthContactTableId,
   getContactEntryIdByRoll,
   getContactRelationByRoll,
+  getContactTableEntries,
   ContactGrant,
 } from '@/data/generator';
 
@@ -127,6 +128,7 @@ const CharacterGeneratorContent = () => {
     { tableId: null, roll: null, rolling: false, manual: false },
     { tableId: null, roll: null, rolling: false, manual: false },
   ]);
+  const [contactPickerOpen, setContactPickerOpen] = useState<boolean[]>([false, false]);
 
   useEffect(() => {
     setSavedList(getSavedCharacters());
@@ -374,6 +376,7 @@ const CharacterGeneratorContent = () => {
       { tableId: null, roll: null, rolling: false, manual: false },
       { tableId: null, roll: null, rolling: false, manual: false },
     ]);
+    setContactPickerOpen([false, false]);
   };
 
   const rollContactSlot = (idx: number, tableId: string, markManual: boolean) => {
@@ -385,6 +388,7 @@ const CharacterGeneratorContent = () => {
   };
 
   const rerollContactSlot = (idx: number) => {
+    setContactPickerOpen((prev) => prev.map((v, i) => (i === idx ? false : v)));
     setContactSlots((prev) => {
       const tableId = prev[idx].tableId;
       if (!tableId) return prev;
@@ -394,6 +398,15 @@ const CharacterGeneratorContent = () => {
       const roll = rollD100();
       setContactSlots((prev) => prev.map((s, i) => (i === idx ? { ...s, roll, rolling: false } : s)));
     }, 600);
+  };
+
+  const chooseContactManually = (idx: number, roll: number) => {
+    setContactSlots((prev) => prev.map((s, i) => (i === idx ? { ...s, roll, rolling: false, manual: true } : s)));
+    setContactPickerOpen((prev) => prev.map((v, i) => (i === idx ? false : v)));
+  };
+
+  const toggleContactPicker = (idx: number) => {
+    setContactPickerOpen((prev) => prev.map((v, i) => (i === idx ? !v : v)));
   };
 
   const selectCareerItemOption = (groupId: string, itemId: string) => {
@@ -836,13 +849,17 @@ const CharacterGeneratorContent = () => {
               careerTitle={career?.title ?? ''}
               tableOptions={contactTableOptions}
               slots={contactSlots}
+              pickerOpenSlots={contactPickerOpen}
               getContactEntry={(tableId, roll) => {
                 const id = getContactEntryIdByRoll(tableId, roll);
                 return id ? entries.find((e) => e.id === id) : null;
               }}
               getRelation={(tableId, roll) => getContactRelationByRoll(tableId, roll)}
+              getTableEntries={getContactTableEntries}
               rollSlot={(idx, tableId) => rollContactSlot(idx, tableId, false)}
               rerollSlot={rerollContactSlot}
+              chooseContactManually={chooseContactManually}
+              togglePicker={toggleContactPicker}
               openEntry={openEntry}
             />
           )}

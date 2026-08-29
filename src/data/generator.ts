@@ -1045,6 +1045,15 @@ export const getContactRelationByRoll = (tableId: string, roll: number): string 
   return key ? range.relations[key] : null;
 };
 
+// Возвращает список всех представителей таблицы контактов для ручного выбора: id
+// представителя и «представительский» бросок (нижняя граница его диапазона) —
+// его достаточно, чтобы дальше корректно определить и NPC, и текст связи.
+export const getContactTableEntries = (tableId: string): { contactEntryId: string; roll: number }[] => {
+  const table = contactRollTables[tableId];
+  if (!table) return [];
+  return table.map((r) => ({ contactEntryId: r.contactEntryId, roll: r.min }));
+};
+
 // Извлекает из карьеры id характеристик (карточки раздела «Способности», подраздел
 // «Характеристики»), отмеченных как предпочтительные для этой карьеры — на основе
 // ссылок, проставленных в строке «Предпочтительные характеристики».

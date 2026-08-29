@@ -12,10 +12,14 @@ interface CareerContactsStepProps {
   careerTitle: string;
   tableOptions: CodexEntry[];
   slots: ContactSlot[];
+  pickerOpenSlots: boolean[];
   getContactEntry: (tableId: string, roll: number) => CodexEntry | null | undefined;
   getRelation: (tableId: string, roll: number) => string | null;
+  getTableEntries: (tableId: string) => { contactEntryId: string; roll: number }[];
   rollSlot: (idx: number, tableId: string) => void;
   rerollSlot: (idx: number) => void;
+  chooseContactManually: (idx: number, roll: number) => void;
+  togglePicker: (idx: number) => void;
   openEntry: (id: string) => void;
 }
 
@@ -23,10 +27,14 @@ const CareerContactsStep = ({
   careerTitle,
   tableOptions,
   slots,
+  pickerOpenSlots,
   getContactEntry,
   getRelation,
+  getTableEntries,
   rollSlot,
   rerollSlot,
+  chooseContactManually,
+  togglePicker,
   openEntry,
 }: CareerContactsStepProps) => {
   return (
@@ -103,12 +111,43 @@ const CareerContactsStep = ({
                     </p>
                   )}
 
-                  <button
-                    onClick={() => rerollSlot(idx)}
-                    className="mt-3 flex items-center gap-2 rounded border border-gold/40 px-4 py-1.5 font-display text-xs font-semibold uppercase tracking-widest text-parchment hover:bg-secondary transition-colors"
-                  >
-                    <Icon name="RotateCcw" size={14} /> Перебросить
-                  </button>
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    <button
+                      onClick={() => rerollSlot(idx)}
+                      className="flex items-center gap-2 rounded border border-gold/40 px-4 py-1.5 font-display text-xs font-semibold uppercase tracking-widest text-parchment hover:bg-secondary transition-colors"
+                    >
+                      <Icon name="RotateCcw" size={14} /> Перебросить
+                    </button>
+                    <button
+                      onClick={() => togglePicker(idx)}
+                      className="flex items-center gap-2 rounded border border-gold/40 px-4 py-1.5 font-display text-xs font-semibold uppercase tracking-widest text-parchment hover:bg-secondary transition-colors"
+                    >
+                      <Icon name="Pencil" size={14} /> Выбрать вручную
+                    </button>
+                  </div>
+
+                  {pickerOpenSlots[idx] && (
+                    <div className="mt-3 flex flex-wrap gap-2 animate-fade-in">
+                      {getTableEntries(slot.tableId).map(({ contactEntryId, roll }) => {
+                        const optionEntry = getContactEntry(slot.tableId as string, roll);
+                        if (!optionEntry) return null;
+                        const selected = optionEntry.id === entry?.id;
+                        return (
+                          <button
+                            key={contactEntryId}
+                            onClick={() => chooseContactManually(idx, roll)}
+                            className={`rounded border px-3 py-1.5 font-display text-xs uppercase tracking-wide transition-colors ${
+                              selected
+                                ? 'border-gold bg-secondary text-gold-bright'
+                                : 'border-gold/30 text-parchment/80 hover:bg-secondary'
+                            }`}
+                          >
+                            {optionEntry.title}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
