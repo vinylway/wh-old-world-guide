@@ -428,7 +428,7 @@ export const careerItemConfigs: Record<string, CareerItemConfig> = {
   'career-apothecary': {
     groups: [
       { id: 'g1', options: ['i10', 'i11'] },
-      { id: 'g2', options: ['i6'] },
+      { id: 'g2', options: ['items-custom-1787086108780'] },
       { id: 'g3', options: ['i12'] },
       { id: 'g4', options: ['i9'] },
       { id: 'g5', options: ['i13'] },
@@ -445,7 +445,7 @@ export const careerItemConfigs: Record<string, CareerItemConfig> = {
   'career-arcanist': {
     groups: [
       { id: 'g1', options: ['i20'] },
-      { id: 'g2', options: ['i6'] },
+      { id: 'g2', options: ['items-custom-1787086108780'] },
       { id: 'g3', options: ['i7'] },
       { id: 'g4', options: ['i66'] },
       { id: 'g5', options: ['i72'] },
@@ -461,7 +461,7 @@ export const careerItemConfigs: Record<string, CareerItemConfig> = {
   },
   'career-artist': {
     groups: [
-      { id: 'g1', options: ['i6'] },
+      { id: 'g1', options: ['items-custom-1787086108780'] },
       { id: 'g2', options: ['i48'] },
       { id: 'g3', options: ['i54'] },
       { id: 'g4', options: ['i73'] },
@@ -479,7 +479,7 @@ export const careerItemConfigs: Record<string, CareerItemConfig> = {
   },
   'career-charlatan': {
     groups: [
-      { id: 'g1', options: ['i6'] },
+      { id: 'g1', options: ['items-custom-1787086108780'] },
       { id: 'g2', options: ['i51'] },
       { id: 'g3', options: ['i7'] },
       { id: 'g4', options: ['i52'] },
@@ -509,7 +509,7 @@ export const careerItemConfigs: Record<string, CareerItemConfig> = {
   'career-forest-ranger': {
     groups: [
       { id: 'g1', options: ['i31'] },
-      { id: 'g2', options: ['i6'] },
+      { id: 'g2', options: ['items-custom-1787086108780'] },
       { id: 'g3', options: ['i1'] },
       { id: 'g4', options: ['i14'] },
       { id: 'g5', options: ['i68', 'i55', 'i76'] },
@@ -542,7 +542,7 @@ export const careerItemConfigs: Record<string, CareerItemConfig> = {
   },
   'career-labourer': {
     groups: [
-      { id: 'g1', options: ['i23', 'i6'] },
+      { id: 'g1', options: ['i23', 'items-custom-1787086108780'] },
       { id: 'g2', options: ['i51'] },
       { id: 'g3', options: ['i9', 'i12'] },
       { id: 'g4', options: ['i68'] },
@@ -560,7 +560,7 @@ export const careerItemConfigs: Record<string, CareerItemConfig> = {
   },
   'career-merchant': {
     groups: [
-      { id: 'g1', options: ['i6'] },
+      { id: 'g1', options: ['items-custom-1787086108780'] },
       { id: 'g2', options: ['i1', 'i7'] },
       { id: 'g3', options: ['i72', 'i73'] },
     ],
@@ -586,7 +586,7 @@ export const careerItemConfigs: Record<string, CareerItemConfig> = {
   'career-priest': {
     groups: [
       { id: 'g1', options: [] },
-      { id: 'g2', options: ['i6'] },
+      { id: 'g2', options: ['items-custom-1787086108780'] },
       { id: 'g3', options: ['i12', 'i1'] },
       { id: 'g4', options: ['i69', 'i72'] },
     ],
@@ -595,7 +595,7 @@ export const careerItemConfigs: Record<string, CareerItemConfig> = {
   'career-ratcatcher': {
     groups: [
       { id: 'g1', options: ['i21', 'i10'] },
-      { id: 'g2', options: ['i6'] },
+      { id: 'g2', options: ['items-custom-1787086108780'] },
       { id: 'g3', options: ['i51'] },
       { id: 'g4', options: ['i67'] },
       { id: 'g5', options: ['i68'] },
@@ -620,7 +620,7 @@ export const careerItemConfigs: Record<string, CareerItemConfig> = {
   },
   'career-scholar': {
     groups: [
-      { id: 'g1', options: ['i6'] },
+      { id: 'g1', options: ['items-custom-1787086108780'] },
       { id: 'g2', options: ['i72'] },
       { id: 'g3', options: ['i7'] },
       { id: 'g4', options: ['i1', 'i74'] },
@@ -645,7 +645,7 @@ export const careerItemConfigs: Record<string, CareerItemConfig> = {
   'career-sniper': {
     groups: [
       { id: 'g1', options: ['i37', 'i38', 'i40'] },
-      { id: 'g2', options: ['i6'] },
+      { id: 'g2', options: ['items-custom-1787086108780'] },
       { id: 'g3', options: ['i12'] },
       { id: 'g4', options: ['i69'] },
       { id: 'g5', options: ['i68', 'i62'] },
@@ -653,19 +653,18 @@ export const careerItemConfigs: Record<string, CareerItemConfig> = {
   },
   'career-soldier': {
     groups: [
-      { id: 'g1', options: [] },
-      { id: 'g2', options: ['i6'] },
+      { id: 'g1', options: ['i25', 'i26', 'i27', 'i28', 'i29', 'i30', 'i15', 'i31', 'i32'] },
+      { id: 'g2', options: ['items-custom-1787086108780'] },
       { id: 'g3', options: ['i55'] },
       { id: 'g4', options: ['i1'] },
       { id: 'g5', options: ['i14'] },
       { id: 'g6', options: ['i59'] },
       { id: 'g7', options: ['i65', 'i63', 'i62'] },
     ],
-    notes: ['Оружие ближнего боя с ценой в серебро — на выбор игрока из подходящих оружейных карточек'],
   },
   'career-thief': {
     groups: [
-      { id: 'g1', options: ['i6'] },
+      { id: 'g1', options: ['items-custom-1787086108780'] },
       { id: 'g2', options: ['i48'] },
       { id: 'g3', options: ['i51'] },
       { id: 'g4', options: ['i53'] },
@@ -674,18 +673,17 @@ export const careerItemConfigs: Record<string, CareerItemConfig> = {
   },
   'career-watchman': {
     groups: [
-      { id: 'g1', options: [] },
-      { id: 'g2', options: ['i6'] },
+      { id: 'g1', options: ['i19', 'items-custom-1787086108780', 'i20', 'i21', 'i22', 'i23', 'i24', 'i25', 'i26', 'i27', 'i28', 'i29', 'i30', 'i15', 'i31', 'i32'] },
+      { id: 'g2', options: ['items-custom-1787086108780'] },
       { id: 'g3', options: ['i1'] },
       { id: 'g4', options: ['i14'] },
       { id: 'g5', options: ['i67'] },
     ],
-    notes: ['Оружие ближнего боя с ценой в медь или серебро — на выбор игрока из подходящих оружейных карточек'],
   },
   'career-witch-doctor': {
     groups: [
       { id: 'g1', options: ['i20'] },
-      { id: 'g2', options: ['i6'] },
+      { id: 'g2', options: ['items-custom-1787086108780'] },
       { id: 'g3', options: ['i51'] },
       { id: 'g4', options: ['i53'] },
       { id: 'g5', options: ['i66'] },
