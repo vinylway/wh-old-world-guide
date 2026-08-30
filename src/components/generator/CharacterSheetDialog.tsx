@@ -9,6 +9,7 @@ import {
   careerStatusIcons,
   disgracedStatus,
   getCareerPreferredAbilityIds,
+  getToughnessTotal,
   LoreGrant,
 } from '@/data/generator';
 
@@ -37,6 +38,8 @@ const CharacterSheetDialog = ({
 }: CharacterSheetDialogProps) => {
   const c = character;
   const cFate = c?.stats.find((s) => s.label === 'Судьба');
+  const cToughness = c?.stats.find((s) => s.label === 'В');
+  const cToughnessTotal = cToughness ? getToughnessTotal(cToughness.final, c?.careerItemIds ?? [], entries) : null;
   const cCharacteristics = c?.stats.filter((s) => s.label !== 'Судьба') ?? [];
   const displayedStatus = c?.careerStatus && c.inDisgrace ? disgracedStatus(c.careerStatus) : c?.careerStatus;
   const legacyLoreIds = c?.loreIds ?? (c?.loreId ? [c.loreId] : []);
@@ -85,7 +88,7 @@ const CharacterSheetDialog = ({
             )}
 
             {cFate && (
-              <div className="mb-4 flex justify-center">
+              <div className="mb-4 flex flex-wrap justify-center gap-3">
                 <button
                   onClick={() => openEntry('r4')}
                   className="w-full sm:w-48 rounded border border-gold bg-secondary/50 py-3 text-center hover:bg-secondary transition-colors"
@@ -93,6 +96,15 @@ const CharacterSheetDialog = ({
                   <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1">{cFate.label}</p>
                   <p className="font-display text-2xl font-bold text-gold-bright">{cFate.final}</p>
                 </button>
+                {cToughnessTotal !== null && (
+                  <button
+                    onClick={() => openEntry('rules-custom-1788118742873')}
+                    className="w-full sm:w-48 rounded border border-gold bg-secondary/50 py-3 text-center hover:bg-secondary transition-colors"
+                  >
+                    <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1">Живучесть</p>
+                    <p className="font-display text-2xl font-bold text-gold-bright">{cToughnessTotal}</p>
+                  </button>
+                )}
               </div>
             )}
 
@@ -265,6 +277,20 @@ const CharacterSheetDialog = ({
                     </button>
                   );
                 })()}
+              </div>
+            )}
+
+            {c.careerTalent && (
+              <div className="mb-3 rounded border border-gold/20 p-3">
+                <p className="flex items-center gap-1.5 font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
+                  <Icon name="Sparkles" size={13} className="text-gold" />
+                  {c.careerTalent.title}
+                </p>
+                <div className="space-y-1.5">
+                  {c.careerTalent.paragraphs.map((p, i) => (
+                    <p key={i} className="font-body text-sm text-parchment/85 leading-snug">{p}</p>
+                  ))}
+                </div>
               </div>
             )}
 

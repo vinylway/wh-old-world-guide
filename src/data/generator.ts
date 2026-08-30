@@ -44,6 +44,16 @@ export interface GeneratedCharacter {
   careerAssetId?: string;
   // Стартовые контакты — два броска d100 по таблицам контактов, доступным карьере
   contacts?: ContactGrant[];
+  // Уникальный карьерный талант (текст из callout карточки карьеры «Карьерный талант»)
+  careerTalent?: CareerTalentInfo;
+}
+
+// Уникальный карьерный талант — заголовок и абзацы описания, взятые из callout
+// карточки карьеры «Карьерный талант». Персонаж получает его автоматически при
+// выборе карьеры, выбора вариантов здесь нет.
+export interface CareerTalentInfo {
+  title: string;
+  paragraphs: string[];
 }
 
 export interface LoreGrant {
@@ -585,12 +595,11 @@ export const careerItemConfigs: Record<string, CareerItemConfig> = {
   },
   'career-priest': {
     groups: [
-      { id: 'g1', options: [] },
+      { id: 'g1', options: ['i25', 'i26', 'i27', 'i28', 'i29', 'i30', 'i15', 'i31', 'i32'] },
       { id: 'g2', options: ['items-custom-1787086108780'] },
       { id: 'g3', options: ['i12', 'i1'] },
       { id: 'g4', options: ['i69', 'i72'] },
     ],
-    notes: ['Оружие с ценой в серебро — на выбор игрока из подходящих оружейных карточек'],
   },
   'career-ratcatcher': {
     groups: [
@@ -745,6 +754,21 @@ export const careerAssetConfigs: Record<string, CareerAssetConfig> = {
 // Возвращает разметку актива для карьеры (варианты на выбор)
 export const getCareerAssetConfig = (careerId: string | null | undefined): CareerAssetConfig | null =>
   careerId ? careerAssetConfigs[careerId] ?? null : null;
+
+// ---------------------------------------------------------------------------
+// Карьерный талант — уникальная способность, которую персонаж получает автоматически
+// при выборе карьеры (заполнен через редактор ГМ-раздела как callout карточки карьеры
+// с заголовком «Карьерный талант»). Выбора вариантов здесь нет — только отображение.
+// ---------------------------------------------------------------------------
+
+export const getCareerTalentInfo = (career: CodexEntry | null | undefined): CareerTalentInfo | null => {
+  const callout = career?.callouts?.find((c) => c.title.trim().startsWith('Карьерный талант'));
+  if (!callout || callout.items.length === 0) return null;
+  return {
+    title: callout.title.trim(),
+    paragraphs: callout.items.map((item) => (typeof item === 'string' ? item : item.text)),
+  };
+};
 
 // ---------------------------------------------------------------------------
 // Контакты («Контакты»): при определении стартовых контактов игрок дважды бросает
@@ -1073,6 +1097,35 @@ export const getSkillLevel = (
   careerSkillAdvances: string[] = []
 ): number =>
   2 + (boostedSkillIds.includes(skillId) ? 1 : 0) + (careerSkillAdvances.includes(skillId) ? 1 : 0);
+
+// ---------------------------------------------------------------------------
+// Живучесть = Выносливость + бонус от надетой брони. Бонус брони берётся из строки
+// характеристик карточки предмета «Живучесть» (значения вида «В+1», «В», «+1») —
+// парсим только числовую добавку, сама характеристика «В» уже учтена отдельно.
+// Среди имущества персонажа учитывается предмет с наибольшим бонусом брони
+// (доспехи не суммируются друг с другом).
+// ---------------------------------------------------------------------------
+
+const parseArmourToughnessBonus = (value: string | undefined): number => {
+  if (!value) return 0;
+  const match = value.replace(/\s/g, '').match(/\+(-?\d+)/);
+  return match ? parseInt(match[1], 10) : 0;
+};
+
+export const getToughnessBonusFromItems = (itemIds: string[], entries: CodexEntry[]): number => {
+  let best = 0;
+  for (const itemId of itemIds) {
+    const item = entries.find((e) => e.id === itemId);
+    const row = item?.stats?.find((s) => s.label === 'Живучесть');
+    const bonus = parseArmourToughnessBonus(row?.value);
+    if (bonus > best) best = bonus;
+  }
+  return best;
+};
+
+// Итоговая живучесть персонажа: характеристика «Выносливость» + бонус лучшей брони в имуществе
+export const getToughnessTotal = (toughness: number, itemIds: string[], entries: CodexEntry[]): number =>
+  toughness + getToughnessBonusFromItems(itemIds, entries);
 
 interface OriginRollRange {
   min: number;

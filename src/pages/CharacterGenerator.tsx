@@ -49,6 +49,8 @@ import {
   getContactRelationByRoll,
   getContactTableEntries,
   ContactGrant,
+  getCareerTalentInfo,
+  getToughnessTotal,
 } from '@/data/generator';
 
 const ALL_LABELS = ['ББ', 'ДБ', 'С', 'В', 'И', 'Пр', 'Р', 'Х', 'Судьба'];
@@ -144,6 +146,7 @@ const CharacterGeneratorContent = () => {
     ? (careerTable.map((r) => entries.find((e) => e.id === r.careerId)).filter(Boolean) as CodexEntry[])
     : [];
   const careerStatus = careerId ? getCareerStatus(careerId) : null;
+  const careerTalent = getCareerTalentInfo(career);
   const careerSkillBonus = getCareerSkillBonus(career);
   const careerSkillEntries = careerSkillBonus
     ? (careerSkillBonus.skillIds.map((id) => entries.find((e) => e.id === id)).filter(Boolean) as CodexEntry[])
@@ -632,6 +635,8 @@ const CharacterGeneratorContent = () => {
 
   const fateStat = finalStats?.find((s) => s.label === 'Судьба') ?? null;
   const characteristicStats = finalStats?.filter((s) => s.label !== 'Судьба') ?? [];
+  const toughnessStat = finalStats?.find((s) => s.label === 'В') ?? null;
+  const toughnessTotal = toughnessStat ? getToughnessTotal(toughnessStat.final, finalCareerItemIds, entries) : null;
   const boostedSkillIds = abilityConfig ? [...abilityConfig.mandatorySkillIds, ...selectedExtraSkills] : [];
 
   const getRelatedSkills = (abilityId: string): CodexEntry[] => {
@@ -681,6 +686,7 @@ const CharacterGeneratorContent = () => {
       careerItemNotes: careerItemConfig?.notes,
       careerAssetId: careerAssetId ?? undefined,
       contacts: finalContacts,
+      careerTalent: careerTalent ?? undefined,
     };
     saveCharacter(character);
     setSavedList(getSavedCharacters());
@@ -879,7 +885,9 @@ const CharacterGeneratorContent = () => {
             careerStatus={careerStatus}
             inDisgrace={inDisgrace}
             fateStat={fateStat}
+            toughnessTotal={toughnessTotal}
             characteristicStats={characteristicStats}
+            careerTalent={careerTalent}
             hasAbilities={!!abilityConfig}
             boostedSkillIds={boostedSkillIds}
             careerSkillAdvances={selectedCareerSkills}

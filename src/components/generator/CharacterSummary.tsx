@@ -10,6 +10,7 @@ import {
   disgracedStatus,
   CareerLoreGrant,
   ContactGrant,
+  CareerTalentInfo,
 } from '@/data/generator';
 
 const statusColorClasses: Record<CareerStatus, string> = {
@@ -32,7 +33,9 @@ interface CharacterSummaryProps {
   careerStatus: CareerStatus | null;
   inDisgrace: boolean;
   fateStat: StatRow | null;
+  toughnessTotal: number | null;
   characteristicStats: StatRow[];
+  careerTalent: CareerTalentInfo | null;
   hasAbilities: boolean;
   boostedSkillIds: string[];
   careerSkillAdvances: string[];
@@ -72,7 +75,9 @@ const CharacterSummary = ({
   careerStatus,
   inDisgrace,
   fateStat,
+  toughnessTotal,
   characteristicStats,
+  careerTalent,
   hasAbilities,
   boostedSkillIds,
   careerSkillAdvances,
@@ -134,7 +139,7 @@ const CharacterSummary = ({
       )}
 
       {fateStat && (
-        <div className="mb-4 flex justify-center">
+        <div className="mb-4 flex flex-wrap justify-center gap-3">
           <button
             onClick={() => openEntry('r4')}
             className="w-full sm:w-48 rounded border border-gold bg-secondary/50 py-3 text-center hover:bg-secondary transition-colors"
@@ -145,6 +150,15 @@ const CharacterSummary = ({
               {fateStat.boosted && <span className="ml-2 text-gold-bright text-sm align-middle">({fateStat.base} +1)</span>}
             </p>
           </button>
+          {toughnessTotal !== null && (
+            <button
+              onClick={() => openEntry('rules-custom-1788118742873')}
+              className="w-full sm:w-48 rounded border border-gold bg-secondary/50 py-3 text-center hover:bg-secondary transition-colors"
+            >
+              <p className="font-display text-xs uppercase tracking-widest text-gold/80 mb-1">Живучесть</p>
+              <p className="font-display text-2xl font-bold text-gold-bright">{toughnessTotal}</p>
+            </button>
+          )}
         </div>
       )}
 
@@ -303,6 +317,20 @@ const CharacterSummary = ({
               </button>
             );
           })()}
+        </div>
+      )}
+
+      {careerTalent && (
+        <div className="mb-5 rounded border border-gold/20 p-3">
+          <p className="flex items-center gap-1.5 font-display text-xs uppercase tracking-widest text-gold/80 mb-1.5">
+            <Icon name="Sparkles" size={13} className="text-gold" />
+            {careerTalent.title}
+          </p>
+          <div className="space-y-1.5">
+            {careerTalent.paragraphs.map((p, i) => (
+              <p key={i} className="font-body text-sm text-parchment/85 leading-snug">{p}</p>
+            ))}
+          </div>
         </div>
       )}
 
