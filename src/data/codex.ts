@@ -235,7 +235,7 @@ export const defaultSourceIds: SourceId[] = ['gm', 'player'];
 export const sections: Section[] = [
   {
     id: 'contacts', title: 'Контакты', icon: 'Feather',
-    description: 'NPC-контакты, которых ведущий выдаёт игрокам по механике «Контакты»',
+    description: 'Полное описание контактов',
     sourceIds: ['gm'],
     groups: ['gm-corner'],
   },
@@ -270,7 +270,7 @@ export const sections: Section[] = [
   },
   {
     id: 'magic', title: 'Магия', icon: 'Sparkles',
-    description: 'Ветра магии, заклинания и колдовские традиции',
+    description: 'Заклинания и Школы магии',
     sourceIds: ['player'],
     groups: ['player-corner'],
   },
@@ -282,13 +282,13 @@ export const sections: Section[] = [
   },
   {
     id: 'ventures', title: 'Затеи', icon: 'ListChecks',
-    description: 'Побочные сюжеты, начинания и планы ваших героев',
+    description: 'Начинания и планы ваших героев для периода простоя',
     sourceIds: ['player'],
     groups: ['player-corner'],
   },
   {
     id: 'creatures', title: 'Персонажи ведущего', icon: 'Skull',
-    description: 'Готовые NPC, чудовища и противники для сюжетных сцен',
+    description: 'Готовые персонажи ведущего, чудовища и противники для сюжетных сцен',
     sourceIds: ['gm', 'trinity', 'talagaad-adventures', 'starter-kit'],
     groups: ['gm-corner'],
   },
