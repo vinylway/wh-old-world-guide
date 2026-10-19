@@ -37,6 +37,13 @@ const Header = () => {
             Контакты
           </Link>
           <Link
+            to="/map"
+            className="story-link flex items-center gap-1.5 font-display text-sm uppercase tracking-widest text-gold hover:text-gold-bright transition-colors"
+          >
+            <Icon name="Map" size={16} />
+            Карта
+          </Link>
+          <Link
             to="/generator"
             className="story-link flex items-center gap-1.5 font-display text-sm uppercase tracking-widest text-gold hover:text-gold-bright transition-colors"
           >
@@ -75,6 +82,14 @@ const Header = () => {
             >
               <Icon name="Feather" size={16} />
               Контакты
+            </Link>
+            <Link
+              to="/map"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 rounded px-3 py-2 text-left font-display text-sm uppercase tracking-wide text-gold hover:bg-secondary transition-colors"
+            >
+              <Icon name="Map" size={16} />
+              Карта
             </Link>
             <Link
               to="/generator"
