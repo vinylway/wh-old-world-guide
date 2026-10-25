@@ -88,6 +88,18 @@ const OldWorldMapContent = () => {
     }
   };
 
+  const moveMarker = async (m: MapMarker, x: number, y: number) => {
+    if (!password) return;
+    setCustomMarkers((prev) => prev.map((c) => (c.id === m.id ? { ...c, x, y } : c)));
+    const res = await fetch(MARKERS_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Edit-Password': password },
+      body: JSON.stringify({ action: 'save', ...m, x, y }),
+    });
+    if (res.status === 401) lock();
+    await loadMarkers();
+  };
+
   const deleteMarker = async (id: string) => {
     if (!password || !window.confirm('Удалить метку?')) return;
     await fetch(MARKERS_API, {
@@ -165,11 +177,17 @@ const OldWorldMapContent = () => {
         html: `${dot}<div class="ow-marker__label">${esc(m.title)}</div>`,
         iconSize: [0, 0],
       });
-      const marker = L.marker(toLatLng(m), { icon }).addTo(layer);
+      const marker = L.marker(toLatLng(m), { icon, draggable: isEditMode && !!m.custom }).addTo(layer);
+      if (isEditMode && m.custom) {
+        marker.on('dragend', () => {
+          const p = L.CRS.Simple.latLngToPoint(marker.getLatLng(), MAX_NATIVE_ZOOM);
+          moveMarker(m, (p.x / IMG_W) * MAP_SIZE.width, (p.y / IMG_H) * MAP_SIZE.height);
+        });
+      }
       marker.on('click', () => setSelectedId(m.id));
       markerRefs.current[m.id] = marker;
     });
-  }, [visible]);
+  }, [visible, isEditMode, password]);
 
   const focusMarker = (m: MapMarker) => {
     setSelectedId(m.id);
@@ -318,6 +336,9 @@ const OldWorldMapContent = () => {
             )}
             {selected.description && (
               <p className="mt-2 font-body text-sm leading-snug text-parchment/90">{selected.description}</p>
+            )}
+            {isEditMode && selected.custom && (
+              <p className="mt-2 font-body text-xs text-gold/70">Чтобы переместить метку, перетащите её на карте.</p>
             )}
             {isEditMode && selected.custom && (
               <div className="mt-3 flex gap-2">
