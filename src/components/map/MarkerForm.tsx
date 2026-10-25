@@ -21,14 +21,14 @@ const MarkerForm = ({ initial, saving, onSave, onCancel }: MarkerFormProps) => {
 
   return (
     <Dialog open onOpenChange={(v) => !v && onCancel()}>
-      <DialogContent className="max-w-md bg-card parchment-panel ornate-frame">
+      <DialogContent className="z-[2000] max-w-md bg-card parchment-panel ornate-frame">
         <DialogHeader>
           <DialogTitle className="font-display uppercase tracking-widest text-gold">
-            {initial.id ? 'Изменить метку' : 'Новая метка'}
+            {initial.id ? 'Изменить метку' : 'Конструктор метки'}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <input className={field} placeholder="Название" value={title} onChange={(e) => setTitle(e.target.value)} />
+          <input className={field} placeholder="Название (необязательно)" value={title} onChange={(e) => setTitle(e.target.value)} />
           <textarea
             className={field}
             rows={4}
@@ -62,9 +62,9 @@ const MarkerForm = ({ initial, saving, onSave, onCancel }: MarkerFormProps) => {
               Отмена
             </button>
             <button
-              disabled={!title.trim() || saving}
+              disabled={saving}
               onClick={() =>
-                onSave({ ...initial, title: title.trim(), description: description.trim(), category, imageUrl: imageUrl.trim() })
+                onSave({ ...initial, title: title.trim() || 'Новая метка', description: description.trim(), category, imageUrl: imageUrl.trim() })
               }
               className="flex items-center gap-2 rounded border border-gold bg-secondary px-4 py-2 font-display text-xs uppercase tracking-widest text-gold-bright hover:bg-secondary/70 disabled:opacity-50"
             >
