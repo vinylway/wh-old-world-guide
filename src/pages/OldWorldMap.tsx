@@ -16,6 +16,7 @@ import {
 const IMG_W = 4341;
 const IMG_H = 6368;
 const MAX_NATIVE_ZOOM = 4;
+const REF_ZOOM = 2;
 const MARKERS_API = 'https://functions.poehali.dev/2b206eaf-1c19-429c-a96b-d9523e081560';
 const TILES_URL = '/map-tiles/{z}/{x}/{y}.webp';
 
@@ -53,7 +54,13 @@ const OldWorldMapContent = () => {
     try {
       const res = await fetch(MARKERS_API);
       const data = await res.json();
-      setCustomMarkers((data.markers || []).map((m: MapMarker) => ({ ...m, custom: true })));
+      setCustomMarkers(
+        (data.markers || []).map((m: MapMarker) => ({
+          ...m,
+          title: m.title === 'Новая метка' ? '' : m.title,
+          custom: true,
+        }))
+      );
     } catch {
       setCustomMarkers([]);
     }
@@ -126,7 +133,7 @@ const OldWorldMapContent = () => {
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
     return allMarkers.filter(
-      (m) => active.has(m.category) && (!q || m.title.toLowerCase().includes(q))
+      (m) => active.has(m.category) && (!q || (m.title || '').toLowerCase().includes(q))
     );
   }, [query, active, allMarkers]);
 
@@ -156,6 +163,10 @@ const OldWorldMapContent = () => {
       noWrap: true,
     }).addTo(map);
     map.fitBounds(bounds);
+    const updateScale = () =>
+      map.getContainer().style.setProperty('--ow-scale', String(Math.pow(2, map.getZoom() - REF_ZOOM)));
+    updateScale();
+    map.on('zoom zoomend', updateScale);
     map.on('click', (e: L.LeafletMouseEvent) => {
       if (!addingRef.current) return;
       const p = L.CRS.Simple.latLngToPoint(e.latlng, MAX_NATIVE_ZOOM);
@@ -181,17 +192,18 @@ const OldWorldMapContent = () => {
     markerRefs.current = {};
     visible.forEach((m) => {
       const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string);
+      const hs = m.imageSize ?? 36;
       const dot = m.imageUrl
-        ? `<img class="ow-marker__img" style="width:${m.imageSize ?? 36}px;height:${m.imageSize ?? 36}px;margin:-${(m.imageSize ?? 36) / 2}px 0 0 -${(m.imageSize ?? 36) / 2}px" src="${esc(m.imageUrl)}" alt="" />`
+        ? `<img class="ow-marker__img" style="--s:${hs}" src="${esc(m.imageUrl)}" alt="" />`
         : `<div class="ow-marker__dot ow-marker__dot--${m.category}"></div>`;
       const canResize = isEditMode && !!m.custom && !!m.imageUrl;
-      const hs = m.imageSize ?? 36;
-      const handle = canResize
-        ? `<div class="ow-marker__handle" style="left:${hs / 2 - 9}px;top:${hs / 2 - 9}px"></div>`
+      const handle = canResize ? `<div class="ow-marker__handle" style="--s:${hs}"></div>` : '';
+      const label = m.title
+        ? `<div class="ow-marker__label"${m.imageUrl ? ` style="--s:${hs}"` : ''}>${esc(m.title)}</div>`
         : '';
       const icon = L.divIcon({
         className: 'ow-marker',
-        html: `${dot}${handle}<div class="ow-marker__label"${m.imageUrl ? ` style="left:${(m.imageSize ?? 36) / 2 + 6}px;top:-10px"` : ''}>${esc(m.title)}</div>`,
+        html: `${dot}${handle}${label}`,
         iconSize: [0, 0],
       });
       const marker = L.marker(toLatLng(m), { icon, draggable: isEditMode && !!m.custom }).addTo(layer);
@@ -219,15 +231,12 @@ const OldWorldMapContent = () => {
           const cy = rect.top + rect.height / 2;
           let size = m.imageSize ?? 36;
           const apply = (v: number) => {
-            imgEl.style.width = `${v}px`;
-            imgEl.style.height = `${v}px`;
-            imgEl.style.margin = `-${v / 2}px 0 0 -${v / 2}px`;
-            handleEl.style.left = `${v / 2 - 9}px`;
-            handleEl.style.top = `${v / 2 - 9}px`;
-            if (labelEl) labelEl.style.left = `${v / 2 + 6}px`;
+            [imgEl, handleEl, labelEl].forEach((el) => el?.style.setProperty('--s', String(v)));
           };
           const onMove = (ev: PointerEvent) => {
-            size = Math.round(Math.min(400, Math.max(24, 2 * Math.max(ev.clientX - cx, ev.clientY - cy))));
+            const scale = Math.pow(2, (mapRef.current?.getZoom() ?? REF_ZOOM) - REF_ZOOM);
+            const px = 2 * Math.max(ev.clientX - cx, ev.clientY - cy);
+            size = Math.min(20000, Math.max(4, Math.round((px / scale) * 10) / 10));
             apply(size);
           };
           const onUp = () => {
@@ -364,7 +373,7 @@ const OldWorldMapContent = () => {
                           selectedId === m.id ? 'bg-secondary text-gold-bright' : 'text-parchment/85'
                         }`}
                       >
-                        {m.title}
+                        {m.title || 'Без названия'}
                       </button>
                     </li>
                   ))}
@@ -381,7 +390,9 @@ const OldWorldMapContent = () => {
                 <p className="font-display text-xs uppercase tracking-widest text-gold/70">
                   {mapCategories[selected.category].title}
                 </p>
-                <h3 className="font-display text-xl font-bold text-gold-bright">{selected.title}</h3>
+                {selected.title && (
+                  <h3 className="font-display text-xl font-bold text-gold-bright">{selected.title}</h3>
+                )}
               </div>
               <button onClick={() => setSelectedId(null)} className="text-parchment/60 hover:text-gold" aria-label="Закрыть">
                 <Icon name="X" size={18} />

@@ -55,11 +55,11 @@ const MarkerForm = ({ initial, saving, onSave, onCancel }: MarkerFormProps) => {
               <>
                 <img src={imageUrl.trim()} alt="" className="mt-2 max-h-32 max-w-full rounded border border-gold/40 object-contain" />
                 <label className="mt-3 block font-body text-xs text-parchment/70">
-                  Размер на карте: {imageSize} px
+                  Размер на карте: {Math.round(imageSize)}
                   <input
                     type="range"
-                    min={24}
-                    max={300}
+                    min={8}
+                    max={1000}
                     value={imageSize}
                     onChange={(e) => setImageSize(Number(e.target.value))}
                     className="mt-1 w-full accent-[#b8860b]"
@@ -78,7 +78,7 @@ const MarkerForm = ({ initial, saving, onSave, onCancel }: MarkerFormProps) => {
             <button
               disabled={saving}
               onClick={() =>
-                onSave({ ...initial, title: title.trim() || 'Новая метка', description: description.trim(), category, imageUrl: imageUrl.trim(), imageSize })
+                onSave({ ...initial, title: title.trim(), description: description.trim(), category, imageUrl: imageUrl.trim(), imageSize })
               }
               className="flex items-center gap-2 rounded border border-gold bg-secondary px-4 py-2 font-display text-xs uppercase tracking-widest text-gold-bright hover:bg-secondary/70 disabled:opacity-50"
             >

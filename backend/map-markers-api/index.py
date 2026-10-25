@@ -60,8 +60,6 @@ def handler(event: dict, context) -> dict:
 
     if action == 'save':
         title = (body.get('title') or '').strip()
-        if not title:
-            return resp(400, {'error': 'Не указано название'})
         try:
             x = float(body.get('x'))
             y = float(body.get('y'))
@@ -71,7 +69,7 @@ def handler(event: dict, context) -> dict:
         description = (body.get('description') or '').strip()
         image_url = (body.get('imageUrl') or '').strip()
         try:
-            image_size = max(16, min(400, int(body.get('imageSize') or 36)))
+            image_size = max(4.0, min(20000.0, float(body.get('imageSize') or 36)))
         except (TypeError, ValueError):
             image_size = 36
         marker_id = body.get('id') or f'm-{uuid.uuid4().hex[:12]}'
