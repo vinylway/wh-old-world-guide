@@ -1,4 +1,10 @@
-export type MapMarkerCategory = 'realm' | 'wild' | 'sea' | 'custom';
+export type MapMarkerCategory = string;
+
+export interface MapCategory {
+  id: string;
+  title: string;
+  color: string;
+}
 
 export interface MapMarker {
   id: string;
@@ -14,12 +20,12 @@ export interface MapMarker {
 
 export const MAP_SIZE = { width: 900, height: 1320 };
 
-export const mapCategories: Record<MapMarkerCategory, { title: string; icon: string }> = {
-  realm: { title: 'Государства', icon: 'Crown' },
-  wild: { title: 'Дикие земли', icon: 'Mountain' },
-  sea: { title: 'Моря и океаны', icon: 'Waves' },
-  custom: { title: 'Мои метки', icon: 'MapPin' },
-};
+export const defaultCategories: MapCategory[] = [
+  { id: 'realm', title: 'Государства', color: '#b8860b' },
+  { id: 'wild', title: 'Дикие земли', color: '#8b2e2e' },
+  { id: 'sea', title: 'Моря и океаны', color: '#2e6a8b' },
+  { id: 'custom', title: 'Мои метки', color: '#5b3a8b' },
+];
 
 export const mapMarkers: MapMarker[] = [
   { id: 'empire', title: 'Империя', category: 'realm', description: 'Крупнейшее человеческое государство Старого Света, управляемое императором из Альтдорфа.', x: 330, y: 500 },

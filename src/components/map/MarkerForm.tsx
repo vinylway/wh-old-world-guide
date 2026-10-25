@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
-import { MapMarker, MapMarkerCategory, mapCategories } from '@/data/mapMarkers';
+import { MapMarker, MapMarkerCategory, MapCategory } from '@/data/mapMarkers';
 
 interface MarkerFormProps {
+  categories: MapCategory[];
   initial: Partial<MapMarker> & { x: number; y: number };
   saving: boolean;
   onSave: (m: Partial<MapMarker> & { x: number; y: number; title: string; category: MapMarkerCategory }) => void;
   onCancel: () => void;
 }
 
-const MarkerForm = ({ initial, saving, onSave, onCancel }: MarkerFormProps) => {
+const MarkerForm = ({ categories, initial, saving, onSave, onCancel }: MarkerFormProps) => {
   const [title, setTitle] = useState(initial.title ?? '');
   const [description, setDescription] = useState(initial.description ?? '');
   const [category, setCategory] = useState<MapMarkerCategory>(initial.category ?? 'custom');
@@ -37,10 +38,10 @@ const MarkerForm = ({ initial, saving, onSave, onCancel }: MarkerFormProps) => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
-          <select className={field} value={category} onChange={(e) => setCategory(e.target.value as MapMarkerCategory)}>
-            {(Object.keys(mapCategories) as MapMarkerCategory[]).map((c) => (
-              <option key={c} value={c}>
-                {mapCategories[c].title}
+          <select className={field} value={category} onChange={(e) => setCategory(e.target.value)}>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.title}
               </option>
             ))}
           </select>

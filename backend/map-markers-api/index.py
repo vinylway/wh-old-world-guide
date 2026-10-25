@@ -3,9 +3,6 @@ import os
 import uuid
 import psycopg2
 
-CATEGORIES = {'realm', 'wild', 'sea', 'custom'}
-
-
 def get_conn():
     return psycopg2.connect(os.environ['DATABASE_URL'])
 
@@ -37,8 +34,12 @@ def handler(event: dict, context) -> dict:
                 {'id': r[0], 'title': r[1], 'description': r[2], 'category': r[3], 'x': r[4], 'y': r[5], 'imageUrl': r[6], 'imageSize': r[7]}
                 for r in cur.fetchall()
             ]
+            cur.execute("SELECT id, title, color FROM map_categories ORDER BY sort_order, title")
+            categories = [{'id': r[0], 'title': r[1], 'color': r[2]} for r in cur.fetchall()]
+            cur.execute("SELECT id FROM map_hidden_markers")
+            hidden = [r[0] for r in cur.fetchall()]
             cur.close()
-            return resp(200, {'markers': markers})
+            return resp(200, {'markers': markers, 'categories': categories, 'hidden': hidden})
         finally:
             conn.close()
 
@@ -65,7 +66,7 @@ def handler(event: dict, context) -> dict:
             y = float(body.get('y'))
         except (TypeError, ValueError):
             return resp(400, {'error': 'Не указаны координаты'})
-        category = body.get('category') if body.get('category') in CATEGORIES else 'custom'
+        category = body.get('category') or 'custom'
         description = (body.get('description') or '').strip()
         image_url = (body.get('imageUrl') or '').strip()
         try:
@@ -88,6 +89,58 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             cur.close()
             return resp(200, {'ok': True, 'id': marker_id})
+        finally:
+            conn.close()
+
+    if action == 'hide':
+        marker_id = body.get('id')
+        if not marker_id:
+            return resp(400, {'error': 'Не хватает id'})
+        conn = get_conn()
+        try:
+            cur = conn.cursor()
+            cur.execute("INSERT INTO map_hidden_markers (id) VALUES (%s) ON CONFLICT DO NOTHING", (marker_id,))
+            conn.commit()
+            cur.close()
+            return resp(200, {'ok': True})
+        finally:
+            conn.close()
+
+    if action == 'save_category':
+        title = (body.get('title') or '').strip()
+        if not title:
+            return resp(400, {'error': 'Не указано название'})
+        color = (body.get('color') or '#b8860b').strip()[:20]
+        cat_id = body.get('id') or f'c-{uuid.uuid4().hex[:10]}'
+        conn = get_conn()
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                INSERT INTO map_categories (id, title, color, sort_order)
+                VALUES (%s, %s, %s, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM map_categories))
+                ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, color = EXCLUDED.color
+                """,
+                (cat_id, title, color),
+            )
+            conn.commit()
+            cur.close()
+            return resp(200, {'ok': True, 'id': cat_id})
+        finally:
+            conn.close()
+
+    if action == 'delete_category':
+        cat_id = body.get('id')
+        if not cat_id or cat_id == 'custom':
+            return resp(400, {'error': 'Эту категорию удалить нельзя'})
+        conn = get_conn()
+        try:
+            cur = conn.cursor()
+            cur.execute("UPDATE map_markers SET category = 'custom' WHERE category = %s", (cat_id,))
+            cur.execute("DELETE FROM map_categories WHERE id = %s", (cat_id,))
+            conn.commit()
+            cur.close()
+            return resp(200, {'ok': True})
         finally:
             conn.close()
 

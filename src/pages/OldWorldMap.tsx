@@ -7,7 +7,8 @@ import MarkerForm from '@/components/map/MarkerForm';
 import { CodexOverridesProvider, useCodexOverrides } from '@/hooks/useCodexOverrides';
 import {
   mapMarkers,
-  mapCategories,
+  defaultCategories,
+  MapCategory,
   MapMarker,
   MapMarkerCategory,
   MAP_SIZE,
@@ -36,9 +37,17 @@ const OldWorldMapContent = () => {
   const layerRef = useRef<L.LayerGroup | null>(null);
   const markerRefs = useRef<Record<string, L.Marker>>({});
   const [query, setQuery] = useState('');
-  const [active, setActive] = useState<Set<MapMarkerCategory>>(
-    new Set(Object.keys(mapCategories) as MapMarkerCategory[])
+  const [categories, setCategories] = useState<MapCategory[]>(defaultCategories);
+  const [hidden, setHidden] = useState<string[]>([]);
+  const [inactive, setInactive] = useState<Set<MapMarkerCategory>>(new Set());
+  const [catEditorOpen, setCatEditorOpen] = useState(false);
+  const [newCatTitle, setNewCatTitle] = useState('');
+  const [newCatColor, setNewCatColor] = useState('#b8860b');
+  const active = useMemo(
+    () => ({ has: (c: string) => !inactive.has(c) }),
+    [inactive]
   );
+  const catById = (id: string) => categories.find((c) => c.id === id);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
 
@@ -48,12 +57,17 @@ const OldWorldMapContent = () => {
       MAX_NATIVE_ZOOM
     );
 
-  const allMarkers = useMemo(() => [...mapMarkers, ...customMarkers], [customMarkers]);
+  const allMarkers = useMemo(
+    () => [...mapMarkers.filter((m) => !hidden.includes(m.id)), ...customMarkers],
+    [customMarkers, hidden]
+  );
 
   const loadMarkers = async () => {
     try {
       const res = await fetch(MARKERS_API);
       const data = await res.json();
+      if (data.categories?.length) setCategories(data.categories);
+      setHidden(data.hidden || []);
       setCustomMarkers(
         (data.markers || []).map((m: MapMarker) => ({
           ...m,
@@ -119,15 +133,10 @@ const OldWorldMapContent = () => {
     await loadMarkers();
   };
 
-  const deleteMarker = async (id: string) => {
-    if (!password || !window.confirm('Удалить метку?')) return;
-    await fetch(MARKERS_API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Edit-Password': password },
-      body: JSON.stringify({ action: 'delete', id }),
-    });
+  const deleteMarker = async (m: MapMarker) => {
+    if (!window.confirm('Удалить метку?')) return;
     setSelectedId(null);
-    await loadMarkers();
+    await post(m.custom ? { action: 'delete', id: m.id } : { action: 'hide', id: m.id });
   };
 
   const visible = useMemo(() => {
@@ -195,7 +204,7 @@ const OldWorldMapContent = () => {
       const hs = m.imageSize ?? 36;
       const dot = m.imageUrl
         ? `<img class="ow-marker__img" style="--s:${hs}" src="${esc(m.imageUrl)}" alt="" />`
-        : `<div class="ow-marker__dot ow-marker__dot--${m.category}"></div>`;
+        : `<div class="ow-marker__dot" style="background:${esc(catById(m.category)?.color ?? '#5b3a8b')}"></div>`;
       const canResize = isEditMode && !!m.custom && !!m.imageUrl;
       const handle = canResize ? `<div class="ow-marker__handle" style="--s:${hs}"></div>` : '';
       const label = m.title && !m.imageUrl ? `<div class="ow-marker__label">${esc(m.title)}</div>` : '';
@@ -250,7 +259,7 @@ const OldWorldMapContent = () => {
       }
       markerRefs.current[m.id] = marker;
     });
-  }, [visible, isEditMode, password]);
+  }, [visible, isEditMode, password, categories]);
 
   const focusMarker = (m: MapMarker) => {
     setSelectedId(m.id);
@@ -258,12 +267,42 @@ const OldWorldMapContent = () => {
   };
 
   const toggleCategory = (c: MapMarkerCategory) => {
-    setActive((prev) => {
+    setInactive((prev) => {
       const next = new Set(prev);
       if (next.has(c)) next.delete(c);
       else next.add(c);
       return next;
     });
+  };
+
+  const post = async (payload: Record<string, unknown>) => {
+    if (!password) return false;
+    const res = await fetch(MARKERS_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Edit-Password': password },
+      body: JSON.stringify(payload),
+    });
+    if (res.status === 401) {
+      lock();
+      return false;
+    }
+    await loadMarkers();
+    return res.ok;
+  };
+
+  const addCategory = async () => {
+    if (!newCatTitle.trim()) return;
+    if (await post({ action: 'save_category', title: newCatTitle.trim(), color: newCatColor })) setNewCatTitle('');
+  };
+
+  const renameCategory = (c: MapCategory) => {
+    const title = window.prompt('Новое название категории', c.title);
+    if (title && title.trim()) post({ action: 'save_category', id: c.id, title: title.trim(), color: c.color });
+  };
+
+  const removeCategory = (c: MapCategory) => {
+    if (window.confirm(`Удалить категорию «${c.title}»? Её метки перейдут в «Мои метки».`))
+      post({ action: 'delete_category', id: c.id });
   };
 
   const selected = allMarkers.find((m) => m.id === selectedId) ?? null;
@@ -299,21 +338,72 @@ const OldWorldMapContent = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {(Object.keys(mapCategories) as MapMarkerCategory[]).map((c) => (
+                  {categories.map((cat) => (
                     <button
-                      key={c}
-                      onClick={() => toggleCategory(c)}
+                      key={cat.id}
+                      onClick={() => toggleCategory(cat.id)}
                       className={`flex items-center gap-1.5 rounded border px-2.5 py-1 font-display text-xs uppercase tracking-wide transition-colors ${
-                        active.has(c)
+                        active.has(cat.id)
                           ? 'border-gold bg-secondary text-gold-bright'
                           : 'border-gold/20 text-parchment/50'
                       }`}
                     >
-                      <Icon name={mapCategories[c].icon} size={12} fallback="Circle" />
-                      {mapCategories[c].title}
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ background: cat.color }} />
+                      {cat.title}
                     </button>
                   ))}
                 </div>
+
+                {isEditMode && (
+                  <div>
+                    <button
+                      onClick={() => setCatEditorOpen(!catEditorOpen)}
+                      className="flex items-center gap-1.5 font-display text-xs uppercase tracking-wide text-gold/80 hover:text-gold"
+                    >
+                      <Icon name="Tags" size={12} /> Категории
+                    </button>
+                    {catEditorOpen && (
+                      <div className="mt-2 space-y-1.5 rounded border border-gold/20 p-2">
+                        {categories.map((cat) => (
+                          <div key={cat.id} className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={cat.color}
+                              onChange={(e) => post({ action: 'save_category', id: cat.id, title: cat.title, color: e.target.value })}
+                              className="h-6 w-6 cursor-pointer rounded border-0 bg-transparent p-0"
+                            />
+                            <span className="flex-1 truncate font-body text-sm text-parchment/90">{cat.title}</span>
+                            <button onClick={() => renameCategory(cat)} className="text-parchment/60 hover:text-gold" aria-label="Переименовать">
+                              <Icon name="Pencil" size={13} />
+                            </button>
+                            {cat.id !== 'custom' && (
+                              <button onClick={() => removeCategory(cat)} className="text-red-300/80 hover:text-red-300" aria-label="Удалить">
+                                <Icon name="Trash2" size={13} />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        <div className="flex items-center gap-2 pt-1">
+                          <input
+                            type="color"
+                            value={newCatColor}
+                            onChange={(e) => setNewCatColor(e.target.value)}
+                            className="h-6 w-6 cursor-pointer rounded border-0 bg-transparent p-0"
+                          />
+                          <input
+                            value={newCatTitle}
+                            onChange={(e) => setNewCatTitle(e.target.value)}
+                            placeholder="Новая категория"
+                            className="min-w-0 flex-1 rounded border border-gold/30 bg-secondary/40 px-2 py-1 font-body text-sm text-parchment placeholder:text-parchment/40 focus:border-gold focus:outline-none"
+                          />
+                          <button onClick={addCategory} className="rounded border border-gold px-2 py-1 text-gold-bright hover:bg-secondary" aria-label="Добавить">
+                            <Icon name="Plus" size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {isEditMode ? (
                   <div className="flex flex-wrap gap-2">
@@ -386,7 +476,7 @@ const OldWorldMapContent = () => {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="font-display text-xs uppercase tracking-widest text-gold/70">
-                  {mapCategories[selected.category].title}
+                  {catById(selected.category)?.title ?? 'Без категории'}
                 </p>
                 {selected.title && (
                   <h3 className="font-display text-xl font-bold text-gold-bright">{selected.title}</h3>
@@ -405,12 +495,14 @@ const OldWorldMapContent = () => {
             {isEditMode && selected.custom && (
               <p className="mt-2 font-body text-xs text-gold/70">Перетащите метку, чтобы переместить; потяните за угол картинки, чтобы изменить размер.</p>
             )}
-            {isEditMode && selected.custom && (
+            {isEditMode && (
               <div className="mt-3 flex gap-2">
+                {selected.custom && (
                 <button onClick={() => setForm(selected)} className="flex items-center gap-1.5 rounded border border-gold/40 px-3 py-1 font-display text-xs uppercase tracking-wide text-parchment hover:bg-secondary">
                   <Icon name="Pencil" size={12} /> Изменить
                 </button>
-                <button onClick={() => deleteMarker(selected.id)} className="flex items-center gap-1.5 rounded border border-red-400/40 px-3 py-1 font-display text-xs uppercase tracking-wide text-red-300 hover:bg-secondary">
+                )}
+                <button onClick={() => deleteMarker(selected)} className="flex items-center gap-1.5 rounded border border-red-400/40 px-3 py-1 font-display text-xs uppercase tracking-wide text-red-300 hover:bg-secondary">
                   <Icon name="Trash2" size={12} /> Удалить
                 </button>
               </div>
@@ -419,7 +511,7 @@ const OldWorldMapContent = () => {
         )}
       </div>
       {form && (
-        <MarkerForm initial={form} saving={saving} onSave={saveMarker} onCancel={() => setForm(null)} />
+        <MarkerForm categories={categories} initial={form} saving={saving} onSave={saveMarker} onCancel={() => setForm(null)} />
       )}
     </div>
   );
