@@ -198,9 +198,7 @@ const OldWorldMapContent = () => {
         : `<div class="ow-marker__dot ow-marker__dot--${m.category}"></div>`;
       const canResize = isEditMode && !!m.custom && !!m.imageUrl;
       const handle = canResize ? `<div class="ow-marker__handle" style="--s:${hs}"></div>` : '';
-      const label = m.title
-        ? `<div class="ow-marker__label"${m.imageUrl ? ` style="--s:${hs}"` : ''}>${esc(m.title)}</div>`
-        : '';
+      const label = m.title && !m.imageUrl ? `<div class="ow-marker__label">${esc(m.title)}</div>` : '';
       const icon = L.divIcon({
         className: 'ow-marker',
         html: `${dot}${handle}${label}`,
@@ -399,7 +397,7 @@ const OldWorldMapContent = () => {
               </button>
             </div>
             {selected.imageUrl && (
-              <img src={selected.imageUrl} alt={selected.title} className="mt-3 max-h-40 max-w-full mx-auto rounded border border-gold/30 object-contain" />
+              <img src={selected.imageUrl} alt={selected.title} className="mt-3 max-h-40 max-w-full mx-auto object-contain" />
             )}
             {selected.description && (
               <p className="mt-2 font-body text-sm leading-snug text-parchment/90">{selected.description}</p>

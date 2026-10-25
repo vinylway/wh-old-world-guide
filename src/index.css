@@ -224,7 +224,6 @@
   width: calc(var(--s) * var(--ow-scale, 1) * 1px); height: calc(var(--s) * var(--ow-scale, 1) * 1px);
   margin: calc(var(--s) * var(--ow-scale, 1) * -0.5px) 0 0 calc(var(--s) * var(--ow-scale, 1) * -0.5px);
   object-fit: contain; max-width: none;
-  border-radius: 6px; border: 2px solid #f5e6b8; box-shadow: 0 0 6px rgba(0,0,0,.7);
 }
 .ow-marker__img ~ .ow-marker__label { left: calc(var(--s) * var(--ow-scale, 1) * 0.5px + 6px); top: -10px; }
 .ow-marker__dot--custom { background: #5b3a8b; }
