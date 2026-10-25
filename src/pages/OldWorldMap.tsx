@@ -14,9 +14,9 @@ import {
   MAP_SIZE,
 } from '@/data/mapMarkers';
 
-const IMG_W = 8682;
-const IMG_H = 12737;
-const MAX_NATIVE_ZOOM = 5;
+const IMG_W = 4341;
+const IMG_H = 6368;
+const MAX_NATIVE_ZOOM = 4;
 const REF_ZOOM = 2;
 const MARKERS_API = 'https://functions.poehali.dev/2b206eaf-1c19-429c-a96b-d9523e081560';
 const TILES_URL = '/map-tiles/{z}/{x}/{y}.webp';
