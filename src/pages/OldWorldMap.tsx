@@ -170,11 +170,11 @@ const OldWorldMapContent = () => {
     visible.forEach((m) => {
       const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string);
       const dot = m.imageUrl
-        ? `<img class="ow-marker__img" src="${esc(m.imageUrl)}" alt="" />`
+        ? `<img class="ow-marker__img" style="width:${m.imageSize ?? 36}px;height:${m.imageSize ?? 36}px;margin:-${(m.imageSize ?? 36) / 2}px 0 0 -${(m.imageSize ?? 36) / 2}px" src="${esc(m.imageUrl)}" alt="" />`
         : `<div class="ow-marker__dot ow-marker__dot--${m.category}"></div>`;
       const icon = L.divIcon({
         className: 'ow-marker',
-        html: `${dot}<div class="ow-marker__label">${esc(m.title)}</div>`,
+        html: `${dot}<div class="ow-marker__label"${m.imageUrl ? ` style="left:${(m.imageSize ?? 36) / 2 + 6}px;top:-10px"` : ''}>${esc(m.title)}</div>`,
         iconSize: [0, 0],
       });
       const marker = L.marker(toLatLng(m), { icon, draggable: isEditMode && !!m.custom }).addTo(layer);
@@ -332,7 +332,7 @@ const OldWorldMapContent = () => {
               </button>
             </div>
             {selected.imageUrl && (
-              <img src={selected.imageUrl} alt={selected.title} className="mt-3 max-h-40 w-full rounded border border-gold/30 object-cover" />
+              <img src={selected.imageUrl} alt={selected.title} className="mt-3 max-h-40 max-w-full mx-auto rounded border border-gold/30 object-contain" />
             )}
             {selected.description && (
               <p className="mt-2 font-body text-sm leading-snug text-parchment/90">{selected.description}</p>

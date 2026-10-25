@@ -8,6 +8,7 @@ export interface MapMarker {
   x: number;
   y: number;
   imageUrl?: string;
+  imageSize?: number;
   custom?: boolean;
 }
 

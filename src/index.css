@@ -220,8 +220,8 @@
 }
 .leaflet-container { font-family: inherit; }
 .ow-marker__img {
-  width: 36px; height: 36px; margin: -18px 0 0 -18px; object-fit: cover;
+  width: 36px; height: 36px; margin: -18px 0 0 -18px; object-fit: contain;
   border-radius: 9999px; border: 2px solid #f5e6b8; box-shadow: 0 0 6px rgba(0,0,0,.7);
 }
 .ow-marker__dot--custom { background: #5b3a8b; }
-.ow-marker__img + .ow-marker__label { left: 24px; top: -10px; }
+

@@ -32,9 +32,9 @@ def handler(event: dict, context) -> dict:
         conn = get_conn()
         try:
             cur = conn.cursor()
-            cur.execute("SELECT id, title, description, category, x, y, image_url FROM map_markers ORDER BY created_at")
+            cur.execute("SELECT id, title, description, category, x, y, image_url, image_size FROM map_markers ORDER BY created_at")
             markers = [
-                {'id': r[0], 'title': r[1], 'description': r[2], 'category': r[3], 'x': r[4], 'y': r[5], 'imageUrl': r[6]}
+                {'id': r[0], 'title': r[1], 'description': r[2], 'category': r[3], 'x': r[4], 'y': r[5], 'imageUrl': r[6], 'imageSize': r[7]}
                 for r in cur.fetchall()
             ]
             cur.close()
@@ -70,18 +70,22 @@ def handler(event: dict, context) -> dict:
         category = body.get('category') if body.get('category') in CATEGORIES else 'custom'
         description = (body.get('description') or '').strip()
         image_url = (body.get('imageUrl') or '').strip()
+        try:
+            image_size = max(16, min(400, int(body.get('imageSize') or 36)))
+        except (TypeError, ValueError):
+            image_size = 36
         marker_id = body.get('id') or f'm-{uuid.uuid4().hex[:12]}'
         conn = get_conn()
         try:
             cur = conn.cursor()
             cur.execute(
                 """
-                INSERT INTO map_markers (id, title, description, category, x, y, image_url)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO map_markers (id, title, description, category, x, y, image_url, image_size)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, description = EXCLUDED.description,
-                  category = EXCLUDED.category, x = EXCLUDED.x, y = EXCLUDED.y, image_url = EXCLUDED.image_url
+                  category = EXCLUDED.category, x = EXCLUDED.x, y = EXCLUDED.y, image_url = EXCLUDED.image_url, image_size = EXCLUDED.image_size
                 """,
-                (marker_id, title, description, category, x, y, image_url),
+                (marker_id, title, description, category, x, y, image_url, image_size),
             )
             conn.commit()
             cur.close()

@@ -15,6 +15,7 @@ const MarkerForm = ({ initial, saving, onSave, onCancel }: MarkerFormProps) => {
   const [description, setDescription] = useState(initial.description ?? '');
   const [category, setCategory] = useState<MapMarkerCategory>(initial.category ?? 'custom');
   const [imageUrl, setImageUrl] = useState(initial.imageUrl ?? '');
+  const [imageSize, setImageSize] = useState(initial.imageSize ?? 36);
 
   const field =
     'w-full rounded border border-gold/30 bg-secondary/40 px-3 py-2 font-body text-sm text-parchment placeholder:text-parchment/40 focus:border-gold focus:outline-none';
@@ -51,7 +52,20 @@ const MarkerForm = ({ initial, saving, onSave, onCancel }: MarkerFormProps) => {
               onChange={(e) => setImageUrl(e.target.value)}
             />
             {imageUrl.trim() && (
-              <img src={imageUrl.trim()} alt="" className="mt-2 h-24 w-24 rounded-full border-2 border-gold/50 object-cover" />
+              <>
+                <img src={imageUrl.trim()} alt="" className="mt-2 max-h-32 max-w-full rounded border border-gold/40 object-contain" />
+                <label className="mt-3 block font-body text-xs text-parchment/70">
+                  Размер на карте: {imageSize} px
+                  <input
+                    type="range"
+                    min={24}
+                    max={300}
+                    value={imageSize}
+                    onChange={(e) => setImageSize(Number(e.target.value))}
+                    className="mt-1 w-full accent-[#b8860b]"
+                  />
+                </label>
+              </>
             )}
           </div>
           <div className="flex justify-end gap-2 pt-1">
@@ -64,7 +78,7 @@ const MarkerForm = ({ initial, saving, onSave, onCancel }: MarkerFormProps) => {
             <button
               disabled={saving}
               onClick={() =>
-                onSave({ ...initial, title: title.trim() || 'Новая метка', description: description.trim(), category, imageUrl: imageUrl.trim() })
+                onSave({ ...initial, title: title.trim() || 'Новая метка', description: description.trim(), category, imageUrl: imageUrl.trim(), imageSize })
               }
               className="flex items-center gap-2 rounded border border-gold bg-secondary px-4 py-2 font-display text-xs uppercase tracking-widest text-gold-bright hover:bg-secondary/70 disabled:opacity-50"
             >
