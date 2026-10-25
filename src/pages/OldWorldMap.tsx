@@ -313,7 +313,7 @@ const OldWorldMapContent = () => {
       <div className="relative isolate flex-1 min-h-0">
         <div ref={containerRef} className="absolute inset-0 bg-[#d9c9a0]" />
 
-        <div className="absolute left-3 top-3 z-[1000] w-[calc(100%-1.5rem)] sm:w-80">
+        <div className="absolute left-3 top-3 z-[1000] w-[calc(100%-1.5rem)] sm:w-96">
           <div className="parchment-panel rounded border border-gold/40 bg-background/95 shadow-lg">
             <button
               onClick={() => setPanelOpen(!panelOpen)}
@@ -472,37 +472,44 @@ const OldWorldMapContent = () => {
         </div>
 
         {selected && (
-          <div className="absolute bottom-4 left-1/2 z-[1000] w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 rounded border border-gold/50 bg-background/95 p-4 shadow-xl animate-fade-in">
+          <div className="absolute left-3 top-24 z-[1000] max-h-[calc(100%-7rem)] w-[calc(100%-1.5rem)] overflow-y-auto rounded border border-gold/50 bg-background/95 p-5 shadow-xl animate-fade-in sm:w-[28rem]">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="font-display text-xs uppercase tracking-widest text-gold/70">
+                <p className="font-display text-sm uppercase tracking-widest text-gold/70">
                   {catById(selected.category)?.title ?? 'Без категории'}
                 </p>
                 {selected.title && (
-                  <h3 className="font-display text-xl font-bold text-gold-bright">{selected.title}</h3>
+                  <h3 className="font-display text-3xl font-bold text-gold-bright">{selected.title}</h3>
                 )}
               </div>
               <button onClick={() => setSelectedId(null)} className="text-parchment/60 hover:text-gold" aria-label="Закрыть">
-                <Icon name="X" size={18} />
+                <Icon name="X" size={22} />
               </button>
             </div>
-            {selected.imageUrl && (
-              <img src={selected.imageUrl} alt={selected.title} className="mt-3 max-h-40 max-w-full mx-auto object-contain" />
+            {selected.imageUrl && !selected.hideImage && (
+              <img src={selected.imageUrl} alt={selected.title} className="mt-4 max-h-64 max-w-full mx-auto object-contain" />
             )}
             {selected.description && (
-              <p className="mt-2 font-body text-sm leading-snug text-parchment/90">{selected.description}</p>
+              <div className="mt-3 space-y-3 font-body text-lg leading-relaxed text-parchment/90">
+                {selected.description
+                  .split(/\n+/)
+                  .filter((t) => t.trim())
+                  .map((t, i) => (
+                    <p key={i}>{t}</p>
+                  ))}
+              </div>
             )}
             {isEditMode && selected.custom && (
-              <p className="mt-2 font-body text-xs text-gold/70">Перетащите метку, чтобы переместить; потяните за угол картинки, чтобы изменить размер.</p>
+              <p className="mt-3 font-body text-sm text-gold/70">Перетащите метку, чтобы переместить; потяните за угол картинки, чтобы изменить размер.</p>
             )}
             {isEditMode && (
               <div className="mt-3 flex gap-2">
                 {selected.custom && (
-                <button onClick={() => setForm(selected)} className="flex items-center gap-1.5 rounded border border-gold/40 px-3 py-1 font-display text-xs uppercase tracking-wide text-parchment hover:bg-secondary">
+                <button onClick={() => setForm(selected)} className="flex items-center gap-1.5 rounded border border-gold/40 px-3 py-1.5 font-display text-sm uppercase tracking-wide text-parchment hover:bg-secondary">
                   <Icon name="Pencil" size={12} /> Изменить
                 </button>
                 )}
-                <button onClick={() => deleteMarker(selected)} className="flex items-center gap-1.5 rounded border border-red-400/40 px-3 py-1 font-display text-xs uppercase tracking-wide text-red-300 hover:bg-secondary">
+                <button onClick={() => deleteMarker(selected)} className="flex items-center gap-1.5 rounded border border-red-400/40 px-3 py-1.5 font-display text-sm uppercase tracking-wide text-red-300 hover:bg-secondary">
                   <Icon name="Trash2" size={12} /> Удалить
                 </button>
               </div>
