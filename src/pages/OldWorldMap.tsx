@@ -3,6 +3,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import Header from '@/components/codex/Header';
 import Icon from '@/components/ui/icon';
+import MarkerForm from '@/components/map/MarkerForm';
+import { CodexOverridesProvider, useCodexOverrides } from '@/hooks/useCodexOverrides';
 import {
   mapMarkers,
   mapCategories,
@@ -14,9 +16,20 @@ import {
 const IMG_W = 4341;
 const IMG_H = 6368;
 const MAX_NATIVE_ZOOM = 4;
+const MARKERS_API = 'https://functions.poehali.dev/2b206eaf-1c19-429c-a96b-d9523e081560';
 const TILES_URL = '/map-tiles/{z}/{x}/{y}.webp';
 
-const OldWorldMap = () => {
+type FormState = Partial<MapMarker> & { x: number; y: number };
+
+const OldWorldMapContent = () => {
+  const { isEditMode, password, unlock, lock, isUnlocking, loginError } = useCodexOverrides();
+  const [customMarkers, setCustomMarkers] = useState<MapMarker[]>([]);
+  const [adding, setAdding] = useState(false);
+  const addingRef = useRef(false);
+  const [form, setForm] = useState<FormState | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [pwInput, setPwInput] = useState('');
+  const [showPw, setShowPw] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
@@ -34,12 +47,64 @@ const OldWorldMap = () => {
       MAX_NATIVE_ZOOM
     );
 
+  const allMarkers = useMemo(() => [...mapMarkers, ...customMarkers], [customMarkers]);
+
+  const loadMarkers = async () => {
+    try {
+      const res = await fetch(MARKERS_API);
+      const data = await res.json();
+      setCustomMarkers((data.markers || []).map((m: MapMarker) => ({ ...m, custom: true })));
+    } catch {
+      setCustomMarkers([]);
+    }
+  };
+
+  useEffect(() => {
+    loadMarkers();
+  }, []);
+
+  useEffect(() => {
+    addingRef.current = adding;
+    if (containerRef.current) containerRef.current.style.cursor = adding ? 'crosshair' : '';
+  }, [adding]);
+
+  const saveMarker = async (m: Partial<MapMarker>) => {
+    if (!password) return;
+    setSaving(true);
+    try {
+      const res = await fetch(MARKERS_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Edit-Password': password },
+        body: JSON.stringify({ action: 'save', ...m }),
+      });
+      if (res.status === 401) {
+        lock();
+        return;
+      }
+      await loadMarkers();
+      setForm(null);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteMarker = async (id: string) => {
+    if (!password || !window.confirm('Удалить метку?')) return;
+    await fetch(MARKERS_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Edit-Password': password },
+      body: JSON.stringify({ action: 'delete', id }),
+    });
+    setSelectedId(null);
+    await loadMarkers();
+  };
+
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return mapMarkers.filter(
+    return allMarkers.filter(
       (m) => active.has(m.category) && (!q || m.title.toLowerCase().includes(q))
     );
-  }, [query, active]);
+  }, [query, active, allMarkers]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -67,6 +132,15 @@ const OldWorldMap = () => {
       noWrap: true,
     }).addTo(map);
     map.fitBounds(bounds);
+    map.on('click', (e: L.LeafletMouseEvent) => {
+      if (!addingRef.current) return;
+      const p = L.CRS.Simple.latLngToPoint(e.latlng, MAX_NATIVE_ZOOM);
+      setForm({
+        x: (p.x / IMG_W) * MAP_SIZE.width,
+        y: (p.y / IMG_H) * MAP_SIZE.height,
+      });
+      setAdding(false);
+    });
     layerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
 
@@ -82,9 +156,13 @@ const OldWorldMap = () => {
     layer.clearLayers();
     markerRefs.current = {};
     visible.forEach((m) => {
+      const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string);
+      const dot = m.imageUrl
+        ? `<img class="ow-marker__img" src="${esc(m.imageUrl)}" alt="" />`
+        : `<div class="ow-marker__dot ow-marker__dot--${m.category}"></div>`;
       const icon = L.divIcon({
         className: 'ow-marker',
-        html: `<div class="ow-marker__dot ow-marker__dot--${m.category}"></div><div class="ow-marker__label">${m.title}</div>`,
+        html: `${dot}<div class="ow-marker__label">${esc(m.title)}</div>`,
         iconSize: [0, 0],
       });
       const marker = L.marker(toLatLng(m), { icon }).addTo(layer);
@@ -107,7 +185,7 @@ const OldWorldMap = () => {
     });
   };
 
-  const selected = mapMarkers.find((m) => m.id === selectedId) ?? null;
+  const selected = allMarkers.find((m) => m.id === selectedId) ?? null;
 
   return (
     <div className="flex h-screen flex-col bg-background">
@@ -156,6 +234,50 @@ const OldWorldMap = () => {
                   ))}
                 </div>
 
+                {isEditMode ? (
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setAdding(!adding)}
+                      className={`flex items-center gap-1.5 rounded border px-3 py-1.5 font-display text-xs uppercase tracking-wide ${
+                        adding ? 'border-gold bg-secondary text-gold-bright' : 'border-gold/40 text-parchment hover:bg-secondary'
+                      }`}
+                    >
+                      <Icon name="MapPin" size={13} />
+                      {adding ? 'Кликните по карте' : 'Добавить метку'}
+                    </button>
+                    <button onClick={lock} className="rounded border border-gold/20 px-3 py-1.5 font-display text-xs uppercase tracking-wide text-parchment/60 hover:bg-secondary">
+                      Выйти
+                    </button>
+                  </div>
+                ) : showPw ? (
+                  <form
+                    className="flex gap-2"
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (await unlock(pwInput)) {
+                        setPwInput('');
+                        setShowPw(false);
+                      }
+                    }}
+                  >
+                    <input
+                      type="password"
+                      value={pwInput}
+                      onChange={(e) => setPwInput(e.target.value)}
+                      placeholder="Пароль редактора"
+                      className="min-w-0 flex-1 rounded border border-gold/30 bg-secondary/40 px-2 py-1.5 font-body text-sm text-parchment placeholder:text-parchment/40 focus:border-gold focus:outline-none"
+                    />
+                    <button disabled={isUnlocking} className="rounded border border-gold px-3 font-display text-xs uppercase text-gold-bright hover:bg-secondary">
+                      Ок
+                    </button>
+                  </form>
+                ) : (
+                  <button onClick={() => setShowPw(true)} className="flex items-center gap-1.5 font-display text-xs uppercase tracking-wide text-gold/80 hover:text-gold">
+                    <Icon name="Pencil" size={12} /> Редактировать карту
+                  </button>
+                )}
+                {loginError && showPw && <p className="font-body text-xs text-red-400">{loginError}</p>}
+
                 <ul className="max-h-48 space-y-1 overflow-y-auto">
                   {visible.length === 0 && (
                     <li className="font-body text-sm text-parchment/60">Ничего не найдено</li>
@@ -191,12 +313,36 @@ const OldWorldMap = () => {
                 <Icon name="X" size={18} />
               </button>
             </div>
-            <p className="mt-2 font-body text-sm leading-snug text-parchment/90">{selected.description}</p>
+            {selected.imageUrl && (
+              <img src={selected.imageUrl} alt={selected.title} className="mt-3 max-h-40 w-full rounded border border-gold/30 object-cover" />
+            )}
+            {selected.description && (
+              <p className="mt-2 font-body text-sm leading-snug text-parchment/90">{selected.description}</p>
+            )}
+            {isEditMode && selected.custom && (
+              <div className="mt-3 flex gap-2">
+                <button onClick={() => setForm(selected)} className="flex items-center gap-1.5 rounded border border-gold/40 px-3 py-1 font-display text-xs uppercase tracking-wide text-parchment hover:bg-secondary">
+                  <Icon name="Pencil" size={12} /> Изменить
+                </button>
+                <button onClick={() => deleteMarker(selected.id)} className="flex items-center gap-1.5 rounded border border-red-400/40 px-3 py-1 font-display text-xs uppercase tracking-wide text-red-300 hover:bg-secondary">
+                  <Icon name="Trash2" size={12} /> Удалить
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
+      {form && (
+        <MarkerForm initial={form} saving={saving} onSave={saveMarker} onCancel={() => setForm(null)} />
+      )}
     </div>
   );
 };
+
+const OldWorldMap = () => (
+  <CodexOverridesProvider>
+    <OldWorldMapContent />
+  </CodexOverridesProvider>
+);
 
 export default OldWorldMap;

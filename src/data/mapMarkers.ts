@@ -1,4 +1,4 @@
-export type MapMarkerCategory = 'realm' | 'wild' | 'sea';
+export type MapMarkerCategory = 'realm' | 'wild' | 'sea' | 'custom';
 
 export interface MapMarker {
   id: string;
@@ -7,6 +7,8 @@ export interface MapMarker {
   description: string;
   x: number;
   y: number;
+  imageUrl?: string;
+  custom?: boolean;
 }
 
 export const MAP_SIZE = { width: 900, height: 1320 };
@@ -15,6 +17,7 @@ export const mapCategories: Record<MapMarkerCategory, { title: string; icon: str
   realm: { title: 'Государства', icon: 'Crown' },
   wild: { title: 'Дикие земли', icon: 'Mountain' },
   sea: { title: 'Моря и океаны', icon: 'Waves' },
+  custom: { title: 'Мои метки', icon: 'MapPin' },
 };
 
 export const mapMarkers: MapMarker[] = [

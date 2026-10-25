@@ -1,0 +1,1 @@
+{"tests": [{"name": "List markers", "method": "GET", "path": "/", "expectedStatus": 200, "expectedBody": {"markers": []}, "bodyMatcher": "partial"}]}
