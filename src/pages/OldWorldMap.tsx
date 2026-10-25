@@ -133,6 +133,18 @@ const OldWorldMapContent = () => {
     await loadMarkers();
   };
 
+  const rotateMarker = async (m: MapMarker, rotation: number) => {
+    if (!password) return;
+    setCustomMarkers((prev) => prev.map((c) => (c.id === m.id ? { ...c, rotation } : c)));
+    const res = await fetch(MARKERS_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Edit-Password': password },
+      body: JSON.stringify({ action: 'save', ...m, rotation }),
+    });
+    if (res.status === 401) lock();
+    await loadMarkers();
+  };
+
   const deleteMarker = async (m: MapMarker) => {
     if (!window.confirm('Удалить метку?')) return;
     setSelectedId(null);
@@ -203,14 +215,15 @@ const OldWorldMapContent = () => {
       const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string);
       const hs = m.imageSize ?? 36;
       const dot = m.imageUrl
-        ? `<img class="ow-marker__img" style="--s:${hs}" src="${esc(m.imageUrl)}" alt="" />`
+        ? `<img class="ow-marker__img" style="--s:${hs};--r:${m.rotation ?? 0}deg" src="${esc(m.imageUrl)}" alt="" />`
         : `<div class="ow-marker__dot" style="background:${esc(catById(m.category)?.color ?? '#5b3a8b')}"></div>`;
       const canResize = isEditMode && !!m.custom && !!m.imageUrl;
       const handle = canResize ? `<div class="ow-marker__handle" style="--s:${hs}"></div>` : '';
+      const rotHandle = canResize ? `<div class="ow-marker__rotate" style="--s:${hs}"></div>` : '';
       const label = m.title && !m.imageUrl ? `<div class="ow-marker__label">${esc(m.title)}</div>` : '';
       const icon = L.divIcon({
         className: 'ow-marker',
-        html: `${dot}${handle}${label}`,
+        html: `${dot}${handle}${rotHandle}${label}`,
         iconSize: [0, 0],
       });
       const marker = L.marker(toLatLng(m), { icon, draggable: isEditMode && !!m.custom }).addTo(layer);
@@ -225,6 +238,36 @@ const OldWorldMapContent = () => {
       const handleEl = root?.querySelector<HTMLElement>('.ow-marker__handle');
       const imgEl = root?.querySelector<HTMLElement>('.ow-marker__img');
       const labelEl = root?.querySelector<HTMLElement>('.ow-marker__label');
+      const rotEl = root?.querySelector<HTMLElement>('.ow-marker__rotate');
+      if (rotEl && imgEl) {
+        ['mousedown', 'touchstart', 'click', 'dblclick'].forEach((ev) =>
+          rotEl.addEventListener(ev, (e) => e.stopPropagation())
+        );
+        rotEl.addEventListener('pointerdown', (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          rotEl.setPointerCapture(e.pointerId);
+          const rect = imgEl.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          let angle = m.rotation ?? 0;
+          const onMove = (ev: PointerEvent) => {
+            let a = (Math.atan2(ev.clientX - cx, -(ev.clientY - cy)) * 180) / Math.PI;
+            if (ev.shiftKey) a = Math.round(a / 15) * 15;
+            angle = Math.round(((a % 360) + 360) % 360);
+            imgEl.style.setProperty('--r', `${angle}deg`);
+          };
+          const onUp = () => {
+            rotEl.removeEventListener('pointermove', onMove);
+            rotEl.removeEventListener('pointerup', onUp);
+            rotEl.removeEventListener('pointercancel', onUp);
+            rotateMarker(m, angle);
+          };
+          rotEl.addEventListener('pointermove', onMove);
+          rotEl.addEventListener('pointerup', onUp);
+          rotEl.addEventListener('pointercancel', onUp);
+        });
+      }
       if (handleEl && imgEl) {
         ['mousedown', 'touchstart', 'click', 'dblclick'].forEach((ev) =>
           handleEl.addEventListener(ev, (e) => e.stopPropagation())
@@ -238,7 +281,7 @@ const OldWorldMapContent = () => {
           const cy = rect.top + rect.height / 2;
           let size = m.imageSize ?? 36;
           const apply = (v: number) => {
-            [imgEl, handleEl, labelEl].forEach((el) => el?.style.setProperty('--s', String(v)));
+            [imgEl, handleEl, labelEl, rotEl].forEach((el) => el?.style.setProperty('--s', String(v)));
           };
           const onMove = (ev: PointerEvent) => {
             const scale = Math.pow(2, (mapRef.current?.getZoom() ?? REF_ZOOM) - REF_ZOOM);
@@ -487,7 +530,7 @@ const OldWorldMapContent = () => {
               </button>
             </div>
             {selected.imageUrl && !selected.hideImage && (
-              <img src={selected.imageUrl} alt={selected.title} className="mt-4 max-h-64 max-w-full mx-auto object-contain" />
+              <img src={selected.imageUrl} alt={selected.title} className="mt-4 max-w-full mx-auto object-contain" style={{ maxHeight: selected.descImageSize ?? 256 }} />
             )}
             {selected.description && (
               <div className="mt-3 space-y-3 font-body text-lg leading-relaxed text-parchment/90">
@@ -500,7 +543,7 @@ const OldWorldMapContent = () => {
               </div>
             )}
             {isEditMode && selected.custom && (
-              <p className="mt-3 font-body text-sm text-gold/70">Перетащите метку, чтобы переместить; потяните за угол картинки, чтобы изменить размер.</p>
+              <p className="mt-3 font-body text-sm text-gold/70">Перетащите метку, чтобы переместить; потяните за угол — размер, за кружок сверху — поворот.</p>
             )}
             {isEditMode && (
               <div className="mt-3 flex gap-2">

@@ -16,6 +16,8 @@ export interface MapMarker {
   imageUrl?: string;
   imageSize?: number;
   hideImage?: boolean;
+  rotation?: number;
+  descImageSize?: number;
   custom?: boolean;
 }
 

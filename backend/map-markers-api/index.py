@@ -29,9 +29,9 @@ def handler(event: dict, context) -> dict:
         conn = get_conn()
         try:
             cur = conn.cursor()
-            cur.execute("SELECT id, title, description, category, x, y, image_url, image_size, hide_image FROM map_markers ORDER BY created_at")
+            cur.execute("SELECT id, title, description, category, x, y, image_url, image_size, hide_image, desc_image_size, rotation FROM map_markers ORDER BY created_at")
             markers = [
-                {'id': r[0], 'title': r[1], 'description': r[2], 'category': r[3], 'x': r[4], 'y': r[5], 'imageUrl': r[6], 'imageSize': r[7], 'hideImage': bool(r[8])}
+                {'id': r[0], 'title': r[1], 'description': r[2], 'category': r[3], 'x': r[4], 'y': r[5], 'imageUrl': r[6], 'imageSize': r[7], 'hideImage': bool(r[8]), 'descImageSize': r[9], 'rotation': r[10]}
                 for r in cur.fetchall()
             ]
             cur.execute("SELECT id, title, color FROM map_categories ORDER BY sort_order, title")
@@ -74,18 +74,26 @@ def handler(event: dict, context) -> dict:
         except (TypeError, ValueError):
             image_size = 36
         hide_image = bool(body.get('hideImage'))
+        try:
+            desc_image_size = max(40, min(2000, int(body.get('descImageSize') or 256)))
+        except (TypeError, ValueError):
+            desc_image_size = 256
+        try:
+            rotation = float(body.get('rotation') or 0) % 360
+        except (TypeError, ValueError):
+            rotation = 0.0
         marker_id = body.get('id') or f'm-{uuid.uuid4().hex[:12]}'
         conn = get_conn()
         try:
             cur = conn.cursor()
             cur.execute(
                 """
-                INSERT INTO map_markers (id, title, description, category, x, y, image_url, image_size, hide_image)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO map_markers (id, title, description, category, x, y, image_url, image_size, hide_image, desc_image_size, rotation)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, description = EXCLUDED.description,
-                  category = EXCLUDED.category, x = EXCLUDED.x, y = EXCLUDED.y, image_url = EXCLUDED.image_url, image_size = EXCLUDED.image_size, hide_image = EXCLUDED.hide_image
+                  category = EXCLUDED.category, x = EXCLUDED.x, y = EXCLUDED.y, image_url = EXCLUDED.image_url, image_size = EXCLUDED.image_size, hide_image = EXCLUDED.hide_image, desc_image_size = EXCLUDED.desc_image_size, rotation = EXCLUDED.rotation
                 """,
-                (marker_id, title, description, category, x, y, image_url, image_size, hide_image),
+                (marker_id, title, description, category, x, y, image_url, image_size, hide_image, desc_image_size, rotation),
             )
             conn.commit()
             cur.close()

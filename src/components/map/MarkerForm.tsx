@@ -17,6 +17,8 @@ const MarkerForm = ({ categories, initial, saving, onSave, onCancel }: MarkerFor
   const [category, setCategory] = useState<MapMarkerCategory>(initial.category ?? 'custom');
   const [imageUrl, setImageUrl] = useState(initial.imageUrl ?? '');
   const [hideImage, setHideImage] = useState(initial.hideImage ?? false);
+  const [descImageSize, setDescImageSize] = useState(initial.descImageSize ?? 256);
+  const [rotation, setRotation] = useState(initial.rotation ?? 0);
   const [imageSize, setImageSize] = useState(initial.imageSize ?? 36);
 
   const field =
@@ -60,6 +62,30 @@ const MarkerForm = ({ categories, initial, saving, onSave, onCancel }: MarkerFor
                   <input type="checkbox" checked={hideImage} onChange={(e) => setHideImage(e.target.checked)} className="h-4 w-4 accent-[#b8860b]" />
                   Не показывать картинку в описании
                 </label>
+                {!hideImage && (
+                  <label className="mt-3 block font-body text-xs text-parchment/70">
+                    Размер в описании: {descImageSize}
+                    <input
+                      type="range"
+                      min={40}
+                      max={600}
+                      value={descImageSize}
+                      onChange={(e) => setDescImageSize(Number(e.target.value))}
+                      className="mt-1 w-full accent-[#b8860b]"
+                    />
+                  </label>
+                )}
+                <label className="mt-3 block font-body text-xs text-parchment/70">
+                  Угол поворота на карте: {Math.round(rotation)}°
+                  <input
+                    type="range"
+                    min={0}
+                    max={359}
+                    value={rotation}
+                    onChange={(e) => setRotation(Number(e.target.value))}
+                    className="mt-1 w-full accent-[#b8860b]"
+                  />
+                </label>
                 <label className="mt-3 block font-body text-xs text-parchment/70">
                   Размер на карте: {Math.round(imageSize)}
                   <input
@@ -84,7 +110,7 @@ const MarkerForm = ({ categories, initial, saving, onSave, onCancel }: MarkerFor
             <button
               disabled={saving}
               onClick={() =>
-                onSave({ ...initial, title: title.trim(), description: description.trim(), category, imageUrl: imageUrl.trim(), imageSize, hideImage })
+                onSave({ ...initial, title: title.trim(), description: description.trim(), category, imageUrl: imageUrl.trim(), imageSize, rotation, hideImage, descImageSize })
               }
               className="flex items-center gap-2 rounded border border-gold bg-secondary px-4 py-2 font-display text-xs uppercase tracking-widest text-gold-bright hover:bg-secondary/70 disabled:opacity-50"
             >
