@@ -100,6 +100,18 @@ const OldWorldMapContent = () => {
     await loadMarkers();
   };
 
+  const resizeMarker = async (m: MapMarker, imageSize: number) => {
+    if (!password) return;
+    setCustomMarkers((prev) => prev.map((c) => (c.id === m.id ? { ...c, imageSize } : c)));
+    const res = await fetch(MARKERS_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Edit-Password': password },
+      body: JSON.stringify({ action: 'save', ...m, imageSize }),
+    });
+    if (res.status === 401) lock();
+    await loadMarkers();
+  };
+
   const deleteMarker = async (id: string) => {
     if (!password || !window.confirm('Удалить метку?')) return;
     await fetch(MARKERS_API, {
@@ -172,9 +184,14 @@ const OldWorldMapContent = () => {
       const dot = m.imageUrl
         ? `<img class="ow-marker__img" style="width:${m.imageSize ?? 36}px;height:${m.imageSize ?? 36}px;margin:-${(m.imageSize ?? 36) / 2}px 0 0 -${(m.imageSize ?? 36) / 2}px" src="${esc(m.imageUrl)}" alt="" />`
         : `<div class="ow-marker__dot ow-marker__dot--${m.category}"></div>`;
+      const canResize = isEditMode && !!m.custom && !!m.imageUrl;
+      const hs = m.imageSize ?? 36;
+      const handle = canResize
+        ? `<div class="ow-marker__handle" style="left:${hs / 2 - 9}px;top:${hs / 2 - 9}px"></div>`
+        : '';
       const icon = L.divIcon({
         className: 'ow-marker',
-        html: `${dot}<div class="ow-marker__label"${m.imageUrl ? ` style="left:${(m.imageSize ?? 36) / 2 + 6}px;top:-10px"` : ''}>${esc(m.title)}</div>`,
+        html: `${dot}${handle}<div class="ow-marker__label"${m.imageUrl ? ` style="left:${(m.imageSize ?? 36) / 2 + 6}px;top:-10px"` : ''}>${esc(m.title)}</div>`,
         iconSize: [0, 0],
       });
       const marker = L.marker(toLatLng(m), { icon, draggable: isEditMode && !!m.custom }).addTo(layer);
@@ -185,6 +202,45 @@ const OldWorldMapContent = () => {
         });
       }
       marker.on('click', () => setSelectedId(m.id));
+      const root = marker.getElement();
+      const handleEl = root?.querySelector<HTMLElement>('.ow-marker__handle');
+      const imgEl = root?.querySelector<HTMLElement>('.ow-marker__img');
+      const labelEl = root?.querySelector<HTMLElement>('.ow-marker__label');
+      if (handleEl && imgEl) {
+        ['mousedown', 'touchstart', 'click', 'dblclick'].forEach((ev) =>
+          handleEl.addEventListener(ev, (e) => e.stopPropagation())
+        );
+        handleEl.addEventListener('pointerdown', (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          handleEl.setPointerCapture(e.pointerId);
+          const rect = imgEl.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          let size = m.imageSize ?? 36;
+          const apply = (v: number) => {
+            imgEl.style.width = `${v}px`;
+            imgEl.style.height = `${v}px`;
+            imgEl.style.margin = `-${v / 2}px 0 0 -${v / 2}px`;
+            handleEl.style.left = `${v / 2 - 9}px`;
+            handleEl.style.top = `${v / 2 - 9}px`;
+            if (labelEl) labelEl.style.left = `${v / 2 + 6}px`;
+          };
+          const onMove = (ev: PointerEvent) => {
+            size = Math.round(Math.min(400, Math.max(24, 2 * Math.max(ev.clientX - cx, ev.clientY - cy))));
+            apply(size);
+          };
+          const onUp = () => {
+            handleEl.removeEventListener('pointermove', onMove);
+            handleEl.removeEventListener('pointerup', onUp);
+            handleEl.removeEventListener('pointercancel', onUp);
+            resizeMarker(m, size);
+          };
+          handleEl.addEventListener('pointermove', onMove);
+          handleEl.addEventListener('pointerup', onUp);
+          handleEl.addEventListener('pointercancel', onUp);
+        });
+      }
       markerRefs.current[m.id] = marker;
     });
   }, [visible, isEditMode, password]);
@@ -338,7 +394,7 @@ const OldWorldMapContent = () => {
               <p className="mt-2 font-body text-sm leading-snug text-parchment/90">{selected.description}</p>
             )}
             {isEditMode && selected.custom && (
-              <p className="mt-2 font-body text-xs text-gold/70">Чтобы переместить метку, перетащите её на карте.</p>
+              <p className="mt-2 font-body text-xs text-gold/70">Перетащите метку, чтобы переместить; потяните за угол картинки, чтобы изменить размер.</p>
             )}
             {isEditMode && selected.custom && (
               <div className="mt-3 flex gap-2">
