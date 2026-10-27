@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from "@/lib/router-compat";
 import { CodexEntry, SectionId, sectionGroups } from '@/data/codex';
 import Header from '@/components/codex/Header';
 import Footer from '@/components/codex/Footer';

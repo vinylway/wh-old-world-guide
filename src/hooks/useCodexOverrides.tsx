@@ -45,7 +45,11 @@ export const CodexOverridesProvider = ({ children }: { children: ReactNode }) =>
   const [overrides, setOverrides] = useState<Record<string, CodexEntry>>({});
   const [removed, setRemoved] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [password, setPassword] = useState<string | null>(() => sessionStorage.getItem(AUTH_STORAGE_KEY));
+  const [password, setPassword] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPassword(sessionStorage.getItem(AUTH_STORAGE_KEY));
+  }, []);
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 

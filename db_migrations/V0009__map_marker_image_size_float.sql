@@ -1,1 +1,0 @@
-ALTER TABLE map_markers ALTER COLUMN image_size TYPE DOUBLE PRECISION;

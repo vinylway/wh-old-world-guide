@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import L from 'leaflet';
+import type * as LT from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import Header from '@/components/codex/Header';
 import Icon from '@/components/ui/icon';
@@ -21,6 +21,8 @@ const REF_ZOOM = 2;
 const MARKERS_API = 'https://functions.poehali.dev/2b206eaf-1c19-429c-a96b-d9523e081560';
 const TILES_URL = '/map-tiles/{z}/{x}/{y}.webp';
 
+type LeafletModule = typeof LT;
+
 type FormState = Partial<MapMarker> & { x: number; y: number };
 
 const OldWorldMapContent = () => {
@@ -33,9 +35,9 @@ const OldWorldMapContent = () => {
   const [pwInput, setPwInput] = useState('');
   const [showPw, setShowPw] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<L.Map | null>(null);
-  const layerRef = useRef<L.LayerGroup | null>(null);
-  const markerRefs = useRef<Record<string, L.Marker>>({});
+  const mapRef = useRef<LT.Map | null>(null);
+  const layerRef = useRef<LT.LayerGroup | null>(null);
+  const markerRefs = useRef<Record<string, LT.Marker>>({});
   const [query, setQuery] = useState('');
   const [categories, setCategories] = useState<MapCategory[]>(defaultCategories);
   const [hidden, setHidden] = useState<string[]>([]);
@@ -51,7 +53,19 @@ const OldWorldMapContent = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
 
-  const toLatLng = (m: { x: number; y: number }) =>
+  // Leaflet touches window at import time, so it is loaded in the browser only.
+  const [leaflet, setLeaflet] = useState<LeafletModule | null>(null);
+  useEffect(() => {
+    let alive = true;
+    import('leaflet').then((mod) => {
+      if (alive) setLeaflet((mod.default ?? mod) as LeafletModule);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const toLatLng = (L: LeafletModule, m: { x: number; y: number }) =>
     L.CRS.Simple.pointToLatLng(
       L.point((m.x / MAP_SIZE.width) * IMG_W, (m.y / MAP_SIZE.height) * IMG_H),
       MAX_NATIVE_ZOOM
@@ -159,7 +173,8 @@ const OldWorldMapContent = () => {
   }, [query, active, allMarkers]);
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    const L = leaflet;
+    if (!L || !containerRef.current || mapRef.current) return;
     const sw = L.CRS.Simple.pointToLatLng(L.point(0, IMG_H), MAX_NATIVE_ZOOM);
     const ne = L.CRS.Simple.pointToLatLng(L.point(IMG_W, 0), MAX_NATIVE_ZOOM);
     const bounds = L.latLngBounds(sw, ne);
@@ -188,7 +203,7 @@ const OldWorldMapContent = () => {
       map.getContainer().style.setProperty('--ow-scale', String(Math.pow(2, map.getZoom() - REF_ZOOM)));
     updateScale();
     map.on('zoom zoomend', updateScale);
-    map.on('click', (e: L.LeafletMouseEvent) => {
+    map.on('click', (e: LT.LeafletMouseEvent) => {
       if (!addingRef.current) return;
       const p = L.CRS.Simple.latLngToPoint(e.latlng, MAX_NATIVE_ZOOM);
       setForm({
@@ -204,11 +219,12 @@ const OldWorldMapContent = () => {
       map.remove();
       mapRef.current = null;
     };
-  }, []);
+  }, [leaflet]);
 
   useEffect(() => {
+    const L = leaflet;
     const layer = layerRef.current;
-    if (!layer) return;
+    if (!L || !layer) return;
     layer.clearLayers();
     markerRefs.current = {};
     visible.forEach((m) => {
@@ -226,7 +242,7 @@ const OldWorldMapContent = () => {
         html: `${dot}${handle}${rotHandle}${label}`,
         iconSize: [0, 0],
       });
-      const marker = L.marker(toLatLng(m), { icon, draggable: isEditMode && !!m.custom }).addTo(layer);
+      const marker = L.marker(toLatLng(L, m), { icon, draggable: isEditMode && !!m.custom }).addTo(layer);
       if (isEditMode && m.custom) {
         marker.on('dragend', () => {
           const p = L.CRS.Simple.latLngToPoint(marker.getLatLng(), MAX_NATIVE_ZOOM);
@@ -302,11 +318,11 @@ const OldWorldMapContent = () => {
       }
       markerRefs.current[m.id] = marker;
     });
-  }, [visible, isEditMode, password, categories]);
+  }, [visible, isEditMode, password, categories, leaflet]);
 
   const focusMarker = (m: MapMarker) => {
     setSelectedId(m.id);
-    mapRef.current?.flyTo(toLatLng(m), 2.5, { duration: 0.8 });
+    if (leaflet) mapRef.current?.flyTo(toLatLng(leaflet, m), 2.5, { duration: 0.8 });
   };
 
   const toggleCategory = (c: MapMarkerCategory) => {
